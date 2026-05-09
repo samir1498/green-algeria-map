@@ -1,64 +1,46 @@
 # Green Algeria Map
 
-Map-based platform for tracking reforestation efforts across Algeria. Monitor tree planting initiatives, visualize green coverage, and support environmental restoration projects.
+Map-based platform for tracking reforestation efforts across Algeria. Volunteers, donors, and organizers can find planting zones, see which trees are needed, track progress with photo verification, and coordinate action.
 
-## Tech Stack
-
-- **Frontend**: React 19, TanStack Router, Tailwind CSS v4
-- **Backend**: NestJS, Spring Boot
-- **Package Manager**: pnpm (monorepo)
-
-## Project Structure
-
-```
-green-algeria-map/
-├── frontend/          # React + TanStack Router SPA
-├── backend-nestjs/    # NestJS backend (coming soon)
-├── backend-springboot/ # Spring Boot backend (coming soon)
-└── pnpm-workspace.yaml
-```
+Built with React 19, TanStack Router, and Leaflet. Styled with Tailwind CSS v4 + shadcn/ui.
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 20+
-- pnpm 9+
-
-### Install & Run
-
 ```bash
 pnpm install
-pnpm dev          # Start all packages
+pnpm dev
 ```
-
-### Run Specific Package
-
-```bash
-pnpm --filter frontend dev
-pnpm --filter backend-nestjs dev
-pnpm --filter backend-springboot dev
-```
-
-## Architecture
-
-- **Frontend**: Single-page application with file-based routing, API integration for map data
-- **Backend**: REST API services (not yet scaffolded)
-- **Map Data**: Tree planting locations, coverage stats, regional progress
 
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start development servers |
-| `pnpm build` | Build all packages |
+| `pnpm dev` | Start dev server (port 3000) |
+| `pnpm build` | Production build |
 | `pnpm test` | Run tests |
-| `pnpm lint` | Lint all packages |
+| `pnpm check` | Type check (tsc --noEmit) |
+| `pnpm lint` | ESLint |
+| `pnpm knip` | Dead code detection |
+| `pnpm format` | Prettier format |
+| `pnpm format:check` | Prettier check |
 
-## Contributing
+## Tech Stack
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+- **Framework**: React 19, TanStack Router (file-based routing)
+- **Styling**: Tailwind CSS v4, shadcn/ui (Radix primitives)
+- **Map**: Leaflet, react-leaflet
+- **Quality**: ESLint, Prettier, knip, husky, TypeScript strict
+- **Package Manager**: pnpm
+
+## Features
+
+- Interactive map with planting zones and trash locations
+- Tree type info per zone (recommended species, Wikipedia links)
+- Crowdsourced location reporting
+- Progress tracking with photo verification
+- "How to help" CTAs per location
+- Dark/light theme toggle
 
 ## License
 
-See [LICENSE](LICENSE).
+MIT

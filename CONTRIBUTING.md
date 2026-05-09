@@ -2,29 +2,25 @@
 
 ## How to Contribute
 
-1. **Fork** the repository
-2. **Clone** your fork
-3. **Create a branch** for your change (`git checkout -b feat/my-feature`)
-4. **Make your changes** and commit
-5. **Push** to your fork and submit a **Pull Request**
+1. Fork the repository
+2. Clone your fork
+3. Create a branch (`git checkout -b feat/my-feature`)
+4. Make your changes and commit
+5. Push to your fork and submit a Pull Request
 
 ## Standards
 
-- Write clear commit messages (Conventional Commits preferred)
+- Write clear commit messages
 - Add tests for new features
-- Run `pnpm build` before submitting PR
+- Run `pnpm check && pnpm lint && pnpm knip && pnpm build` before submitting PR
 - Fill out the PR template completely
 
 ## Code Style
 
-- Frontend: ESLint/Prettier (see `frontend/tsconfig.json`)
-- Backend: follow language-specific conventions (NestJS/Spring Boot)
+- ESLint + Prettier enforced
+- Pre-commit hook formats staged files automatically
+- TypeScript strict mode
 
 ## Reporting Issues
 
-- Use GitHub Issues for bugs and feature requests
-- Include steps to reproduce and your environment (OS, Node version, etc.)
-
-## Questions?
-
-Open an issue or reach out via the repository.
+Use GitHub Issues for bugs and feature requests.
