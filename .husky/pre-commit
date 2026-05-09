@@ -1,0 +1,3 @@
+cd frontend
+pnpm check
+npx lint-staged
