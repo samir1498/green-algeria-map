@@ -52,3 +52,7 @@ Pre-commit hook runs:
 2. `lint-staged` (Prettier format on staged files)
 
 CI runs in parallel: check → lint → knip → test → build
+
+## Skills
+
+- `.claude/skills/pc-version-bump/` — Bump version, update CHANGELOG, tag a release
