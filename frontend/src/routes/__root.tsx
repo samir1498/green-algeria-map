@@ -49,16 +49,16 @@ function RootComponent() {
     <div className="min-h-screen flex flex-col">
       <header className="border-b bg-background">
         <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <a href="/" className="flex items-center gap-2 font-semibold text-lg">
-            <svg className="w-6 h-6 text-green-600" viewBox="0 0 32 32" fill="currentColor">
-              <circle cx="16" cy="16" r="14" />
-              <path d="M16 8c-2 4-6 8-6 12a6 6 0 0012 0c0-4-4-8-6-12z" fill="#15803d" />
-            </svg>
+            <a href="/" className="flex items-center gap-2 font-semibold text-lg">
+              <svg className="w-6 h-6 text-green-600" viewBox="0 0 32 32" fill="currentColor">
+                <circle cx="16" cy="16" r="14" />
+                <path d="M16 8c-2 4-6 8-6 12a6 6 0 0012 0c0-4-4-8-6-12z" />
+              </svg>
             Green Algeria Map
           </a>
           <div className="flex items-center gap-4">
-            <a href="/" className="text-sm font-medium hover:text-green-600">Map</a>
-            <a href="/about" className="text-sm font-medium hover:text-green-600">About</a>
+            <a href="/" className="text-sm font-medium hover:text-foreground/80">Map</a>
+            <a href="/about" className="text-sm font-medium hover:text-foreground/80">About</a>
             <ThemeToggle />
           </div>
         </nav>
