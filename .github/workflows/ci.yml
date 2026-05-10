@@ -43,7 +43,7 @@ jobs:
       - run: pnpm lint
 
   knip:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
@@ -59,6 +59,8 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile --prefer-offline
       - run: pnpm knip
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
 
   test:
     runs-on: ubuntu-slim
