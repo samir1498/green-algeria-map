@@ -43,7 +43,7 @@ jobs:
       - run: pnpm lint
 
   knip:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
