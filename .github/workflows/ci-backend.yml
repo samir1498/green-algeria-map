@@ -1,0 +1,46 @@
+name: CI Backend
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: [frontend/**]
+  pull_request:
+    paths-ignore: [frontend/**]
+
+jobs:
+  lint:
+    runs-on: ubuntu-slim
+    defaults:
+      run:
+        working-directory: backend-nestjs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: backend-nestjs/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm lint
+
+  build:
+    runs-on: ubuntu-slim
+    needs: [lint]
+    defaults:
+      run:
+        working-directory: backend-nestjs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: backend-nestjs/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm build
