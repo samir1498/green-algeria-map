@@ -1,20 +1,21 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useLoaderData } from '@tanstack/react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Map } from '@/components/map/Map'
+import { getAll } from '@/api/zones'
 import { demoZones } from '@/components/map/demo-data'
+import type { Zone } from '@/types/zone'
 
 export const Route = createFileRoute('/')({
+  loader: async (): Promise<Zone[]> => {
+    try {
+      return await getAll()
+    } catch {
+      return demoZones as Zone[]
+    }
+  },
   component: Home,
 })
-
-const projectCounts = {
-  total: demoZones.length,
-  planting: demoZones.filter((z) => z.type === 'planting').length,
-  trash: demoZones.filter((z) => z.type === 'trash' || z.type === 'cleanup').length,
-  trees: demoZones.reduce((sum, z) => sum + (z.currentCount ?? 0), 0),
-  treeTarget: demoZones.reduce((sum, z) => sum + (z.targetCount ?? 0), 0),
-}
 
 function StatCard({ value, label }: { value: string; label: string }) {
   return (
@@ -30,6 +31,15 @@ function StatCard({ value, label }: { value: string; label: string }) {
 }
 
 function Home() {
+  const zones = useLoaderData({ from: '/' })
+
+  const projectCounts = {
+    total: zones.length,
+    planting: zones.filter((z) => z.type === 'planting').length,
+    trees: zones.reduce((sum, z) => sum + (z.currentCount ?? 0), 0),
+    treeTarget: zones.reduce((sum, z) => sum + (z.targetCount ?? 0), 0),
+  }
+
   return (
     <div>
       <div className="max-w-7xl mx-auto px-4 py-4">
@@ -41,7 +51,7 @@ function Home() {
       </div>
 
       <div className="max-w-7xl mx-auto rounded-lg border">
-        <Map />
+        <Map zones={zones} />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-4 grid grid-cols-1 md:grid-cols-4 gap-3">

@@ -1,12 +1,16 @@
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
-import { demoZones } from './demo-data'
+import type { Zone } from '@/types/zone'
 import { statusColors, typeLabels, statusBadgeClasses } from './helpers'
 import { Legend } from './Legend'
 
 const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
 
-export function Map() {
+interface MapProps {
+  zones: Zone[]
+}
+
+export function Map({ zones }: MapProps) {
   return (
     <div className="relative">
       <MapContainer
@@ -19,7 +23,7 @@ export function Map() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {demoZones.map((zone) => (
+        {zones.map((zone) => (
           <CircleMarker
             key={zone.id}
             center={[zone.lat, zone.lng]}
