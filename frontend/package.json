@@ -14,6 +14,10 @@
     "check": "tsc --noEmit",
     "lint": "eslint . --quiet",
     "knip": "knip",
+    "depcruise": "depcruise src",
+    "depcruise:dot": "depcruise src --output-type dot > dependency-graph.dot",
+    "depcruise:svg": "depcruise src --output-type dot | dot -T svg > dependency-graph.svg",
+    "depcruise:png": "depcruise src --output-type dot | dot -T png > dependency-graph.png",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky"
@@ -52,6 +56,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.1",
+    "dependency-cruiser": "^17.4.0",
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
