@@ -1,4 +1,4 @@
-import type { Zone } from './types'
+import type { Zone } from '@/types/zone'
 
 export const statusColors: Record<Zone['status'], string> = {
   planned: '#f59e0b',
