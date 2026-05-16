@@ -5,7 +5,7 @@ export interface Zone {
   status: 'planned' | 'in-progress' | 'completed'
   lat: number
   lng: number
-  targetCount?: number
-  currentCount?: number
+  targetCount?: number | null
+  currentCount?: number | null
   description: string
 }

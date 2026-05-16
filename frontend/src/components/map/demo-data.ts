@@ -1,4 +1,4 @@
-import type { Zone } from './types'
+import type { Zone } from '@/types/zone'
 
 export const demoZones: Zone[] = [
   {
