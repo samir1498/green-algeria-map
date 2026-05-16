@@ -1,10 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Map } from '@/components/map/Map'
+import { demoZones } from '@/components/map/demo-data'
 
 export const Route = createFileRoute('/')({
   component: Home,
 })
+
+const projectCounts = {
+  total: demoZones.length,
+  planting: demoZones.filter((z) => z.type === 'planting').length,
+  trash: demoZones.filter((z) => z.type === 'trash' || z.type === 'cleanup').length,
+  trees: demoZones.reduce((sum, z) => sum + (z.currentCount ?? 0), 0),
+  treeTarget: demoZones.reduce((sum, z) => sum + (z.targetCount ?? 0), 0),
+}
 
 function StatCard({ value, label }: { value: string; label: string }) {
   return (
@@ -21,8 +31,8 @@ function StatCard({ value, label }: { value: string; label: string }) {
 
 function Home() {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-4">
-      <div className="mb-4">
+    <div>
+      <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-3xl font-bold text-foreground">Explore Reforestation</h1>
           <Badge variant="outline" className="text-xs">Beta</Badge>
@@ -30,20 +40,15 @@ function Home() {
         <p className="text-muted-foreground">Track tree planting initiatives and green coverage across Algeria.</p>
       </div>
 
-      <div className="border rounded-lg bg-muted h-[18.75rem] flex items-center justify-center">
-        <div className="text-center">
-          <svg className="w-16 h-16 mx-auto text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75v12m6-6v-6.75m-3 3H15m-3 0v-1.5M12 9v8.25m0-8.25h3.75M12 18h3.75M9.75 9h4.5M9.75 9a2.25 2.25 0 1 1 0 4.5h-4.5v3h4.5ZM12 9v6" />
-          </svg>
-          <p className="mt-4 text-muted-foreground font-medium">Map View</p>
-          <p className="mt-1 text-sm text-muted-foreground/60">Interactive map coming soon</p>
-        </div>
+      <div className="max-w-7xl mx-auto rounded-lg border">
+        <Map />
       </div>
 
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-        <StatCard value="0" label="Active Projects" />
-        <StatCard value="0" label="Trees Planted" />
-        <StatCard value="0 ha" label="Area Covered" />
+      <div className="max-w-7xl mx-auto px-4 py-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+        <StatCard value={String(projectCounts.total)} label="Total Projects" />
+        <StatCard value={String(projectCounts.planting)} label="Planting Zones" />
+        <StatCard value={String(projectCounts.trees)} label="Trees Planted" />
+        <StatCard value={`${projectCounts.trees} / ${projectCounts.treeTarget}`} label="Trees Progress" />
       </div>
     </div>
   )
