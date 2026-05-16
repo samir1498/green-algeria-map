@@ -1,3 +1,6 @@
 cd frontend
 pnpm check
 npx lint-staged
+
+cd ../backend-nestjs
+pnpm lint
