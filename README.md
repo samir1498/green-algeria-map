@@ -1,45 +1,109 @@
 # Green Algeria Map
 
-Map-based platform for tracking reforestation efforts across Algeria. Volunteers, donors, and organizers can find planting zones, see which trees are needed, track progress with photo verification, and coordinate action.
+Map-based platform for tracking reforestation and cleanup efforts across Algeria. Volunteers, donors, and organizers can find planting zones, track progress, and coordinate action.
 
-Built with React 19, TanStack Router, and Leaflet. Styled with Tailwind CSS v4 + shadcn/ui.
+## Stack
 
-## Getting Started
+| Layer | Tech |
+|-------|------|
+| **Frontend** | React 19, TanStack Router, Tailwind CSS v4, shadcn/ui, Leaflet |
+| **Backend** | NestJS 11, TypeORM, PostgreSQL 18 |
+| **Quality** | TypeScript strict, ESLint, Prettier, knip, depcruise, husky |
+| **CI** | GitHub Actions — frontend + backend workflows with path filters |
+| **Runtime** | Docker (PostgreSQL), pnpm, Bun |
+
+## Quick Start
 
 ```bash
-pnpm install
+# Start everything (DB → service selection → tmux session)
+./start-dev.sh
+
+# Or manually:
+docker run -d --name green-algeria-db \
+  -e POSTGRES_USER=greenalgeria \
+  -e POSTGRES_PASSWORD=greenalgeria \
+  -e POSTGRES_DB=greenalgeria \
+  -p 5432:5432 \
+  postgres:18-alpine
+
+cd backend-nestjs
+bunx --bun typeorm migration:run -d src/data-source.ts
+bun src/seed.ts
+pnpm start:dev
+
+cd frontend
 pnpm dev
 ```
 
-## Scripts
+## Frontend Scripts
+
+Run from `frontend/`:
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start dev server (port 3000) |
+| `pnpm dev` | Dev server (port 3000) |
 | `pnpm build` | Production build |
-| `pnpm test` | Run tests |
-| `pnpm check` | Type check (tsc --noEmit) |
+| `pnpm check` | Type check |
 | `pnpm lint` | ESLint |
 | `pnpm knip` | Dead code detection |
-| `pnpm format` | Prettier format |
-| `pnpm format:check` | Prettier check |
+| `pnpm depcruise` | Module boundary validation |
+| `pnpm format` | Prettier |
 
-## Tech Stack
+## Backend Scripts
 
-- **Framework**: React 19, TanStack Router (file-based routing)
-- **Styling**: Tailwind CSS v4, shadcn/ui (Radix primitives)
-- **Map**: Leaflet, react-leaflet
-- **Quality**: ESLint, Prettier, knip, husky, TypeScript strict
-- **Package Manager**: pnpm
+Run from `backend-nestjs/`:
 
-## Features
+| Command | Description |
+|---------|-------------|
+| `pnpm start:dev` | Dev server (port 8080, watch mode) |
+| `pnpm build` | Compile to dist/ |
+| `pnpm lint` | ESLint |
+| `bunx --bun typeorm migration:run -d src/data-source.ts` | Run pending migrations |
+| `bun src/seed.ts` | Seed demo data (10 zones) |
 
-- Interactive map with planting zones and trash locations
-- Tree type info per zone (recommended species, Wikipedia links)
-- Crowdsourced location reporting
-- Progress tracking with photo verification
-- "How to help" CTAs per location
-- Dark/light theme toggle
+API docs at `http://localhost:8080/api/docs` (Scalar, moon theme).
+
+## Project Structure
+
+```
+green-algeria-map/
+├── frontend/           # React SPA
+│   ├── src/
+│   │   ├── api/        # API client modules
+│   │   ├── components/ # Map components + shadcn/ui
+│   │   ├── hooks/      # Custom hooks
+│   │   ├── lib/        # Utilities
+│   │   ├── routes/     # TanStack Router routes
+│   │   └── types/      # Shared TypeScript types
+│   └── ...
+├── backend-nestjs/     # NestJS API
+│   ├── src/
+│   │   ├── modules/    # Domain modules (zones)
+│   │   ├── migrations/ # TypeORM migrations
+│   │   └── seed.ts     # Demo data seeder
+│   └── ...
+├── .github/workflows/  # CI (frontend + backend)
+├── start-dev.sh        # Dev environment launcher
+└── .tmux.conf          # Tmux config
+```
+
+## CI
+
+| Workflow | Triggers | Jobs |
+|----------|----------|------|
+| CI (frontend) | Changes in `frontend/` or shared infra | check → lint → knip → depcruise → test → build |
+| CI Backend | Changes in `backend-nestjs/` or shared infra | lint → build |
+
+## Status
+
+- ✅ Interactive Leaflet map with 10 demo zones, color-coded by status
+- ✅ Dark mode, legend, zoom controls, status popups
+- ✅ NestJS 11 backend with TypeORM + PostgreSQL
+- ✅ Zone CRUD API + Scalar docs
+- ✅ TypeORM migration workflow + seed script
+- ✅ CI split, depcruise, pre-commit hooks
+- 🔄 Frontend → API integration (TanStack Router loaders)
+- 📋 Tree info / wiki lookup, damage reporting, photo upload, volunteer CTA
 
 ## License
 
