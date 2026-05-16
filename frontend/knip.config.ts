@@ -1,26 +1,14 @@
 export default {
-  entry: [
-    'src/main.tsx',
-    'src/styles.css',
-    'vite.config.ts',
-    'src/routes/**/*.{ts,tsx}',
-    'src/components/ui/**/*.{ts,tsx}',
-  ],
-  project: ['src/**/*.ts', 'src/**/*.tsx', 'src/**/*.css'],
+  entry: ['src/styles.css', 'src/routes/**/*.{ts,tsx}'],
+  project: ['src/**/*.{ts,tsx,css}'],
   ignoreExportsUsedInFile: true,
-  ignore: ['src/router.tsx', 'src/components/map/**/*'],
   ignoreDependencies: [
     '@tailwindcss/typography',
     '@tanstack/router-plugin',
     'eslint-plugin-react-hooks',
     'eslint-plugin-react-refresh',
-    'leaflet',
     'lint-staged',
-    'react-leaflet',
-    '@types/leaflet',
     '@testing-library/dom',
     '@testing-library/react',
-    'jsdom',
-    'vitest',
   ],
 }
