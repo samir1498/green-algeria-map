@@ -17,7 +17,7 @@ import { ZonesModule } from './modules/zones/zones.module';
         password: config.get('DB_PASSWORD', 'greenalgeria'),
         database: config.get('DB_NAME', 'greenalgeria'),
         autoLoadEntities: true,
-        synchronize: config.get('NODE_ENV', 'development') === 'development',
+        synchronize: false,
       }),
     }),
     ZonesModule,
