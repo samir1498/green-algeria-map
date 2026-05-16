@@ -1,5 +1,18 @@
 # Changelog
 
+## [frontend-v0.3.0] - 2026-05-16
+
+### Added
+- Axios instance with base URL pointing to backend
+- API module for zones (getAll, getById, create, update, remove)
+- Shared Zone type at `src/types/zone.ts`
+- TanStack Router loaders: home page fetches from API, falls back to demo data
+
+### Changed
+- Map component now accepts `zones` as a prop (data-agnostic)
+- Home route uses `useLoaderData` instead of hardcoded demo imports
+- Zone type moved from `components/map/types.ts` to `types/zone.ts`
+
 ## [v0.2.0] - 2026-05-16
 
 ### Added
