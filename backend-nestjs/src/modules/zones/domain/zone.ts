@@ -74,4 +74,18 @@ export class Zone {
       this.markComplete();
     }
   }
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      type: this.type,
+      status: this.status,
+      lat: this.coordinates.lat,
+      lng: this.coordinates.lng,
+      targetCount: this.targetCount,
+      currentCount: this.currentCount,
+      description: this.description,
+    };
+  }
 }
