@@ -7,13 +7,14 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import { ApiTags } from '@nestjs/swagger';
-import { GetAllZonesUseCase } from './application/get-all-zones.use-case';
-import { GetZoneByIdUseCase } from './application/get-zone-by-id.use-case';
-import { CreateZoneUseCase } from './application/create-zone.use-case';
-import { UpdateZoneUseCase } from './application/update-zone.use-case';
-import { DeleteZoneUseCase } from './application/delete-zone.use-case';
+import { CreateZoneCommand } from './application/commands/create-zone.command';
+import { UpdateZoneCommand } from './application/commands/update-zone.command';
+import { DeleteZoneCommand } from './application/commands/delete-zone.command';
+import { GetAllZonesQuery } from './application/queries/get-all-zones.query';
+import { GetZoneByIdQuery } from './application/queries/get-zone-by-id.query';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
 
@@ -21,37 +22,57 @@ import { UpdateZoneDto } from './dto/update-zone.dto';
 @Controller('zones')
 export class ZonesController {
   constructor(
-    private readonly getAllZones: GetAllZonesUseCase,
-    private readonly getZoneById: GetZoneByIdUseCase,
-    private readonly createZone: CreateZoneUseCase,
-    private readonly updateZone: UpdateZoneUseCase,
-    private readonly deleteZone: DeleteZoneUseCase,
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
   ) {}
 
   @Get()
   @AllowAnonymous()
   findAll() {
-    return this.getAllZones.execute();
+    return this.queryBus.execute(new GetAllZonesQuery());
   }
 
   @Get(':id')
   @AllowAnonymous()
   findOne(@Param('id') id: string) {
-    return this.getZoneById.execute(id);
+    return this.queryBus.execute(new GetZoneByIdQuery(id));
   }
 
   @Post()
   create(@Body() dto: CreateZoneDto) {
-    return this.createZone.execute(dto);
+    return this.commandBus.execute(
+      new CreateZoneCommand(
+        dto.name,
+        dto.type,
+        dto.status,
+        dto.lat,
+        dto.lng,
+        dto.targetCount,
+        dto.currentCount,
+        dto.description,
+      ),
+    );
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateZoneDto) {
-    return this.updateZone.execute(id, dto);
+    return this.commandBus.execute(
+      new UpdateZoneCommand(
+        id,
+        dto.name,
+        dto.type,
+        dto.status,
+        dto.lat,
+        dto.lng,
+        dto.targetCount,
+        dto.currentCount,
+        dto.description,
+      ),
+    );
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.deleteZone.execute(id);
+    return this.commandBus.execute(new DeleteZoneCommand(id));
   }
 }

@@ -1,27 +1,20 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { ZoneRepository } from '../domain/zone.repository';
-import { Zone } from '../domain/zone';
-import { Coordinates } from '../domain/coordinates.value-object';
-import { ZoneType, ZoneStatus } from '../domain/zone.types';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { NotFoundException } from '@nestjs/common';
+import { UpdateZoneCommand } from './update-zone.command';
+import { ZoneRepository } from '../../domain/zone.repository';
+import { Zone } from '../../domain/zone';
+import { Coordinates } from '../../domain/coordinates.value-object';
 
-export interface UpdateZoneCommand {
-  name?: string;
-  type?: ZoneType;
-  status?: ZoneStatus;
-  lat?: number;
-  lng?: number;
-  targetCount?: number;
-  currentCount?: number;
-  description?: string;
-}
-
-@Injectable()
-export class UpdateZoneUseCase {
+@CommandHandler(UpdateZoneCommand)
+export class UpdateZoneHandler implements ICommandHandler<
+  UpdateZoneCommand,
+  Zone
+> {
   constructor(private readonly repository: ZoneRepository) {}
 
-  async execute(id: string, command: UpdateZoneCommand): Promise<Zone> {
-    const zone = await this.repository.findById(id);
-    if (!zone) throw new NotFoundException(`Zone ${id} not found`);
+  async execute(command: UpdateZoneCommand): Promise<Zone> {
+    const zone = await this.repository.findById(command.id);
+    if (!zone) throw new NotFoundException(`Zone ${command.id} not found`);
 
     if (command.name !== undefined) zone.name = command.name;
     if (command.type !== undefined) zone.type = command.type;

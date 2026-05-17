@@ -1,28 +1,36 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CqrsModule } from '@nestjs/cqrs';
 import { ZoneOrmEntity } from './infrastructure/zone.orm-entity';
 import { ZoneRepositoryImpl } from './infrastructure/zone.repository.impl';
 import { ZoneRepository } from './domain/zone.repository';
-import { GetAllZonesUseCase } from './application/get-all-zones.use-case';
-import { GetZoneByIdUseCase } from './application/get-zone-by-id.use-case';
-import { CreateZoneUseCase } from './application/create-zone.use-case';
-import { UpdateZoneUseCase } from './application/update-zone.use-case';
-import { DeleteZoneUseCase } from './application/delete-zone.use-case';
+import { CreateZoneHandler } from './application/commands/create-zone.handler';
+import { UpdateZoneHandler } from './application/commands/update-zone.handler';
+import { DeleteZoneHandler } from './application/commands/delete-zone.handler';
+import { GetAllZonesHandler } from './application/queries/get-all-zones.handler';
+import { GetZoneByIdHandler } from './application/queries/get-zone-by-id.handler';
+import { ZoneCreatedHandler } from './application/events/zone-created.handler';
 import { ZonesController } from './zones.controller';
 
+const CommandHandlers = [
+  CreateZoneHandler,
+  UpdateZoneHandler,
+  DeleteZoneHandler,
+];
+const QueryHandlers = [GetAllZonesHandler, GetZoneByIdHandler];
+const EventHandlers = [ZoneCreatedHandler];
+
 @Module({
-  imports: [TypeOrmModule.forFeature([ZoneOrmEntity])],
+  imports: [TypeOrmModule.forFeature([ZoneOrmEntity]), CqrsModule],
   controllers: [ZonesController],
   providers: [
     {
       provide: ZoneRepository,
       useClass: ZoneRepositoryImpl,
     },
-    GetAllZonesUseCase,
-    GetZoneByIdUseCase,
-    CreateZoneUseCase,
-    UpdateZoneUseCase,
-    DeleteZoneUseCase,
+    ...CommandHandlers,
+    ...QueryHandlers,
+    ...EventHandlers,
   ],
 })
 export class ZonesModule {}

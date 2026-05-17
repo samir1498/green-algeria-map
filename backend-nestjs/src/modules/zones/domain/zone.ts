@@ -22,6 +22,8 @@ export class Zone {
   currentCount?: number;
   description: string;
 
+  private events: unknown[] = [];
+
   private constructor(props: ZoneProps) {
     this.id = props.id;
     this.name = props.name;
@@ -35,6 +37,18 @@ export class Zone {
 
   static create(props: ZoneProps): Zone {
     return new Zone(props);
+  }
+
+  recordEvent(event: unknown): void {
+    this.events.push(event);
+  }
+
+  getUncommittedEvents(): unknown[] {
+    return [...this.events];
+  }
+
+  clearEvents(): void {
+    this.events = [];
   }
 
   canStart(): boolean {
