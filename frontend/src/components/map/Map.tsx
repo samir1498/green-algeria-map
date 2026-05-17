@@ -15,8 +15,8 @@ export function Map({ zones }: MapProps) {
     <div className="relative">
       <MapContainer
         center={ALGERIA_CENTER}
-        zoom={6}
-        style={{ height: '50vh', width: '100%' }}
+        zoom={5}
+        style={{ height: '60vh', width: '100%' }}
         scrollWheelZoom
       >
         <TileLayer
@@ -39,11 +39,15 @@ export function Map({ zones }: MapProps) {
               <div className="text-sm">
                 <p className="font-semibold">{zone.name}</p>
                 <p className="text-muted-foreground">{typeLabels[zone.type]}</p>
-                <span className={`inline-block px-1.5 py-0.5 text-xs rounded mt-1 ${statusBadgeClasses[zone.status]}`}>
+                <span
+                  className={`mt-1 inline-block rounded px-1.5 py-0.5 text-xs ${statusBadgeClasses[zone.status]}`}
+                >
                   {zone.status}
                 </span>
                 {zone.targetCount && (
-                  <p className="mt-1 text-xs">{zone.currentCount} / {zone.targetCount} trees</p>
+                  <p className="mt-1 text-xs">
+                    {zone.currentCount} / {zone.targetCount} trees
+                  </p>
                 )}
               </div>
             </Popup>
