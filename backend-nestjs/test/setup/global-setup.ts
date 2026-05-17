@@ -22,5 +22,6 @@ export default async function globalSetup(): Promise<void> {
       password: container.getPassword(),
       database: container.getDatabase(),
     }),
+    { mode: 0o600 },
   );
 }

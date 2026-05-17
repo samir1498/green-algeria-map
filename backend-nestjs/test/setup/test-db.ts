@@ -16,7 +16,9 @@ export function getTestDbConfig(): {
   }
   return {
     host: process.env.TEST_DB_HOST ?? 'localhost',
-    port: Number(process.env.TEST_DB_PORT ?? 5432),
+    port: Number.isFinite(Number(process.env.TEST_DB_PORT))
+      ? Number(process.env.TEST_DB_PORT)
+      : 5432,
     username: process.env.TEST_DB_USERNAME ?? 'test_greenalgeria',
     password: process.env.TEST_DB_PASSWORD ?? 'test_greenalgeria',
     database: process.env.TEST_DB_NAME ?? 'test_greenalgeria',

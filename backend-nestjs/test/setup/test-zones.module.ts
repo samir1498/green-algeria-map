@@ -19,6 +19,7 @@ import {
   Delete,
   Body,
   Param,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiTags } from '@nestjs/swagger';
@@ -44,7 +45,7 @@ class TestZonesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.queryBus.execute(new GetZoneByIdQuery(id));
   }
 
@@ -65,7 +66,7 @@ class TestZonesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateZoneDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateZoneDto) {
     return this.commandBus.execute(
       new UpdateZoneCommand(
         id,
@@ -82,7 +83,7 @@ class TestZonesController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.commandBus.execute(new DeleteZoneCommand(id));
   }
 }

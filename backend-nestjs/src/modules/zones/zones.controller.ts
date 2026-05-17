@@ -73,7 +73,7 @@ export class ZonesController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.commandBus.execute(new DeleteZoneCommand(id));
   }
 }

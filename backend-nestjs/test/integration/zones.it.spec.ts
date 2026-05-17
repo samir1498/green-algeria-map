@@ -132,6 +132,12 @@ describe('Zones (integration)', () => {
         .get(`/zones/${nonExistentId}`)
         .expect(404);
     });
+
+    it('returns 400 for malformed id', () => {
+      return supertest(app.getHttpServer())
+        .get('/zones/not-a-uuid')
+        .expect(400);
+    });
   });
 
   describe('PATCH /zones/:id', () => {
@@ -167,6 +173,13 @@ describe('Zones (integration)', () => {
         .send({ name: 'Nope' })
         .expect(404);
     });
+
+    it('returns 400 for malformed id', () => {
+      return supertest(app.getHttpServer())
+        .patch('/zones/not-a-uuid')
+        .send({ name: 'Nope' })
+        .expect(400);
+    });
   });
 
   describe('DELETE /zones/:id', () => {
@@ -198,6 +211,12 @@ describe('Zones (integration)', () => {
       return supertest(app.getHttpServer())
         .delete(`/zones/${nonExistentId}`)
         .expect(404);
+    });
+
+    it('returns 400 for malformed id', () => {
+      return supertest(app.getHttpServer())
+        .delete('/zones/not-a-uuid')
+        .expect(400);
     });
   });
 });
