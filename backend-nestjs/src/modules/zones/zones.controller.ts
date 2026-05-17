@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
@@ -34,7 +35,7 @@ export class ZonesController {
 
   @Get(':id')
   @AllowAnonymous()
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.queryBus.execute(new GetZoneByIdQuery(id));
   }
 
@@ -55,7 +56,7 @@ export class ZonesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateZoneDto) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateZoneDto) {
     return this.commandBus.execute(
       new UpdateZoneCommand(
         id,
@@ -72,7 +73,7 @@ export class ZonesController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.commandBus.execute(new DeleteZoneCommand(id));
   }
 }
