@@ -82,7 +82,7 @@ jobs:
       - run: pnpm install --frozen-lockfile --prefer-offline
       - run: pnpm depcruise
 
-  test:
+  test-unit:
     runs-on: ubuntu-slim
     needs: [check, lint, knip]
     defaults:
@@ -99,11 +99,30 @@ jobs:
           cache: pnpm
           cache-dependency-path: backend-nestjs/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile --prefer-offline
-      - run: pnpm test
+      - run: pnpm test:unit
+
+  test-it:
+    runs-on: ubuntu-latest
+    needs: [check, lint, knip]
+    defaults:
+      run:
+        working-directory: backend-nestjs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: backend-nestjs/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm test:it
 
   build:
     runs-on: ubuntu-slim
-    needs: [test]
+    needs: [test-unit, test-it]
     defaults:
       run:
         working-directory: backend-nestjs
