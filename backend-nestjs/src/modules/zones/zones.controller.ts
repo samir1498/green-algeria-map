@@ -7,23 +7,25 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
+import { ApiTags } from '@nestjs/swagger';
 import { ZonesService } from './zones.service';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
 
 @ApiTags('Zones')
-@ApiBearerAuth()
 @Controller('zones')
 export class ZonesController {
   constructor(private readonly service: ZonesService) {}
 
   @Get()
+  @AllowAnonymous()
   findAll() {
     return this.service.findAll();
   }
 
   @Get(':id')
+  @AllowAnonymous()
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }

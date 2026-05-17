@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from '@thallesp/nestjs-better-auth';
+import { auth } from './auth';
+import { AuthEntitiesModule } from './modules/auth/auth-entities.module';
 import { ZonesModule } from './modules/zones/zones.module';
 
 @Module({
@@ -20,6 +23,8 @@ import { ZonesModule } from './modules/zones/zones.module';
         synchronize: false,
       }),
     }),
+    AuthModule.forRoot({ auth }),
+    AuthEntitiesModule,
     ZonesModule,
   ],
 })
