@@ -1,7 +1,21 @@
-import { Zone } from './modules/zones/zone.entity';
+import { Zone } from './modules/zones/domain/zone';
+import { Coordinates } from './modules/zones/domain/coordinates.value-object';
+import { ZoneRepository } from './modules/zones/domain/zone.repository';
+import { ZoneRepositoryImpl } from './modules/zones/infrastructure/zone.repository.impl';
 import { AppDataSource } from './data-source';
 
-const demoZones: Partial<Zone>[] = [
+interface SeedZoneData {
+  name: string;
+  type: 'planting' | 'trash' | 'cleanup';
+  status: 'planned' | 'in-progress' | 'completed';
+  lat: number;
+  lng: number;
+  targetCount?: number;
+  currentCount?: number;
+  description: string;
+}
+
+const demoZones: SeedZoneData[] = [
   {
     name: 'Chrea National Park',
     type: 'planting',
@@ -98,16 +112,28 @@ const demoZones: Partial<Zone>[] = [
 
 async function seed() {
   await AppDataSource.initialize();
-  const repo = AppDataSource.getRepository(Zone);
+  const repo = AppDataSource.getRepository(
+    ZoneRepositoryImpl,
+  ) as unknown as ZoneRepository;
 
   let count = 0;
   for (const data of demoZones) {
-    const exists = await repo.findOneBy({ name: data.name });
+    const exists = await repo.existsByName(data.name);
     if (exists) {
       console.log(`  SKIP ${data.name}`);
       continue;
     }
-    await repo.save(repo.create(data));
+    const coordinates = new Coordinates(data.lat, data.lng);
+    const zone = Zone.create({
+      name: data.name,
+      type: data.type,
+      status: data.status,
+      coordinates,
+      targetCount: data.targetCount,
+      currentCount: data.currentCount,
+      description: data.description,
+    });
+    await repo.save(zone);
     console.log(`  OK   ${data.name}`);
     count++;
   }

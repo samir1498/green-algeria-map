@@ -1,10 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-export type ZoneType = 'planting' | 'trash' | 'cleanup';
-export type ZoneStatus = 'planned' | 'in-progress' | 'completed';
-
 @Entity('zones')
-export class Zone {
+export class ZoneOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -12,10 +9,10 @@ export class Zone {
   name: string;
 
   @Column({ type: 'varchar' })
-  type: ZoneType;
+  type: string;
 
   @Column({ type: 'varchar' })
-  status: ZoneStatus;
+  status: string;
 
   @Column('double precision')
   lat: number;

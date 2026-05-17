@@ -24,5 +24,5 @@ export class User {
   updatedAt: Date;
 
   @Column({ default: 'volunteer' })
-  role: string;
+  role: 'volunteer' | 'reporter' | 'organizer' | 'admin';
 }

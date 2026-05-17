@@ -1,14 +1,15 @@
 import { IsString, IsIn, IsNumber, IsOptional, Min } from 'class-validator';
+import { ZONE_TYPES, ZONE_STATUSES } from '../domain/zone.types';
 
 export class CreateZoneDto {
   @IsString()
   name: string;
 
-  @IsIn(['planting', 'trash', 'cleanup'])
-  type: 'planting' | 'trash' | 'cleanup';
+  @IsIn(ZONE_TYPES)
+  type: (typeof ZONE_TYPES)[number];
 
-  @IsIn(['planned', 'in-progress', 'completed'])
-  status: 'planned' | 'in-progress' | 'completed';
+  @IsIn(ZONE_STATUSES)
+  status: (typeof ZONE_STATUSES)[number];
 
   @IsNumber()
   lat: number;

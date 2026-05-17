@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { Zone } from './modules/zones/zone.entity';
+import { ZoneOrmEntity } from './modules/zones/infrastructure/zone.orm-entity';
 import { User } from './modules/auth/entities/user.entity';
 import { Session } from './modules/auth/entities/session.entity';
 import { Account } from './modules/auth/entities/account.entity';
@@ -7,11 +7,11 @@ import { Verification } from './modules/auth/entities/verification.entity';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'greenalgeria',
-  password: 'greenalgeria',
-  database: 'greenalgeria',
-  entities: [Zone, User, Session, Account, Verification],
+  host: process.env.DB_HOST ?? 'localhost',
+  port: Number(process.env.DB_PORT ?? 5432),
+  username: process.env.DB_USERNAME ?? 'greenalgeria',
+  password: process.env.DB_PASSWORD ?? 'greenalgeria',
+  database: process.env.DB_NAME ?? 'greenalgeria',
+  entities: [ZoneOrmEntity, User, Session, Account, Verification],
   migrations: ['src/migrations/*.ts'],
 });
