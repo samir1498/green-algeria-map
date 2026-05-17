@@ -7,39 +7,72 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { ZonesService } from './zones.service';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
+import { ApiTags } from '@nestjs/swagger';
+import { CreateZoneCommand } from './application/commands/create-zone.command';
+import { UpdateZoneCommand } from './application/commands/update-zone.command';
+import { DeleteZoneCommand } from './application/commands/delete-zone.command';
+import { GetAllZonesQuery } from './application/queries/get-all-zones.query';
+import { GetZoneByIdQuery } from './application/queries/get-zone-by-id.query';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
 
 @ApiTags('Zones')
-@ApiBearerAuth()
 @Controller('zones')
 export class ZonesController {
-  constructor(private readonly service: ZonesService) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @Get()
+  @AllowAnonymous()
   findAll() {
-    return this.service.findAll();
+    return this.queryBus.execute(new GetAllZonesQuery());
   }
 
   @Get(':id')
+  @AllowAnonymous()
   findOne(@Param('id') id: string) {
-    return this.service.findOne(id);
+    return this.queryBus.execute(new GetZoneByIdQuery(id));
   }
 
   @Post()
   create(@Body() dto: CreateZoneDto) {
-    return this.service.create(dto);
+    return this.commandBus.execute(
+      new CreateZoneCommand(
+        dto.name,
+        dto.type,
+        dto.status,
+        dto.lat,
+        dto.lng,
+        dto.targetCount,
+        dto.currentCount,
+        dto.description,
+      ),
+    );
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateZoneDto) {
-    return this.service.update(id, dto);
+    return this.commandBus.execute(
+      new UpdateZoneCommand(
+        id,
+        dto.name,
+        dto.type,
+        dto.status,
+        dto.lat,
+        dto.lng,
+        dto.targetCount,
+        dto.currentCount,
+        dto.description,
+      ),
+    );
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.service.remove(id);
+    return this.commandBus.execute(new DeleteZoneCommand(id));
   }
 }

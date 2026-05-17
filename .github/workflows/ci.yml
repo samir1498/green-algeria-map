@@ -3,9 +3,9 @@ name: CI
 on:
   push:
     branches: [main]
-    paths-ignore: [backend-nestjs/**]
+    paths: ['frontend/**', '.github/workflows/ci.yml']
   pull_request:
-    paths-ignore: [backend-nestjs/**]
+    paths: ['frontend/**', '.github/workflows/ci.yml']
 
 jobs:
   check:

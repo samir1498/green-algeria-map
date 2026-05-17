@@ -1,98 +1,137 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Green Algeria Map — Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS 11 API with CQRS, BetterAuth, TypeORM, and PostgreSQL 18.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Architecture
 
-## Description
+### Clean Architecture Layers
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ pnpm install
+```
+Controller → CommandBus/QueryBus → Handlers → ZoneRepository (interface) ← ZoneRepositoryImpl → TypeORM
+                                                    ↑
+                                              Domain Entity
 ```
 
-## Compile and run the project
+| Layer | Responsibility | Location |
+|-------|---------------|----------|
+| **Presentation** | Controllers, DTOs, auth decorators | `zones.controller.ts`, `dto/` |
+| **Application** | Commands, queries, event handlers | `application/{commands,queries,events}/` |
+| **Domain** | Entities, value objects, repository interfaces | `domain/` |
+| **Infrastructure** | TypeORM entities, mappers, repository impls | `infrastructure/` |
+
+### CQRS
+
+- **Commands** (writes): `CreateZone`, `UpdateZone`, `DeleteZone`
+- **Queries** (reads): `GetAllZones`, `GetZoneById`
+- **Events**: `ZoneCreated` — side effects (logging, future notifications)
+
+### Auth
+
+- BetterAuth with email/password authentication
+- `@thallesp/nestjs-better-auth` provides global `AuthGuard`
+- Zone GET routes are `@AllowAnonymous()`, writes require auth
+- User `role` field: `volunteer`, `reporter`, `organizer`, `admin`
+
+## Setup
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+pnpm install
 ```
 
-## Run tests
+### Environment Variables
+
+```env
+NODE_ENV=development
+PORT=8080
+CLIENT_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:8080
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=greenalgeria
+DB_PASSWORD=greenalgeria
+DB_NAME=greenalgeria
+DATABASE_URL=postgresql://greenalgeria:greenalgeria@localhost:5432/greenalgeria
+```
+
+### Database
 
 ```bash
-# unit tests
-$ pnpm run test
+# Start PostgreSQL
+docker compose up -d db
 
-# e2e tests
-$ pnpm run test:e2e
+# Run migrations
+pnpm migration:run
 
-# test coverage
-$ pnpm run test:cov
+# Seed demo data
+bun src/seed.ts
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Running
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+pnpm start:dev    # Watch mode (port 8080)
+pnpm start        # Single run
+pnpm start:prod   # Production (dist/main)
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Scripts
 
-## Resources
+| Command | Description |
+|---------|-------------|
+| `pnpm start:dev` | Dev server (watch mode) |
+| `pnpm build` | Compile to dist/ |
+| `pnpm check` | Type check (`tsc --noEmit`) |
+| `pnpm lint` | ESLint |
+| `pnpm knip` | Dead code detection |
+| `pnpm depcruise` | Circular dependency detection |
+| `pnpm test` | Jest tests |
+| `pnpm migration:generate` | Generate migration |
+| `pnpm migration:run` | Apply migrations |
+| `pnpm migration:revert` | Revert last migration |
+| `bun src/seed.ts` | Seed demo zones |
 
-Check out a few resources that may come in handy when working with NestJS:
+## API
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Auth
 
-## Support
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/auth/sign-up/email` | Register |
+| POST | `/api/auth/sign-in/email` | Sign in |
+| GET | `/api/auth/get-session` | Get session |
+| POST | `/api/auth/sign-out` | Sign out |
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Zones
 
-## Stay in touch
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/zones` | Public | List all zones |
+| GET | `/zones/:id` | Public | Get zone by ID |
+| POST | `/zones` | Required | Create zone |
+| PATCH | `/zones/:id` | Required | Update zone |
+| DELETE | `/zones/:id` | Required | Delete zone |
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+API docs at `http://localhost:8080/api/docs` (Scalar, moon theme).
 
-## License
+## Module Structure
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```
+src/modules/zones/
+├── domain/
+│   ├── zone.ts                    # Domain entity with invariants
+│   ├── zone.types.ts              # ZoneType, ZoneStatus constants
+│   ├── coordinates.value-object.ts # Coordinates value object
+│   └── zone.repository.ts         # Repository interface
+├── application/
+│   ├── commands/                  # Write operations
+│   ├── queries/                   # Read operations
+│   └── events/                    # Domain events + handlers
+├── infrastructure/
+│   ├── zone.orm-entity.ts         # TypeORM entity
+│   ├── zone.mapper.ts             # Domain ↔ ORM mapper
+│   └── zone.repository.impl.ts    # Repository implementation
+├── dto/                           # Request validation
+├── zones.controller.ts
+└── zones.module.ts
+```
