@@ -8,6 +8,24 @@ on:
     paths-ignore: [frontend/**]
 
 jobs:
+  check:
+    runs-on: ubuntu-slim
+    defaults:
+      run:
+        working-directory: backend-nestjs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: backend-nestjs/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm check
+
   lint:
     runs-on: ubuntu-slim
     defaults:
@@ -26,9 +44,66 @@ jobs:
       - run: pnpm install --frozen-lockfile --prefer-offline
       - run: pnpm lint
 
+  knip:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-nestjs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: backend-nestjs/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm knip
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+
+  depcruise:
+    runs-on: ubuntu-slim
+    defaults:
+      run:
+        working-directory: backend-nestjs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: backend-nestjs/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm depcruise
+
+  test:
+    runs-on: ubuntu-slim
+    needs: [check, lint, knip]
+    defaults:
+      run:
+        working-directory: backend-nestjs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: backend-nestjs/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm test
+
   build:
     runs-on: ubuntu-slim
-    needs: [lint]
+    needs: [test]
     defaults:
       run:
         working-directory: backend-nestjs
