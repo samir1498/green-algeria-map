@@ -32,10 +32,18 @@ cd frontend && pnpm dev
 
 ### Clean Architecture Layers
 
-```
-Controller → CommandBus/QueryBus → Handlers → ZoneRepository (interface) ← ZoneRepositoryImpl → TypeORM
-                                                    ↑
-                                              Domain Entity
+```mermaid
+graph LR
+    C[Controller] --> CB[CommandBus]
+    C --> QB[QueryBus]
+    CB --> CH[Command Handlers]
+    QB --> QH[Query Handlers]
+    CH --> RI[ZoneRepository Interface]
+    QH --> RI
+    RI --> RImpl[ZoneRepositoryImpl]
+    RImpl --> TO[TypeORM]
+    RI -. depends .-> D[Domain Entity]
+    RImpl -. maps .-> D
 ```
 
 | Layer | Responsibility | Location |
@@ -47,9 +55,35 @@ Controller → CommandBus/QueryBus → Handlers → ZoneRepository (interface) �
 
 ### CQRS Flow
 
-- **Commands** (writes): `CreateZone` → `UpdateZone` → `DeleteZone`
-- **Queries** (reads): `GetAllZones` → `GetZoneById`
-- **Events**: `ZoneCreated` → side effects (logging, notifications)
+```mermaid
+sequenceDiagram
+    participant C as Controller
+    participant CB as CommandBus
+    participant QB as QueryBus
+    participant CH as Command Handler
+    participant QH as Query Handler
+    participant R as ZoneRepository
+    participant DB as PostgreSQL
+
+    C->>QB: GetAllZonesQuery
+    QB->>QH: execute()
+    QH->>R: findAll()
+    R->>DB: SELECT
+    DB-->>R: rows
+    R-->>QH: Zone[]
+    QH-->>QB: Zone[]
+    QB-->>C: Zone[]
+
+    C->>CB: CreateZoneCommand
+    CB->>CH: execute()
+    CH->>R: save(zone)
+    R->>DB: INSERT
+    R-->>CH: Zone
+    CH-->>CB: Zone
+    CB-->>C: Zone
+    Note over R: publishes ZoneCreatedEvent
+```
+
 - Zone GET routes are `@AllowAnonymous()` (public), writes require auth
 
 ## Frontend Scripts

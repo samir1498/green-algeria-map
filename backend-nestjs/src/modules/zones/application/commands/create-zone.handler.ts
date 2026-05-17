@@ -1,4 +1,4 @@
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { CreateZoneCommand } from './create-zone.command';
 import { ZoneRepository } from '../../domain/zone.repository';
 import { Zone } from '../../domain/zone';
@@ -10,7 +10,10 @@ export class CreateZoneHandler implements ICommandHandler<
   CreateZoneCommand,
   Zone
 > {
-  constructor(private readonly repository: ZoneRepository) {}
+  constructor(
+    private readonly repository: ZoneRepository,
+    private readonly eventBus: EventBus,
+  ) {}
 
   async execute(command: CreateZoneCommand): Promise<Zone> {
     const coordinates = new Coordinates(command.lat, command.lng);
@@ -23,7 +26,10 @@ export class CreateZoneHandler implements ICommandHandler<
       currentCount: command.currentCount,
       description: command.description ?? '',
     });
-    zone.recordEvent(new ZoneCreatedEvent(zone.id!, zone.name, zone.type));
-    return this.repository.save(zone);
+    const saved = await this.repository.save(zone);
+    this.eventBus.publish(
+      new ZoneCreatedEvent(saved.id!, saved.name, saved.type),
+    );
+    return saved;
   }
 }

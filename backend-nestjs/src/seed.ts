@@ -1,7 +1,4 @@
-import { Zone } from './modules/zones/domain/zone';
-import { Coordinates } from './modules/zones/domain/coordinates.value-object';
-import { ZoneRepository } from './modules/zones/domain/zone.repository';
-import { ZoneRepositoryImpl } from './modules/zones/infrastructure/zone.repository.impl';
+import { ZoneOrmEntity } from './modules/zones/infrastructure/zone.orm-entity';
 import { AppDataSource } from './data-source';
 
 interface SeedZoneData {
@@ -112,28 +109,16 @@ const demoZones: SeedZoneData[] = [
 
 async function seed() {
   await AppDataSource.initialize();
-  const repo = AppDataSource.getRepository(
-    ZoneRepositoryImpl,
-  ) as unknown as ZoneRepository;
+  const repo = AppDataSource.getRepository(ZoneOrmEntity);
 
   let count = 0;
   for (const data of demoZones) {
-    const exists = await repo.existsByName(data.name);
+    const exists = await repo.exists({ where: { name: data.name } });
     if (exists) {
       console.log(`  SKIP ${data.name}`);
       continue;
     }
-    const coordinates = new Coordinates(data.lat, data.lng);
-    const zone = Zone.create({
-      name: data.name,
-      type: data.type,
-      status: data.status,
-      coordinates,
-      targetCount: data.targetCount,
-      currentCount: data.currentCount,
-      description: data.description,
-    });
-    await repo.save(zone);
+    await repo.save(repo.create(data));
     console.log(`  OK   ${data.name}`);
     count++;
   }

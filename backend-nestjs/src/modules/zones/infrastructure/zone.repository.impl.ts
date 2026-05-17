@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { EventBus, IEvent } from '@nestjs/cqrs';
 import { ZoneRepository } from '../domain/zone.repository';
 import { Zone } from '../domain/zone';
 import { ZoneOrmEntity } from './zone.orm-entity';
@@ -12,7 +11,6 @@ export class ZoneRepositoryImpl implements ZoneRepository {
   constructor(
     @InjectRepository(ZoneOrmEntity)
     private readonly repo: Repository<ZoneOrmEntity>,
-    private readonly eventBus: EventBus,
   ) {}
 
   async findAll(): Promise<Zone[]> {
@@ -29,13 +27,7 @@ export class ZoneRepositoryImpl implements ZoneRepository {
   async save(zone: Zone): Promise<Zone> {
     const entity = ZoneMapper.toOrmEntity(zone);
     const saved = await this.repo.save(entity);
-    const domain = ZoneMapper.toDomain(saved);
-    const events = zone.getUncommittedEvents() as IEvent[];
-    zone.clearEvents();
-    if (events.length > 0) {
-      this.eventBus.publishAll(events);
-    }
-    return domain;
+    return ZoneMapper.toDomain(saved);
   }
 
   async remove(id: string): Promise<void> {
