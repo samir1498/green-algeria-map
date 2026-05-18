@@ -24,8 +24,11 @@ async function createTestDatabase(
     database: container.getDatabase(),
   });
   await adminDs.initialize();
-  await adminDs.query(`CREATE DATABASE "${dbName}"`);
-  await adminDs.destroy();
+  try {
+    await adminDs.query(`CREATE DATABASE "${dbName}"`);
+  } finally {
+    await adminDs.destroy();
+  }
 
   return new DataSource({
     type: 'postgres',

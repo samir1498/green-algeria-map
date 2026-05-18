@@ -59,6 +59,8 @@ describe.skip('Auth (integration)', () => {
       await container.stop();
     }
     delete process.env.DATABASE_URL;
+    delete process.env.BETTER_AUTH_URL;
+    delete process.env.CLIENT_URL;
   });
 
   describe('POST /api/auth/sign-up/email', () => {

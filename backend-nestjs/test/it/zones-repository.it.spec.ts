@@ -13,6 +13,7 @@ import { Coordinates } from '../../src/modules/zones/domain/coordinates.value-ob
 
 describe('ZoneRepository (integration)', () => {
   let container: StartedPostgreSqlContainer;
+  let moduleRef: TestingModule;
   let repository: ZoneRepository;
 
   beforeAll(async () => {
@@ -23,7 +24,7 @@ describe('ZoneRepository (integration)', () => {
       .withExposedPorts(5432)
       .start();
 
-    const module: TestingModule = await Test.createTestingModule({
+    moduleRef = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
           type: 'postgres',
@@ -46,10 +47,13 @@ describe('ZoneRepository (integration)', () => {
       ],
     }).compile();
 
-    repository = module.get<ZoneRepository>(ZoneRepository);
+    repository = moduleRef.get<ZoneRepository>(ZoneRepository);
   });
 
   afterAll(async () => {
+    if (moduleRef) {
+      await moduleRef.close();
+    }
     if (container) {
       await container.stop();
     }
