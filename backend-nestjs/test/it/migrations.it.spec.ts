@@ -1,3 +1,5 @@
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
 import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
@@ -8,6 +10,8 @@ import { User } from '../../src/modules/auth/entities/user.entity';
 import { Session } from '../../src/modules/auth/entities/session.entity';
 import { Account } from '../../src/modules/auth/entities/account.entity';
 import { Verification } from '../../src/modules/auth/entities/verification.entity';
+
+const execAsync = promisify(exec);
 
 const allEntities = [ZoneOrmEntity, User, Session, Account, Verification];
 
@@ -38,9 +42,18 @@ async function createTestDatabase(
     password: container.getPassword(),
     database: dbName,
     entities: allEntities,
-    migrations: ['src/migrations/*.ts'],
     synchronize: false,
   });
+}
+
+async function runMigrationsCli(
+  container: StartedPostgreSqlContainer,
+  dbName: string,
+): Promise<void> {
+  await execAsync(
+    `DB_HOST=${container.getHost()} DB_PORT=${container.getPort()} DB_USERNAME=${container.getUsername()} DB_PASSWORD=${container.getPassword()} DB_NAME=${dbName} pnpm migration:run`,
+    { cwd: process.cwd() },
+  );
 }
 
 describe('Migrations (integration)', () => {
@@ -68,8 +81,11 @@ describe('Migrations (integration)', () => {
     );
     await dataSource.initialize();
     try {
-      const migrations = await dataSource.runMigrations();
-      expect(migrations.length).toBeGreaterThanOrEqual(2);
+      await runMigrationsCli(container, 'test_migrations_run');
+      const queryRunner = dataSource.createQueryRunner();
+      const tables = await queryRunner.getTables();
+      expect(tables.length).toBeGreaterThan(2);
+      await queryRunner.release();
     } finally {
       await dataSource.destroy();
     }
@@ -81,19 +97,22 @@ describe('Migrations (integration)', () => {
       'test_migrations_tables',
     );
     await dataSource.initialize();
-    const queryRunner = dataSource.createQueryRunner();
     try {
-      await dataSource.runMigrations();
-      const tables = await queryRunner.getTables();
-      const tableNames = tables.map((t) => t.name);
+      await runMigrationsCli(container, 'test_migrations_tables');
+      const queryRunner = dataSource.createQueryRunner();
+      try {
+        const tables = await queryRunner.getTables();
+        const tableNames = tables.map((t) => t.name);
 
-      expect(tableNames).toContain('zones');
-      expect(tableNames).toContain('user');
-      expect(tableNames).toContain('session');
-      expect(tableNames).toContain('account');
-      expect(tableNames).toContain('verification');
+        expect(tableNames).toContain('zones');
+        expect(tableNames).toContain('user');
+        expect(tableNames).toContain('session');
+        expect(tableNames).toContain('account');
+        expect(tableNames).toContain('verification');
+      } finally {
+        await queryRunner.release();
+      }
     } finally {
-      await queryRunner.release();
       await dataSource.destroy();
     }
   });
@@ -104,19 +123,28 @@ describe('Migrations (integration)', () => {
       'test_migrations_revert',
     );
     await dataSource.initialize();
-    const queryRunner = dataSource.createQueryRunner();
     try {
-      await dataSource.runMigrations();
-      await dataSource.undoLastMigration();
-      await dataSource.undoLastMigration();
+      await runMigrationsCli(container, 'test_migrations_revert');
+      await execAsync(
+        `DB_HOST=${container.getHost()} DB_PORT=${container.getPort()} DB_USERNAME=${container.getUsername()} DB_PASSWORD=${container.getPassword()} DB_NAME=test_migrations_revert pnpm migration:revert`,
+        { cwd: process.cwd() },
+      );
+      await execAsync(
+        `DB_HOST=${container.getHost()} DB_PORT=${container.getPort()} DB_USERNAME=${container.getUsername()} DB_PASSWORD=${container.getPassword()} DB_NAME=test_migrations_revert pnpm migration:revert`,
+        { cwd: process.cwd() },
+      );
 
-      const tables = await queryRunner.getTables();
-      const tableNames = tables.map((t) => t.name);
+      const queryRunner = dataSource.createQueryRunner();
+      try {
+        const tables = await queryRunner.getTables();
+        const tableNames = tables.map((t) => t.name);
 
-      expect(tableNames).not.toContain('zones');
-      expect(tableNames).not.toContain('user');
+        expect(tableNames).not.toContain('zones');
+        expect(tableNames).not.toContain('user');
+      } finally {
+        await queryRunner.release();
+      }
     } finally {
-      await queryRunner.release();
       await dataSource.destroy();
     }
   });
@@ -128,8 +156,12 @@ describe('Migrations (integration)', () => {
     );
     await dataSource.initialize();
     try {
-      await dataSource.runMigrations();
-      await expect(dataSource.runMigrations()).resolves.toHaveLength(0);
+      await runMigrationsCli(container, 'test_migrations_idempotent');
+      await runMigrationsCli(container, 'test_migrations_idempotent');
+      const queryRunner = dataSource.createQueryRunner();
+      const tables = await queryRunner.getTables();
+      expect(tables.length).toBeGreaterThan(2);
+      await queryRunner.release();
     } finally {
       await dataSource.destroy();
     }

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { INestApplication } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { vi } from 'vitest';
 import { EventBus } from '@nestjs/cqrs';
 import {
   PostgreSqlContainer,
@@ -44,15 +44,11 @@ describe('Zones CQRS (integration)', () => {
           password: container.getPassword(),
           database: container.getDatabase(),
           entities: [ZoneOrmEntity],
-          synchronize: false,
-          migrations: ['src/migrations/*.ts'],
+          synchronize: true,
         }),
         TestZonesModule,
       ],
     }).compile();
-
-    const dataSource = moduleRef.get(DataSource);
-    await dataSource.runMigrations();
 
     app = moduleRef.createNestApplication();
     await app.init();
@@ -99,7 +95,7 @@ describe('Zones CQRS (integration)', () => {
     });
 
     it('publishes ZoneCreatedEvent', async () => {
-      const publishSpy = jest.spyOn(eventBus, 'publish');
+      const publishSpy = vi.spyOn(eventBus, 'publish');
       const command = new CreateZoneCommand(
         'Event Zone',
         'trash',

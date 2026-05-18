@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { DataSource } from 'typeorm';
 import { ZoneOrmEntity } from '../../src/modules/zones/infrastructure/zone.orm-entity';
 import { TestZonesModule } from './test-zones.module';
 
@@ -33,15 +32,11 @@ export async function createTestingModule({
         password,
         database,
         entities: [ZoneOrmEntity],
-        synchronize: false,
-        migrations: ['src/migrations/*.ts'],
+        synchronize: true,
       }),
       TestZonesModule,
     ],
   }).compile();
-
-  const dataSource = module.get(DataSource);
-  await dataSource.runMigrations();
 
   const app = module.createNestApplication();
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
