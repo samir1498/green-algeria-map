@@ -10,7 +10,6 @@ import { DeleteZoneHandler } from '../../src/modules/zones/application/commands/
 import { GetAllZonesHandler } from '../../src/modules/zones/application/queries/get-all-zones.handler';
 import { GetZoneByIdHandler } from '../../src/modules/zones/application/queries/get-zone-by-id.handler';
 import { ZoneCreatedHandler } from '../../src/modules/zones/application/events/zone-created.handler';
-
 import {
   Controller,
   Get,
@@ -22,7 +21,6 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { ApiTags } from '@nestjs/swagger';
 import { CreateZoneCommand } from '../../src/modules/zones/application/commands/create-zone.command';
 import { UpdateZoneCommand } from '../../src/modules/zones/application/commands/update-zone.command';
 import { DeleteZoneCommand } from '../../src/modules/zones/application/commands/delete-zone.command';
@@ -32,7 +30,6 @@ import { CreateZoneDto } from '../../src/modules/zones/dto/create-zone.dto';
 import { UpdateZoneDto } from '../../src/modules/zones/dto/update-zone.dto';
 
 @Controller('zones')
-@ApiTags('Zones')
 class TestZonesController {
   constructor(
     private readonly commandBus: CommandBus,
