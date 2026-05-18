@@ -67,11 +67,12 @@ describe('Migrations (integration)', () => {
       'test_migrations_run',
     );
     await dataSource.initialize();
-
-    const migrations = await dataSource.runMigrations();
-
-    expect(migrations.length).toBeGreaterThanOrEqual(2);
-    await dataSource.destroy();
+    try {
+      const migrations = await dataSource.runMigrations();
+      expect(migrations.length).toBeGreaterThanOrEqual(2);
+    } finally {
+      await dataSource.destroy();
+    }
   });
 
   it('creates all expected tables after migration', async () => {
@@ -80,19 +81,21 @@ describe('Migrations (integration)', () => {
       'test_migrations_tables',
     );
     await dataSource.initialize();
-    await dataSource.runMigrations();
-
     const queryRunner = dataSource.createQueryRunner();
-    const tables = await queryRunner.getTables();
-    const tableNames = tables.map((t) => t.name);
+    try {
+      await dataSource.runMigrations();
+      const tables = await queryRunner.getTables();
+      const tableNames = tables.map((t) => t.name);
 
-    expect(tableNames).toContain('zones');
-    expect(tableNames).toContain('user');
-    expect(tableNames).toContain('session');
-    expect(tableNames).toContain('account');
-    expect(tableNames).toContain('verification');
-    await queryRunner.release();
-    await dataSource.destroy();
+      expect(tableNames).toContain('zones');
+      expect(tableNames).toContain('user');
+      expect(tableNames).toContain('session');
+      expect(tableNames).toContain('account');
+      expect(tableNames).toContain('verification');
+    } finally {
+      await queryRunner.release();
+      await dataSource.destroy();
+    }
   });
 
   it('reverts last migration successfully', async () => {
@@ -101,18 +104,21 @@ describe('Migrations (integration)', () => {
       'test_migrations_revert',
     );
     await dataSource.initialize();
-    await dataSource.runMigrations();
-    await dataSource.undoLastMigration();
-    await dataSource.undoLastMigration();
-
     const queryRunner = dataSource.createQueryRunner();
-    const tables = await queryRunner.getTables();
-    const tableNames = tables.map((t) => t.name);
+    try {
+      await dataSource.runMigrations();
+      await dataSource.undoLastMigration();
+      await dataSource.undoLastMigration();
 
-    expect(tableNames).not.toContain('zones');
-    expect(tableNames).not.toContain('user');
-    await queryRunner.release();
-    await dataSource.destroy();
+      const tables = await queryRunner.getTables();
+      const tableNames = tables.map((t) => t.name);
+
+      expect(tableNames).not.toContain('zones');
+      expect(tableNames).not.toContain('user');
+    } finally {
+      await queryRunner.release();
+      await dataSource.destroy();
+    }
   });
 
   it('is idempotent when run on already-migrated database', async () => {
@@ -121,9 +127,11 @@ describe('Migrations (integration)', () => {
       'test_migrations_idempotent',
     );
     await dataSource.initialize();
-    await dataSource.runMigrations();
-
-    await expect(dataSource.runMigrations()).resolves.not.toThrow();
-    await dataSource.destroy();
+    try {
+      await dataSource.runMigrations();
+      await expect(dataSource.runMigrations()).resolves.toHaveLength(0);
+    } finally {
+      await dataSource.destroy();
+    }
   });
 });

@@ -21,16 +21,31 @@ User says "check coderabbit", "fix coderabbit comments", "apply code review", or
 3. **Fix each issue**
    - Read the affected file
    - Apply the suggested fix
-   - Verify the fix doesn't break anything
+   - Note: Verification happens in step 3.5 via quality gates
 
-4. **Commit and push**
+3.5. **Run quality gates**
+   ```bash
+   pnpm check  # Type checking
+   pnpm lint   # Linting
+   pnpm test   # Unit and integration tests
+   ```
+   If any gate fails, report the error and stop. Do not commit broken code.
+
+4. **Show changes and request approval**
+   ```bash
+   git diff
+   ```
+   Present the changes to the user and ask: "These changes address the CodeRabbit comments. Shall I commit and push them? (yes/no)"
+   Wait for user confirmation before proceeding.
+
+5. **Commit and push** (after approval)
    ```bash
    git add -A
    git commit -m "fix: address CodeRabbit review comments on PR #<number>"
    git push
    ```
 
-5. **Re-trigger review**
+6. **Re-trigger review**
    ```bash
    gh pr comment <number> --body "@coderabbitai review"
    ```

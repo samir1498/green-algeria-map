@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CqrsModule } from '@nestjs/cqrs';
+import { DataSource } from 'typeorm';
 import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
@@ -34,7 +35,8 @@ describe('ZoneRepository (integration)', () => {
           password: container.getPassword(),
           database: container.getDatabase(),
           entities: [ZoneOrmEntity],
-          synchronize: true,
+          synchronize: false,
+          migrations: ['src/migrations/*.ts'],
         }),
         TypeOrmModule.forFeature([ZoneOrmEntity]),
         CqrsModule,
@@ -46,6 +48,9 @@ describe('ZoneRepository (integration)', () => {
         },
       ],
     }).compile();
+
+    const dataSource = moduleRef.get(DataSource);
+    await dataSource.runMigrations();
 
     repository = moduleRef.get<ZoneRepository>(ZoneRepository);
   });

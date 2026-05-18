@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { INestApplication } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { EventBus } from '@nestjs/cqrs';
 import {
   PostgreSqlContainer,
@@ -19,6 +20,7 @@ import { NotFoundException } from '@nestjs/common';
 
 describe('Zones CQRS (integration)', () => {
   let container: StartedPostgreSqlContainer;
+  let moduleRef: TestingModule;
   let app: INestApplication;
   let commandBus: CommandBus;
   let queryBus: QueryBus;
@@ -32,7 +34,7 @@ describe('Zones CQRS (integration)', () => {
       .withExposedPorts(5432)
       .start();
 
-    const module: TestingModule = await Test.createTestingModule({
+    moduleRef = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
           type: 'postgres',
@@ -42,23 +44,30 @@ describe('Zones CQRS (integration)', () => {
           password: container.getPassword(),
           database: container.getDatabase(),
           entities: [ZoneOrmEntity],
-          synchronize: true,
+          synchronize: false,
+          migrations: ['src/migrations/*.ts'],
         }),
         TestZonesModule,
       ],
     }).compile();
 
-    app = module.createNestApplication();
+    const dataSource = moduleRef.get(DataSource);
+    await dataSource.runMigrations();
+
+    app = moduleRef.createNestApplication();
     await app.init();
 
-    commandBus = module.get(CommandBus);
-    queryBus = module.get(QueryBus);
-    eventBus = module.get(EventBus);
+    commandBus = moduleRef.get(CommandBus);
+    queryBus = moduleRef.get(QueryBus);
+    eventBus = moduleRef.get(EventBus);
   });
 
   afterAll(async () => {
     if (app) {
       await app.close();
+    }
+    if (moduleRef) {
+      await moduleRef.close();
     }
     if (container) {
       await container.stop();
