@@ -53,6 +53,13 @@ Pre-commit hook runs:
 
 CI runs in parallel: check → lint → knip → test → build
 
+## Git Workflow
+
+- **NEVER push directly to `main`** — always create a PR
+- Branch naming: `feat/...`, `fix/...`, `chore/...`, `test/...`, `refactor/...`
+- Tag convention: `frontend-vX.Y.Z` / `backend-vX.Y.Z`
+- Branch protection enforced on GitHub (1 review required, no force push)
+
 ## Skills
 
 - `.claude/skills/pc-version-bump/` — Bump version, update CHANGELOG, tag a release

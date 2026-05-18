@@ -1,18 +1,14 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { CqrsModule } from '@nestjs/cqrs';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import supertest from 'supertest';
 import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
-import { TestZonesModule } from '../setup/test-zones.module';
-import { ZoneOrmEntity } from '../../src/modules/zones/infrastructure/zone.orm-entity';
+import { createTestingModule } from '../setup/create-testing-module';
 
 const nonExistentId = '00000000-0000-0000-0000-000000000000';
 
-describe('Zones (integration)', () => {
+describe('Zones HTTP (integration)', () => {
   let app: INestApplication;
   let container: StartedPostgreSqlContainer;
 
@@ -24,28 +20,14 @@ describe('Zones (integration)', () => {
       .withExposedPorts(5432)
       .start();
 
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: container.getHost(),
-          port: container.getPort(),
-          username: container.getUsername(),
-          password: container.getPassword(),
-          database: container.getDatabase(),
-          entities: [ZoneOrmEntity],
-          synchronize: true,
-        }),
-        CqrsModule,
-        TestZonesModule,
-      ],
-    }).compile();
-
-    app = module.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-    await app.init();
+    const { app: createdApp } = await createTestingModule({
+      host: container.getHost(),
+      port: container.getPort(),
+      username: container.getUsername(),
+      password: container.getPassword(),
+      database: container.getDatabase(),
+    });
+    app = createdApp;
   });
 
   afterAll(async () => {
