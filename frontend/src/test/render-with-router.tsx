@@ -8,23 +8,17 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import type { ComponentType } from 'react'
-
-interface RenderWithRouterOptions {
-  initialEntry?: string
-}
+import type { ReactElement } from 'react'
 
 interface RenderWithRouterResult {
   user: ReturnType<typeof userEvent.setup>
-  router: ReturnType<typeof createRouter>
-  rerender: (ui: React.ReactElement) => void
+  rerender: (ui: ReactElement) => void
   unmount: () => void
   container: HTMLElement
 }
 
 export async function renderWithRouter(
-  Component: ComponentType,
-  { initialEntry = '/' }: RenderWithRouterOptions = {},
+  component: ReactElement,
 ): Promise<RenderWithRouterResult> {
   const rootRoute = createRootRoute({
     component: () => <Outlet />,
@@ -33,16 +27,16 @@ export async function renderWithRouter(
   const testRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/',
-    component: Component as React.ComponentType,
+    component: () => component,
   })
 
   const routeTree = rootRoute.addChildren([testRoute])
-  const history = createMemoryHistory({ initialEntries: [initialEntry] })
+  const history = createMemoryHistory({ initialEntries: ['/'] })
   const router = createRouter({
     routeTree,
     history,
-    defaultPendingMinMs: 0,
-  }) as ReturnType<typeof createRouter>
+    defaultPendingMs: 0,
+  })
 
   await router.load()
 
@@ -52,7 +46,6 @@ export async function renderWithRouter(
 
   return {
     user: userEvent.setup(),
-    router,
     rerender,
     unmount,
     container,
