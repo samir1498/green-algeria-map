@@ -8,6 +8,7 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
+import { ParseUUIDPipe } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateDamageReportCommand } from './application/commands/create-damage-report/create-damage-report.command';
@@ -37,7 +38,7 @@ export class DamageReportsController {
   }
 
   @Get(':id')
-  findById(@Param('id') id: string) {
+  findById(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.queryBus.execute(new GetDamageReportByIdQuery(id));
   }
 
@@ -58,7 +59,7 @@ export class DamageReportsController {
 
   @Patch(':id/status')
   updateStatus(
-    @Param('id') id: string,
+    @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateDamageReportStatusDto,
   ) {
     return this.commandBus.execute(
@@ -70,7 +71,7 @@ export class DamageReportsController {
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string) {
+  delete(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.commandBus.execute(new DeleteDamageReportCommand(id));
   }
 }
