@@ -54,10 +54,7 @@ export class Zone {
   }
 
   markInProgress(): void {
-    if (!this.canStart()) {
-      throw new Error(`Cannot start zone: current status is "${this.status}"`);
-    }
-    this.status = 'in-progress';
+    this.changeStatus('in-progress');
   }
 
   changeStatus(status: ZoneStatus): void {
@@ -81,12 +78,7 @@ export class Zone {
   }
 
   markComplete(): void {
-    if (!this.canComplete()) {
-      throw new Error(
-        `Cannot complete zone: target not reached (${this.currentCount}/${this.targetCount})`,
-      );
-    }
-    this.status = 'completed';
+    this.changeStatus('completed');
   }
 
   updateProgress(count: number): void {

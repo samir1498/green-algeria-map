@@ -1,4 +1,5 @@
 import type { Zone } from '@/types/zone'
+import type { DamageReport } from '@/types/damage-report'
 
 export const statusColors: Record<Zone['status'], string> = {
   planned: '#f59e0b',
@@ -18,8 +19,22 @@ export const statusBadgeClasses: Record<Zone['status'], string> = {
   completed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
 }
 
+export const damageSeverityColors: Record<DamageReport['severity'], string> = {
+  low: '#f97316',
+  medium: '#ef4444',
+  high: '#dc2626',
+  critical: '#991b1b',
+}
+
+export const damageStatusBadgeClasses: Record<DamageReport['status'], string> = {
+  reported: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+  verified: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+  resolved: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
+}
+
 export const legendItems = [
   { label: 'Planned', color: statusColors.planned },
   { label: 'In Progress', color: statusColors['in-progress'] },
   { label: 'Completed', color: statusColors.completed },
+  { label: 'Damage Report', color: damageSeverityColors.critical },
 ] as const

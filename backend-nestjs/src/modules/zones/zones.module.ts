@@ -32,6 +32,5 @@ const EventHandlers = [ZoneCreatedHandler];
     ...QueryHandlers,
     ...EventHandlers,
   ],
-  exports: [ZoneRepository],
 })
 export class ZonesModule {}

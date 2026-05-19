@@ -17,7 +17,6 @@ export class UpdateZoneHandler implements ICommandHandler<
 
     if (command.name !== undefined) zone.rename(command.name);
     if (command.type !== undefined) zone.updateType(command.type);
-    if (command.status !== undefined) zone.changeStatus(command.status);
     if (command.lat !== undefined || command.lng !== undefined) {
       zone.reposition(
         command.lat ?? zone.coordinates.lat,
@@ -28,6 +27,7 @@ export class UpdateZoneHandler implements ICommandHandler<
       zone.targetCount = command.targetCount;
     if (command.currentCount !== undefined)
       zone.updateProgress(command.currentCount);
+    if (command.status !== undefined) zone.changeStatus(command.status);
     if (command.description !== undefined)
       zone.description = command.description;
 

@@ -4,6 +4,7 @@ import { Route } from './login'
 import { renderWithRouter } from '@/test/render-with-router'
 
 const mockSignIn = vi.fn().mockResolvedValue({ data: { user: {} }, error: null })
+const mockNavigate = vi.fn()
 
 vi.mock('@/services/auth', () => ({
   useAuth: () => ({
@@ -16,6 +17,10 @@ vi.mock('sonner', () => ({
     error: vi.fn(),
     success: vi.fn(),
   },
+}))
+
+vi.mock('@tanstack/react-router', () => ({
+  useNavigate: () => mockNavigate,
 }))
 
 const originalLocation = window.location
@@ -42,7 +47,7 @@ afterAll(() => {
 
 describe('LoginPage', () => {
   it('renders email and password fields', async () => {
-    await renderWithRouter(Route.options.component)
+    await renderWithRouter(Route.options.component as React.ReactElement)
 
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
@@ -50,7 +55,7 @@ describe('LoginPage', () => {
   })
 
   it('shows sign up link', async () => {
-    await renderWithRouter(Route.options.component)
+    await renderWithRouter(Route.options.component as React.ReactElement)
 
     expect(screen.getByRole('link', { name: /sign up/i })).toHaveAttribute(
       'href',
@@ -59,7 +64,7 @@ describe('LoginPage', () => {
   })
 
   it('calls signIn with form values on submit', async () => {
-    const { user } = await renderWithRouter(Route.options.component)
+    const { user } = await renderWithRouter(Route.options.component as React.ReactElement)
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.type(screen.getByLabelText(/password/i), 'password123')
@@ -79,7 +84,7 @@ describe('LoginPage', () => {
         ),
     )
 
-    const { user } = await renderWithRouter(Route.options.component)
+    const { user } = await renderWithRouter(Route.options.component as React.ReactElement)
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.type(screen.getByLabelText(/password/i), 'password123')
@@ -98,7 +103,7 @@ describe('LoginPage', () => {
       },
     })
 
-    const { user } = await renderWithRouter(Route.options.component)
+    const { user } = await renderWithRouter(Route.options.component as React.ReactElement)
 
     await user.type(screen.getByLabelText(/email/i), 'wrong@example.com')
     await user.type(screen.getByLabelText(/password/i), 'wrong')
@@ -116,7 +121,7 @@ describe('LoginPage', () => {
   it('shows success toast and redirects on success', async () => {
     mockSignIn.mockResolvedValueOnce({ data: { user: {} }, error: null })
 
-    const { user } = await renderWithRouter(Route.options.component)
+    const { user } = await renderWithRouter(Route.options.component as React.ReactElement)
 
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
     await user.type(screen.getByLabelText(/password/i), 'password123')
@@ -128,6 +133,6 @@ describe('LoginPage', () => {
         'Signed in successfully',
       )
     })
-    expect(window.location.href).toBe('/')
+    expect(mockNavigate).toHaveBeenCalledWith({ to: '/' })
   })
 })

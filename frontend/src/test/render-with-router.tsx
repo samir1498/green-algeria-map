@@ -8,7 +8,7 @@ import {
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
-import type { ComponentType } from 'react'
+import type { RouteComponent } from '@tanstack/react-router'
 
 interface RenderWithRouterOptions {
   initialEntry?: string
@@ -23,7 +23,7 @@ interface RenderWithRouterResult {
 }
 
 export async function renderWithRouter(
-  Component: ComponentType,
+  Component: RouteComponent,
   { initialEntry = '/' }: RenderWithRouterOptions = {},
 ): Promise<RenderWithRouterResult> {
   const rootRoute = createRootRoute({
@@ -33,7 +33,7 @@ export async function renderWithRouter(
   const testRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/',
-    component: Component as React.ComponentType,
+    component: Component,
   })
 
   const routeTree = rootRoute.addChildren([testRoute])

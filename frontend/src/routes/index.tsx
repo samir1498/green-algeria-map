@@ -2,16 +2,23 @@ import { createFileRoute, useLoaderData } from '@tanstack/react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Map } from '@/components/map/Map'
-import { getAll } from '@/api/zones'
+import { getAll as getAllZones } from '@/api/zones'
+import { getAll as getAllDamageReports } from '@/api/damage-reports'
 import { demoZones } from '@/components/map/demo-data'
+import { demoDamageReports } from '@/components/map/demo-damage-data'
 import type { Zone } from '@/types/zone'
+import type { DamageReport } from '@/types/damage-report'
 
 export const Route = createFileRoute('/')({
-  loader: async (): Promise<Zone[]> => {
+  loader: async (): Promise<{ zones: Zone[]; damageReports: DamageReport[] }> => {
     try {
-      return await getAll()
+      const [zones, damageReports] = await Promise.all([
+        getAllZones(),
+        getAllDamageReports(),
+      ])
+      return { zones, damageReports }
     } catch {
-      return demoZones as Zone[]
+      return { zones: demoZones as Zone[], damageReports: demoDamageReports }
     }
   },
   component: Home,
@@ -31,13 +38,15 @@ function StatCard({ value, label }: { value: string; label: string }) {
 }
 
 function Home() {
-  const zones = useLoaderData({ from: '/' })
+  const { zones, damageReports } = useLoaderData({ from: '/' })
 
   const projectCounts = {
     total: zones.length,
     planting: zones.filter((z) => z.type === 'planting').length,
     trees: zones.reduce((sum, z) => sum + (z.currentCount ?? 0), 0),
     treeTarget: zones.reduce((sum, z) => sum + (z.targetCount ?? 0), 0),
+    damageReports: damageReports.length,
+    criticalDamage: damageReports.filter((d) => d.severity === 'critical').length,
   }
 
   return (
@@ -51,13 +60,13 @@ function Home() {
       </div>
 
       <div className="max-w-7xl mx-auto rounded-lg border">
-        <Map zones={zones} />
+        <Map zones={zones} damageReports={damageReports} />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-4 grid grid-cols-1 md:grid-cols-4 gap-3">
         <StatCard value={String(projectCounts.total)} label="Total Projects" />
         <StatCard value={String(projectCounts.planting)} label="Planting Zones" />
-        <StatCard value={String(projectCounts.trees)} label="Trees Planted" />
+        <StatCard value={String(projectCounts.damageReports)} label="Damage Reports" />
         <StatCard value={`${projectCounts.trees} / ${projectCounts.treeTarget}`} label="Trees Progress" />
       </div>
     </div>
