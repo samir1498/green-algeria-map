@@ -11,8 +11,8 @@ export class DeleteZoneHandler implements ICommandHandler<
   constructor(private readonly repository: ZoneRepository) {}
 
   async execute(command: DeleteZoneCommand): Promise<void> {
-    const zone = await this.repository.findById(command.id);
-    if (!zone) throw new NotFoundException(`Zone ${command.id} not found`);
+    const exists = await this.repository.findById(command.id);
+    if (!exists) throw new NotFoundException(`Zone ${command.id} not found`);
     await this.repository.remove(command.id);
   }
 }

@@ -45,9 +45,9 @@ export class ZonesController {
       new CreateZoneCommand(
         dto.name,
         dto.type,
-        dto.status,
         dto.lat,
         dto.lng,
+        dto.status,
         dto.targetCount,
         dto.currentCount,
         dto.description,

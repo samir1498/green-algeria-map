@@ -137,6 +137,86 @@ describe('Zone', () => {
     });
   });
 
+  describe('rename', () => {
+    it('updates the zone name', () => {
+      const zone = makeZone();
+      zone.rename('New Name');
+
+      expect(zone.name).toBe('New Name');
+    });
+  });
+
+  describe('updateType', () => {
+    it('changes the zone type', () => {
+      const zone = makeZone({ type: 'planting' });
+      zone.updateType('trash');
+
+      expect(zone.type).toBe('trash');
+    });
+  });
+
+  describe('reposition', () => {
+    it('updates coordinates', () => {
+      const zone = makeZone();
+      zone.reposition(40.0, -3.0);
+
+      expect(zone.coordinates.lat).toBe(40.0);
+      expect(zone.coordinates.lng).toBe(-3.0);
+    });
+  });
+
+  describe('changeStatus', () => {
+    it('transitions from planned to in-progress', () => {
+      const zone = makeZone({ status: 'planned' });
+      zone.changeStatus('in-progress');
+
+      expect(zone.status).toBe('in-progress');
+    });
+
+    it('transitions to completed when target is met', () => {
+      const zone = makeZone({
+        status: 'in-progress',
+        targetCount: 10,
+        currentCount: 10,
+      });
+      zone.changeStatus('completed');
+
+      expect(zone.status).toBe('completed');
+    });
+
+    it('throws when starting an already started zone', () => {
+      const zone = makeZone({ status: 'in-progress' });
+
+      expect(() => zone.changeStatus('in-progress')).toThrow(
+        'Cannot start zone: current status is "in-progress"',
+      );
+    });
+
+    it('throws when completing without reaching target', () => {
+      const zone = makeZone({
+        status: 'in-progress',
+        targetCount: 10,
+        currentCount: 5,
+      });
+
+      expect(() => zone.changeStatus('completed')).toThrow(
+        'Cannot complete zone: target not reached (5/10)',
+      );
+    });
+
+    it('throws when starting a completed zone', () => {
+      const zone = makeZone({
+        status: 'completed',
+        targetCount: 10,
+        currentCount: 10,
+      });
+
+      expect(() => zone.changeStatus('in-progress')).toThrow(
+        'Cannot start zone: current status is "completed"',
+      );
+    });
+  });
+
   describe('updateProgress', () => {
     it('sets currentCount', () => {
       const zone = makeZone();
