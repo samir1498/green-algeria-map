@@ -3,15 +3,44 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Map } from '@/components/map/Map'
 import { getAll } from '@/api/zones'
+import { getAll as getDamageReports } from '@/api/damage-reports'
 import { demoZones } from '@/components/map/demo-data'
+import { demoDamageReports } from '@/components/map/demo-damage-data'
+import { isValidCoordinate } from '@/components/map/helpers'
 import type { Zone } from '@/types/zone'
+import type { DamageReport } from '@/types/damage-report'
+
+interface LoaderResult {
+  zones: Zone[]
+  damageReports: DamageReport[]
+  demoMode: boolean
+}
 
 export const Route = createFileRoute('/')({
-  loader: async (): Promise<Zone[]> => {
-    try {
-      return await getAll()
-    } catch {
-      return demoZones as Zone[]
+  loader: async (): Promise<LoaderResult> => {
+    const [zonesResult, damageResult] = await Promise.allSettled([
+      getAll(),
+      getDamageReports(),
+    ])
+
+    const zonesResultData = zonesResult.status === 'fulfilled' ? zonesResult.value : null
+    const damageResultData = damageResult.status === 'fulfilled' ? damageResult.value : null
+
+    if (zonesResultData) {
+      console.info(`[${new Date().toISOString()}] Zones loaded from backend`)
+      return {
+        zones: zonesResultData,
+        damageReports: damageResultData ?? [],
+        demoMode: false,
+      }
+    }
+
+    const reason = zonesResult.status === 'rejected' ? zonesResult.reason : 'unknown error'
+    console.error(`[${new Date().toISOString()}] Backend unavailable, using demo data:`, reason)
+    return {
+      zones: demoZones.filter((z) => isValidCoordinate(z.lat, z.lng)),
+      damageReports: damageResultData ?? demoDamageReports,
+      demoMode: true,
     }
   },
   component: Home,
@@ -31,7 +60,7 @@ function StatCard({ value, label }: { value: string; label: string }) {
 }
 
 function Home() {
-  const zones = useLoaderData({ from: '/' })
+  const { zones, damageReports, demoMode } = useLoaderData({ from: '/' })
 
   const projectCounts = {
     total: zones.length,
@@ -50,8 +79,8 @@ function Home() {
         <p className="text-muted-foreground">Track tree planting initiatives and green coverage across Algeria.</p>
       </div>
 
-      <div className="max-w-7xl mx-auto rounded-lg border">
-        <Map zones={zones} />
+      <div className="max-w-7xl mx-auto rounded-lg border overflow-hidden">
+        <Map zones={zones} damageReports={damageReports} demoMode={demoMode} />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-4 grid grid-cols-1 md:grid-cols-4 gap-3">
