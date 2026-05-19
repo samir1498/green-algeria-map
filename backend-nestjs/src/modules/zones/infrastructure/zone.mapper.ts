@@ -1,14 +1,27 @@
+import { BadRequestException } from '@nestjs/common';
 import { Zone } from '../domain/zone';
 import { Coordinates } from '../domain/coordinates.value-object';
 import { ZoneOrmEntity } from './zone.orm-entity';
+import {
+  ZONE_TYPES,
+  ZONE_STATUSES,
+  type ZoneType,
+  type ZoneStatus,
+} from '../domain/zone.types';
 
 export class ZoneMapper {
   static toDomain(orm: ZoneOrmEntity): Zone {
+    if (!ZONE_TYPES.includes(orm.type as ZoneType)) {
+      throw new BadRequestException(`Invalid zone type: ${orm.type}`);
+    }
+    if (!ZONE_STATUSES.includes(orm.status as ZoneStatus)) {
+      throw new BadRequestException(`Invalid zone status: ${orm.status}`);
+    }
     return Zone.create({
       id: orm.id,
       name: orm.name,
-      type: orm.type as Zone['type'],
-      status: orm.status as Zone['status'],
+      type: orm.type as ZoneType,
+      status: orm.status as ZoneStatus,
       coordinates: new Coordinates(orm.lat, orm.lng),
       targetCount: orm.targetCount,
       currentCount: orm.currentCount,
