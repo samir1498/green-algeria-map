@@ -63,3 +63,4 @@ CI runs in parallel: check → lint → knip → test → build
 ## Skills
 
 - `.claude/skills/pc-version-bump/` — Bump version, update CHANGELOG, tag a release
+- `.skills/db-migration-cli/` — **NEVER write migrations by hand**. Always use `pnpm migration:generate`, then edit the generated file to keep only relevant changes.
