@@ -13,26 +13,29 @@ export class Session {
   @PrimaryColumn('text')
   id: string;
 
-  @Index()
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'userId' })
-  user: User;
-
-  @Column({ unique: true })
-  token: string;
-
   @Column({ type: 'timestamp' })
   expiresAt: Date;
 
-  @Column({ nullable: true })
-  ipAddress: string;
-
-  @Column({ nullable: true })
-  userAgent: string;
+  @Column({ type: 'text', unique: true })
+  token: string;
 
   @Column({ type: 'timestamp' })
   createdAt: Date;
 
   @Column({ type: 'timestamp' })
   updatedAt: Date;
+
+  @Column({ type: 'text', nullable: true })
+  ipAddress: string;
+
+  @Column({ type: 'text', nullable: true })
+  userAgent: string;
+
+  @Index()
+  @Column('text')
+  userId: string;
+
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user: User;
 }

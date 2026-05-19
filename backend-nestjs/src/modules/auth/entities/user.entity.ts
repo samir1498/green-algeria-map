@@ -5,16 +5,16 @@ export class User {
   @PrimaryColumn('text')
   id: string;
 
-  @Column()
+  @Column('text')
   name: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'text', unique: true })
   email: string;
 
-  @Column({ default: false })
+  @Column({ type: 'boolean', default: false })
   emailVerified: boolean;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   image: string;
 
   @Column({ type: 'timestamp' })
@@ -23,6 +23,6 @@ export class User {
   @Column({ type: 'timestamp' })
   updatedAt: Date;
 
-  @Column({ default: 'volunteer' })
-  role: 'volunteer' | 'reporter' | 'organizer' | 'admin';
+  @Column({ type: 'text', default: 'volunteer' })
+  role: string;
 }

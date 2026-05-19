@@ -6,10 +6,10 @@ export class Verification {
   id: string;
 
   @Index()
-  @Column()
+  @Column({ type: 'text' })
   identifier: string;
 
-  @Column()
+  @Column({ type: 'text' })
   value: string;
 
   @Column({ type: 'timestamp' })
