@@ -133,6 +133,10 @@ describe('Migrations (integration)', () => {
         `DB_HOST=${container.getHost()} DB_PORT=${container.getPort()} DB_USERNAME=${container.getUsername()} DB_PASSWORD=${container.getPassword()} DB_NAME=test_migrations_revert pnpm migration:revert`,
         { cwd: process.cwd() },
       );
+      await execAsync(
+        `DB_HOST=${container.getHost()} DB_PORT=${container.getPort()} DB_USERNAME=${container.getUsername()} DB_PASSWORD=${container.getPassword()} DB_NAME=test_migrations_revert pnpm migration:revert`,
+        { cwd: process.cwd() },
+      );
 
       const queryRunner = dataSource.createQueryRunner();
       try {
@@ -141,6 +145,7 @@ describe('Migrations (integration)', () => {
 
         expect(tableNames).not.toContain('zones');
         expect(tableNames).not.toContain('user');
+        expect(tableNames).not.toContain('damage_reports');
       } finally {
         await queryRunner.release();
       }
