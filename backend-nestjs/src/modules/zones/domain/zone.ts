@@ -37,15 +37,36 @@ export class Zone {
     return new Zone(props);
   }
 
+  rename(name: string): void {
+    this.name = name;
+  }
+
+  updateType(type: ZoneType): void {
+    this.type = type;
+  }
+
+  reposition(lat: number, lng: number): void {
+    this.coordinates = new Coordinates(lat, lng);
+  }
+
   canStart(): boolean {
     return this.status === 'planned';
   }
 
   markInProgress(): void {
-    if (!this.canStart()) {
+    this.changeStatus('in-progress');
+  }
+
+  changeStatus(status: ZoneStatus): void {
+    if (status === 'in-progress' && !this.canStart()) {
       throw new Error(`Cannot start zone: current status is "${this.status}"`);
     }
-    this.status = 'in-progress';
+    if (status === 'completed' && !this.canComplete()) {
+      throw new Error(
+        `Cannot complete zone: target not reached (${this.currentCount}/${this.targetCount})`,
+      );
+    }
+    this.status = status;
   }
 
   canComplete(): boolean {
@@ -57,12 +78,7 @@ export class Zone {
   }
 
   markComplete(): void {
-    if (!this.canComplete()) {
-      throw new Error(
-        `Cannot complete zone: target not reached (${this.currentCount}/${this.targetCount})`,
-      );
-    }
-    this.status = 'completed';
+    this.changeStatus('completed');
   }
 
   updateProgress(count: number): void {
