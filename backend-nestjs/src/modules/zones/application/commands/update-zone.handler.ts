@@ -3,7 +3,6 @@ import { NotFoundException } from '@nestjs/common';
 import { UpdateZoneCommand } from './update-zone.command';
 import { ZoneRepository } from '../../domain/zone.repository';
 import { Zone } from '../../domain/zone';
-import { Coordinates } from '../../domain/coordinates.value-object';
 
 @CommandHandler(UpdateZoneCommand)
 export class UpdateZoneHandler implements ICommandHandler<
@@ -16,11 +15,11 @@ export class UpdateZoneHandler implements ICommandHandler<
     const zone = await this.repository.findById(command.id);
     if (!zone) throw new NotFoundException(`Zone ${command.id} not found`);
 
-    if (command.name !== undefined) zone.name = command.name;
-    if (command.type !== undefined) zone.type = command.type;
-    if (command.status !== undefined) zone.status = command.status;
+    if (command.name !== undefined) zone.rename(command.name);
+    if (command.type !== undefined) zone.updateType(command.type);
+    if (command.status !== undefined) zone.changeStatus(command.status);
     if (command.lat !== undefined || command.lng !== undefined) {
-      zone.coordinates = new Coordinates(
+      zone.reposition(
         command.lat ?? zone.coordinates.lat,
         command.lng ?? zone.coordinates.lng,
       );

@@ -75,9 +75,9 @@ describe('Zones CQRS (integration)', () => {
       const command = new CreateZoneCommand(
         'CQRS Zone',
         'planting',
-        'planned',
         36.0,
         3.0,
+        'planned',
         undefined,
         undefined,
         'CQRS test',
@@ -99,9 +99,9 @@ describe('Zones CQRS (integration)', () => {
       const command = new CreateZoneCommand(
         'Event Zone',
         'trash',
-        'planned',
         35.0,
         2.0,
+        'planned',
         undefined,
         undefined,
         'Event test',
@@ -123,9 +123,9 @@ describe('Zones CQRS (integration)', () => {
       const command = new CreateZoneCommand(
         'Lookup CQRS',
         'cleanup',
-        'planned',
         34.0,
         1.0,
+        'planned',
         undefined,
         undefined,
         'Lookup',
@@ -157,9 +157,9 @@ describe('Zones CQRS (integration)', () => {
         new CreateZoneCommand(
           'Zebra',
           'planting',
-          'planned',
           36.0,
           3.0,
+          'planned',
           undefined,
           undefined,
           'Z',
@@ -169,9 +169,9 @@ describe('Zones CQRS (integration)', () => {
         new CreateZoneCommand(
           'Apple',
           'planting',
-          'planned',
           36.0,
           3.0,
+          'planned',
           undefined,
           undefined,
           'A',
@@ -185,7 +185,6 @@ describe('Zones CQRS (integration)', () => {
       const names = zones.map((z) => z.name);
 
       const appleIdx = names.indexOf('Apple');
-
       const zebraIdx = names.indexOf('Zebra');
 
       expect(appleIdx).toBeLessThan(zebraIdx);
@@ -199,9 +198,9 @@ describe('Zones CQRS (integration)', () => {
       const command = new CreateZoneCommand(
         'Update CQRS',
         'planting',
-        'planned',
         36.0,
         3.0,
+        'planned',
         undefined,
         undefined,
         'Before update',
@@ -234,9 +233,9 @@ describe('Zones CQRS (integration)', () => {
       const command = new CreateZoneCommand(
         'Progress Zone',
         'planting',
-        'planned',
         36.0,
         3.0,
+        'planned',
         10,
         0,
         'Progress test',
@@ -279,9 +278,9 @@ describe('Zones CQRS (integration)', () => {
       const command = new CreateZoneCommand(
         'Delete CQRS',
         'planting',
-        'planned',
         36.0,
         3.0,
+        'planned',
         undefined,
         undefined,
         'Delete me',
