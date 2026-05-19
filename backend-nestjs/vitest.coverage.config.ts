@@ -8,5 +8,25 @@ export default defineConfig({
     testTimeout: 120000,
     hookTimeout: 120000,
     pool: 'forks',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      reportsDirectory: './coverage',
+      thresholds: {
+        lines: 80,
+        branches: 75,
+        functions: 80,
+        statements: 80,
+      },
+      exclude: [
+        '**/*.entity.ts',
+        '**/*.module.ts',
+        '**/*.controller.ts',
+        '**/main.ts',
+        '**/data-source.ts',
+        '**/node_modules/**',
+        '**/dist/**',
+      ],
+    },
   },
 })
