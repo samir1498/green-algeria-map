@@ -11,7 +11,7 @@ export const Route = createFileRoute('/auth/login')({
   component: LoginPage,
 })
 
-function LoginPage() {
+export function LoginPage() {
   const { signIn } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -41,12 +41,13 @@ function LoginPage() {
           <CardDescription>Enter your email and password to access your account</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" data-testid="login-form">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
+                data-testid="email-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -58,18 +59,19 @@ function LoginPage() {
               <Input
                 id="password"
                 type="password"
+                data-testid="password-input"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading} data-testid="submit-button">
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
-              <Link to="/auth/register" className="text-primary hover:underline">
+              <Link to="/auth/register" className="text-primary hover:underline" data-testid="sign-up-link">
                 Sign up
               </Link>
             </p>
