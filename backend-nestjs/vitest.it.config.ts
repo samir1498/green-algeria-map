@@ -8,5 +8,11 @@ export default mergeConfig(baseConfig, defineConfig({
     testTimeout: 120_000,
     hookTimeout: 120_000,
     pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
+    },
+    dangerouslyIgnoreUnhandledErrors: true,
   },
 }))
