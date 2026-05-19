@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { auth } from './auth';
 import { ZonesModule } from './modules/zones/zones.module';
+import { DamageReportsModule } from './modules/damage-reports/damage-reports.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ZonesModule } from './modules/zones/zones.module';
     }),
     AuthModule.forRoot({ auth }),
     ZonesModule,
+    DamageReportsModule,
   ],
 })
 export class AppModule {}

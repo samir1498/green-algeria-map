@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
 import { ZoneOrmEntity } from './modules/zones/infrastructure/zone.orm-entity';
+import { DamageReportOrmEntity } from './modules/damage-reports/infrastructure/damage-report.orm-entity';
 import { User } from './modules/auth/entities/user.entity';
 import { Session } from './modules/auth/entities/session.entity';
 import { Account } from './modules/auth/entities/account.entity';
@@ -12,6 +13,13 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME ?? 'greenalgeria',
   password: process.env.DB_PASSWORD ?? 'greenalgeria',
   database: process.env.DB_NAME ?? 'greenalgeria',
-  entities: [ZoneOrmEntity, User, Session, Account, Verification],
+  entities: [
+    ZoneOrmEntity,
+    DamageReportOrmEntity,
+    User,
+    Session,
+    Account,
+    Verification,
+  ],
   migrations: ['src/migrations/*.ts'],
 });

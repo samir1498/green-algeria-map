@@ -13,24 +13,27 @@ export class Account {
   @PrimaryColumn('text')
   id: string;
 
+  @Column({ type: 'text' })
+  accountId: string;
+
+  @Column({ type: 'text' })
+  providerId: string;
+
   @Index()
+  @Column('text')
+  userId: string;
+
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @Column()
-  accountId: string;
-
-  @Column()
-  providerId: string;
-
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   accessToken: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   refreshToken: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   idToken: string;
 
   @Column({ type: 'timestamp', nullable: true })
@@ -39,10 +42,10 @@ export class Account {
   @Column({ type: 'timestamp', nullable: true })
   refreshTokenExpiresAt: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   scope: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   password: string;
 
   @Column({ type: 'timestamp' })
