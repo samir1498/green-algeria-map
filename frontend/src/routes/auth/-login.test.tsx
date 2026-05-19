@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterAll, afterEach } from 'vitest'
 import { screen, waitFor, cleanup } from '@testing-library/react'
-import { Route } from './login'
+import { LoginPage } from './login'
 import { renderWithRouter } from '@/test/render-with-router'
 
 const mockSignIn = vi.fn().mockResolvedValue({ data: { user: {} }, error: null })
@@ -41,29 +41,30 @@ afterAll(() => {
 })
 
 describe('LoginPage', () => {
-  it('renders email and password fields', async () => {
-    await renderWithRouter(Route.options.component)
+  it('renders form with all inputs and button', async () => {
+    await renderWithRouter(<LoginPage />)
 
-    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument()
+    expect(screen.getByTestId('email-input')).toBeInTheDocument()
+    expect(screen.getByTestId('password-input')).toBeInTheDocument()
+    expect(screen.getByTestId('submit-button')).toBeInTheDocument()
+    expect(screen.getByTestId('sign-up-link')).toBeInTheDocument()
   })
 
   it('shows sign up link', async () => {
-    await renderWithRouter(Route.options.component)
+    await renderWithRouter(<LoginPage />)
 
-    expect(screen.getByRole('link', { name: /sign up/i })).toHaveAttribute(
+    expect(screen.getByTestId('sign-up-link')).toHaveAttribute(
       'href',
       '/auth/register',
     )
   })
 
   it('calls signIn with form values on submit', async () => {
-    const { user } = await renderWithRouter(Route.options.component)
+    const { user } = await renderWithRouter(<LoginPage />)
 
-    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /sign in/i }))
+    await user.type(screen.getByTestId('email-input'), 'test@example.com')
+    await user.type(screen.getByTestId('password-input'), 'password123')
+    await user.click(screen.getByTestId('submit-button'))
 
     expect(mockSignIn).toHaveBeenCalledWith({
       email: 'test@example.com',
@@ -79,13 +80,14 @@ describe('LoginPage', () => {
         ),
     )
 
-    const { user } = await renderWithRouter(Route.options.component)
+    const { user } = await renderWithRouter(<LoginPage />)
 
-    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /sign in/i }))
+    await user.type(screen.getByTestId('email-input'), 'test@example.com')
+    await user.type(screen.getByTestId('password-input'), 'password123')
+    await user.click(screen.getByTestId('submit-button'))
 
-    expect(screen.getByRole('button', { name: /signing in/i })).toBeDisabled()
+    expect(screen.getByTestId('submit-button')).toBeDisabled()
+    expect(screen.getByTestId('submit-button')).toHaveTextContent('Signing in...')
   })
 
   it('shows error toast and re-enables button on failure', async () => {
@@ -98,11 +100,11 @@ describe('LoginPage', () => {
       },
     })
 
-    const { user } = await renderWithRouter(Route.options.component)
+    const { user } = await renderWithRouter(<LoginPage />)
 
-    await user.type(screen.getByLabelText(/email/i), 'wrong@example.com')
-    await user.type(screen.getByLabelText(/password/i), 'wrong')
-    await user.click(screen.getByRole('button', { name: /sign in/i }))
+    await user.type(screen.getByTestId('email-input'), 'wrong@example.com')
+    await user.type(screen.getByTestId('password-input'), 'wrong')
+    await user.click(screen.getByTestId('submit-button'))
 
     const { toast } = await import('sonner')
     await waitFor(() => {
@@ -110,17 +112,17 @@ describe('LoginPage', () => {
         'Invalid email or password',
       )
     })
-    expect(screen.getByRole('button', { name: /sign in/i })).not.toBeDisabled()
+    expect(screen.getByTestId('submit-button')).not.toBeDisabled()
   })
 
   it('shows success toast and redirects on success', async () => {
     mockSignIn.mockResolvedValueOnce({ data: { user: {} }, error: null })
 
-    const { user } = await renderWithRouter(Route.options.component)
+    const { user } = await renderWithRouter(<LoginPage />)
 
-    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/password/i), 'password123')
-    await user.click(screen.getByRole('button', { name: /sign in/i }))
+    await user.type(screen.getByTestId('email-input'), 'test@example.com')
+    await user.type(screen.getByTestId('password-input'), 'password123')
+    await user.click(screen.getByTestId('submit-button'))
 
     const { toast } = await import('sonner')
     await waitFor(() => {
