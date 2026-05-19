@@ -1,7 +1,7 @@
-import { defineConfig, mergeConfig } from 'vitest/config'
+import { mergeConfig } from 'vitest/config'
 import baseConfig from './vitest.base'
 
-export default mergeConfig(baseConfig, defineConfig({
+export default mergeConfig(baseConfig, {
   test: {
     include: ['test/**/*.it.spec.ts'],
     environment: 'node',
@@ -15,4 +15,4 @@ export default mergeConfig(baseConfig, defineConfig({
     },
     dangerouslyIgnoreUnhandledErrors: true,
   },
-}))
+})
