@@ -23,7 +23,9 @@ Run everything from `frontend/`.
 ```bash
 pnpm dev          # Start dev server
 pnpm build        # Production build
-pnpm test         # Run tests
+pnpm test         # Run unit + integration tests (both configs)
+pnpm test:unit    # Unit tests only
+pnpm test:it      # Integration tests only
 pnpm check        # Type check
 pnpm lint         # ESLint
 pnpm knip         # Dead code detection
@@ -40,7 +42,11 @@ import { Button } from '@/components/ui/button'
 
 - **Framework**: React 19, TanStack Router (file-based routing)
 - **Styling**: Tailwind CSS v4 (CSS-first), shadcn/ui
-- **Testing**: Vitest
+- **Testing**: Vitest with separate configs (`vitest.unit.config.ts` / `vitest.it.config.ts`)
+- **Test naming**:
+  - `*.unit.spec.{ts,tsx}` — unit tests (pure logic, hooks in isolation)
+  - `*.it.spec.{ts,tsx}` — integration tests (component + API + side-effects)
+  - Legacy `*.test.{ts,tsx}` files accepted in unit config but avoid in new code
 - **File naming**: PascalCase for components, camelCase for hooks/utils
 - **Routes**: File-based in `src/routes/`
 - **No comments** in code — clear naming over comments
