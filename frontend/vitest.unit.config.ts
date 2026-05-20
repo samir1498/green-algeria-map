@@ -13,7 +13,7 @@ export default mergeConfig(
       coverage: {
         provider: 'v8',
         reporter: ['text', 'json', 'html'],
-        reportsDirectory: './coverage',
+        reportsDirectory: './coverage/unit',
         thresholds: {
           lines: 80,
           branches: 75,
