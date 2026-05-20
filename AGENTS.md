@@ -63,7 +63,7 @@ CI runs in parallel: check → lint → knip → test → build
 ## Post-PR Review Workflow
 
 After creating a PR:
-1. Fetch CodeRabbit review comments: `gh api repos/samir1498/green-algeria-map/pulls/<number>/comments`
+1. Review CodeRabbit comments in the PR
 2. Fix all actionable suggestions
 3. Commit fixes and push to the same branch
 4. Re-trigger review by commenting on the PR: `@coderabbitai review`
