@@ -1,5 +1,10 @@
 import { ZoneType, ZoneStatus } from './zone.types';
 import { Coordinates } from './coordinates.value-object';
+import {
+  CannotStartZoneError,
+  CannotCompleteZoneError,
+  NegativeCountError,
+} from '../../../lib/domain/zone-errors';
 
 export interface ZoneProps {
   id?: string;
@@ -59,11 +64,12 @@ export class Zone {
 
   changeStatus(status: ZoneStatus): void {
     if (status === 'in-progress' && !this.canStart()) {
-      throw new Error(`Cannot start zone: current status is "${this.status}"`);
+      throw new CannotStartZoneError(this.status);
     }
     if (status === 'completed' && !this.canComplete()) {
-      throw new Error(
-        `Cannot complete zone: target not reached (${this.currentCount}/${this.targetCount})`,
+      throw new CannotCompleteZoneError(
+        this.currentCount ?? 0,
+        this.targetCount,
       );
     }
     this.status = status;
@@ -83,7 +89,7 @@ export class Zone {
 
   updateProgress(count: number): void {
     if (count < 0) {
-      throw new Error('Count cannot be negative');
+      throw new NegativeCountError();
     }
     this.currentCount = count;
     if (this.canComplete()) {
