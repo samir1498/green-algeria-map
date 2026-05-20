@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +12,7 @@ export const Route = createFileRoute('/auth/register')({
 })
 
 function RegisterPage() {
+  const navigate = useNavigate()
   const { signUp } = useAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -31,7 +32,7 @@ function RegisterPage() {
     }
 
     toast.success('Account created successfully')
-    window.location.href = '/'
+    navigate({ to: '/' })
   }
 
   return (

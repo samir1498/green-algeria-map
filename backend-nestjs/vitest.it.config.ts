@@ -9,10 +9,11 @@ export default mergeConfig(baseConfig, {
     hookTimeout: 120_000,
     pool: 'forks',
     fileParallelism: false,
-    onUnhandledError(error) {
+    onUnhandledError(error: unknown) {
       if (
-        error.message.includes('57P01') ||
-        error.message.includes('terminating connection due to administrator command')
+        error instanceof Error &&
+        (error.message.includes('57P01') ||
+          error.message.includes('terminating connection due to administrator command'))
       ) {
         return false;
       }

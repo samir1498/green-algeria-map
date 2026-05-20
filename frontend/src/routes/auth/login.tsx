@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +12,7 @@ export const Route = createFileRoute('/auth/login')({
 })
 
 export function LoginPage() {
+  const navigate = useNavigate()
   const { signIn } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -30,7 +31,7 @@ export function LoginPage() {
     }
 
     toast.success('Signed in successfully')
-    window.location.href = '/'
+    navigate({ to: '/' })
   }
 
   return (
