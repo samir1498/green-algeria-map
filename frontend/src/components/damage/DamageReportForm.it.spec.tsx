@@ -71,6 +71,9 @@ describe('DamageReportForm', () => {
     await waitFor(() => {
       expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Damage report submitted')
     })
+
+    expect(screen.getByTestId('description-input')).toHaveValue('')
+    expect(screen.getByTestId('reported-by-input')).toHaveValue('')
   })
 
   it('shows validation error when required field is empty after user interaction', async () => {

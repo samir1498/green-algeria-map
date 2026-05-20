@@ -5,7 +5,7 @@ export default defineConfig({
   resolve: { tsconfigPaths: true },
   plugins: [viteReact()],
   test: {
-    passWithNoTests: true,
+    passWithNoTests: false,
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
   },

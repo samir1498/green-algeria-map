@@ -108,7 +108,7 @@ export function DamageReportForm({ zoneId, lat, lng, onSuccess }: DamageReportFo
             name="description"
             validators={{
               onChange: ({ value }) =>
-                value ? undefined : 'Description is required',
+                value?.trim() ? undefined : 'Description is required',
             }}
             children={({ state: { value }, handleChange, name, state: { meta: { isTouched, errors } } }) => (
               <div className="space-y-2">
@@ -131,7 +131,7 @@ export function DamageReportForm({ zoneId, lat, lng, onSuccess }: DamageReportFo
             name="reportedBy"
             validators={{
               onChange: ({ value }) =>
-                value ? undefined : 'Volunteer ID or name is required',
+                value?.trim() ? undefined : 'Volunteer ID or name is required',
             }}
             children={({ state: { value }, handleChange, name, state: { meta: { isTouched, errors } } }) => (
               <div className="space-y-2">
