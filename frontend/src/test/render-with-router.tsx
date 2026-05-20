@@ -9,14 +9,14 @@ import {
   createRouter,
 } from '@tanstack/react-router'
 import type { ReactElement } from 'react'
-import type { Router } from '@tanstack/react-router'
+import type { Router, AnyRoute } from '@tanstack/react-router'
 
 interface RenderWithRouterResult {
   user: ReturnType<typeof userEvent.setup>
   rerender: (ui: ReactElement) => void
   unmount: () => void
   container: HTMLElement
-  router: Router
+  router: Router<AnyRoute>
 }
 
 export async function renderWithRouter(

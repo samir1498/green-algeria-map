@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/services/auth'
+import { DefaultErrorBoundary } from '@/components/DefaultErrorBoundary'
+import { NotFound } from '@/components/NotFound'
 import '@/styles.css'
 
 export const Route = createRootRoute({
@@ -20,6 +22,8 @@ export const Route = createRootRoute({
     ],
   }),
   component: RootComponent,
+  errorComponent: DefaultErrorBoundary,
+  notFoundComponent: NotFound,
 })
 
 function ThemeToggle() {
