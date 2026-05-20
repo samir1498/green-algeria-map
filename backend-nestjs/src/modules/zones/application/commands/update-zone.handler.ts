@@ -24,12 +24,12 @@ export class UpdateZoneHandler implements ICommandHandler<
       );
     }
     if (command.targetCount !== undefined)
-      zone.targetCount = command.targetCount;
+      zone.updateTargetCount(command.targetCount);
     if (command.currentCount !== undefined)
       zone.updateProgress(command.currentCount);
     if (command.status !== undefined) zone.changeStatus(command.status);
     if (command.description !== undefined)
-      zone.description = command.description;
+      zone.updateDescription(command.description);
 
     return this.repository.save(zone);
   }

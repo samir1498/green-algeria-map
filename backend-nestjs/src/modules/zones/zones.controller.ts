@@ -9,7 +9,7 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
+import { Public } from '../../lib/auth';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateZoneCommand } from './application/commands/create-zone.command';
 import { UpdateZoneCommand } from './application/commands/update-zone.command';
@@ -28,13 +28,13 @@ export class ZonesController {
   ) {}
 
   @Get()
-  @AllowAnonymous()
+  @Public()
   findAll() {
     return this.queryBus.execute(new GetAllZonesQuery());
   }
 
   @Get(':id')
-  @AllowAnonymous()
+  @Public()
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.queryBus.execute(new GetZoneByIdQuery(id));
   }
