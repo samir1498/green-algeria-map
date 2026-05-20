@@ -117,7 +117,7 @@ describe('Migrations (integration)', () => {
     }
   });
 
-  it('reverts last migration successfully', async () => {
+  it('reverts last three migrations successfully', async () => {
     const dataSource = await createTestDatabase(
       container,
       'test_migrations_revert',
@@ -125,6 +125,10 @@ describe('Migrations (integration)', () => {
     await dataSource.initialize();
     try {
       await runMigrationsCli(container, 'test_migrations_revert');
+      await execAsync(
+        `DB_HOST=${container.getHost()} DB_PORT=${container.getPort()} DB_USERNAME=${container.getUsername()} DB_PASSWORD=${container.getPassword()} DB_NAME=test_migrations_revert pnpm migration:revert`,
+        { cwd: process.cwd() },
+      );
       await execAsync(
         `DB_HOST=${container.getHost()} DB_PORT=${container.getPort()} DB_USERNAME=${container.getUsername()} DB_PASSWORD=${container.getPassword()} DB_NAME=test_migrations_revert pnpm migration:revert`,
         { cwd: process.cwd() },
@@ -141,6 +145,7 @@ describe('Migrations (integration)', () => {
 
         expect(tableNames).not.toContain('zones');
         expect(tableNames).not.toContain('user');
+        expect(tableNames).not.toContain('damage_reports');
       } finally {
         await queryRunner.release();
       }

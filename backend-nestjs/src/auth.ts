@@ -1,14 +1,16 @@
 import { betterAuth } from 'better-auth';
 import { Pool } from 'pg';
 
+export const pool = new Pool({
+  connectionString:
+    process.env.DATABASE_URL ??
+    'postgresql://greenalgeria:greenalgeria@localhost:5432/greenalgeria',
+});
+
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:8080',
   basePath: '/api/auth',
-  database: new Pool({
-    connectionString:
-      process.env.DATABASE_URL ??
-      'postgresql://greenalgeria:greenalgeria@localhost:5432/greenalgeria',
-  }),
+  database: pool,
   emailAndPassword: {
     enabled: true,
   },
