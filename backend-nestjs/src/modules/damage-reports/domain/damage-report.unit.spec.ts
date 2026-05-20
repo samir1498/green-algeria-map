@@ -1,5 +1,9 @@
-import { BadRequestException } from '@nestjs/common';
 import { DamageReport, type DamageReportProps } from './damage-report';
+import {
+  InvalidDamageReportTypeError,
+  InvalidDamageReportSeverityError,
+  InvalidStatusTransitionError,
+} from '../../../lib/domain/damage-report-errors';
 
 describe('DamageReport', () => {
   function makeReport(
@@ -54,7 +58,7 @@ describe('DamageReport', () => {
           description: 'Test',
           reportedBy: 'volunteer-001',
         }),
-      ).toThrow(BadRequestException);
+      ).toThrow(InvalidDamageReportTypeError);
     });
 
     it('rejects invalid severity', () => {
@@ -70,7 +74,7 @@ describe('DamageReport', () => {
           description: 'Test',
           reportedBy: 'volunteer-001',
         }),
-      ).toThrow(BadRequestException);
+      ).toThrow(InvalidDamageReportSeverityError);
     });
   });
 
@@ -127,7 +131,7 @@ describe('DamageReport', () => {
       const report = makeReport({ status: 'reported' });
 
       expect(() => report.changeStatus('resolved')).toThrow(
-        BadRequestException,
+        InvalidStatusTransitionError,
       );
     });
 
@@ -135,7 +139,7 @@ describe('DamageReport', () => {
       const report = makeReport({ status: 'verified' });
 
       expect(() => report.changeStatus('reported')).toThrow(
-        BadRequestException,
+        InvalidStatusTransitionError,
       );
     });
 
@@ -143,7 +147,7 @@ describe('DamageReport', () => {
       const report = makeReport({ status: 'resolved' });
 
       expect(() => report.changeStatus('verified')).toThrow(
-        BadRequestException,
+        InvalidStatusTransitionError,
       );
     });
 

@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import {
   DAMAGE_REPORT_TYPES,
   DAMAGE_REPORT_SEVERITIES,
@@ -7,6 +6,12 @@ import {
   type DamageReportSeverity,
   type DamageReportStatus,
 } from './damage-report.types';
+import {
+  InvalidDamageReportTypeError,
+  InvalidDamageReportSeverityError,
+  InvalidDamageReportStatusError,
+  InvalidStatusTransitionError,
+} from '../../../lib/domain/damage-report-errors';
 
 export interface DamageReportProps {
   id?: string;
@@ -63,22 +68,16 @@ export class DamageReport {
 
   static create(props: DamageReportProps): DamageReport {
     if (!DAMAGE_REPORT_TYPES.includes(props.type)) {
-      throw new BadRequestException(
-        `Invalid damage report type: ${props.type}`,
-      );
+      throw new InvalidDamageReportTypeError(props.type);
     }
     if (!DAMAGE_REPORT_SEVERITIES.includes(props.severity)) {
-      throw new BadRequestException(
-        `Invalid damage report severity: ${props.severity}`,
-      );
+      throw new InvalidDamageReportSeverityError(props.severity);
     }
     if (
       props.status !== undefined &&
       !DAMAGE_REPORT_STATUSES.includes(props.status)
     ) {
-      throw new BadRequestException(
-        `Invalid damage report status: ${props.status}`,
-      );
+      throw new InvalidDamageReportStatusError(props.status);
     }
     const now = new Date();
     return new DamageReport({
@@ -107,9 +106,7 @@ export class DamageReport {
 
   changeStatus(newStatus: DamageReportStatus): DamageReport {
     if (!this.canChangeStatusTo(newStatus)) {
-      throw new BadRequestException(
-        `Cannot change status from '${this.status}' to '${newStatus}'`,
-      );
+      throw new InvalidStatusTransitionError(this.status, newStatus);
     }
     return DamageReport.create({
       id: this.id,

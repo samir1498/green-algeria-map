@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './lib/filters/all-exceptions.filter';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -10,6 +11,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bodyParser: false });
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalFilters(new AllExceptionsFilter());
   app.enableCors({
     origin: process.env.CLIENT_URL ?? 'http://localhost:3000',
     credentials: true,
