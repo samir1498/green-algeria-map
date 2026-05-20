@@ -5,6 +5,7 @@ import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { auth, PoolService, poolService } from './auth';
 import { ZonesModule } from './modules/zones/zones.module';
 import { DamageReportsModule } from './modules/damage-reports/damage-reports.module';
+import { AUTH_SERVICE, BetterAuthAdapter } from './lib/auth';
 
 @Module({
   imports: [
@@ -27,6 +28,9 @@ import { DamageReportsModule } from './modules/damage-reports/damage-reports.mod
     ZonesModule,
     DamageReportsModule,
   ],
-  providers: [{ provide: PoolService, useValue: poolService }],
+  providers: [
+    { provide: PoolService, useValue: poolService },
+    { provide: AUTH_SERVICE, useClass: BetterAuthAdapter },
+  ],
 })
 export class AppModule {}
