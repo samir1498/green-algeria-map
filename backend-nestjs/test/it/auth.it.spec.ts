@@ -16,7 +16,6 @@ import { DamageReportOrmEntity } from '../../src/modules/damage-reports/infrastr
 describe('Auth (integration)', () => {
   let container: StartedPostgreSqlContainer;
   let app: INestApplication;
-  let pool: any;
 
   beforeAll(async () => {
     container = await new PostgreSqlContainer('postgres:18-alpine')
@@ -34,9 +33,6 @@ describe('Auth (integration)', () => {
     process.env.DATABASE_URL = `postgresql://${container.getUsername()}:${container.getPassword()}@${container.getHost()}:${container.getPort()}/${container.getDatabase()}`;
     process.env.BETTER_AUTH_URL = 'http://localhost:8080';
     process.env.CLIENT_URL = 'http://localhost:3000';
-
-    const authModule = await import('../../src/auth');
-    pool = authModule.pool;
 
     // @ts-ignore - dynamic ESM import, works at runtime but not resolvable by tsc
     const { AppModule } = await import('../../src/app.module');
@@ -73,7 +69,6 @@ describe('Auth (integration)', () => {
 
   afterAll(async () => {
     if (app) await app.close();
-    await pool.end();
     if (container) await container.stop();
     delete process.env.DB_HOST;
     delete process.env.DB_PORT;

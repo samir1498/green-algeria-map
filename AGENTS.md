@@ -60,6 +60,14 @@ CI runs in parallel: check → lint → knip → test → build
 - Tag convention: `frontend-vX.Y.Z` / `backend-vX.Y.Z`
 - Branch protection enforced on GitHub (1 review required, no force push)
 
+## Post-PR Review Workflow
+
+After creating a PR:
+1. Review CodeRabbit comments in the PR
+2. Fix all actionable suggestions
+3. Commit fixes and push to the same branch
+4. Re-trigger review by commenting on the PR: `@coderabbitai review`
+
 ## Skills
 
 - `.claude/skills/pc-version-bump/` — Bump version, update CHANGELOG, tag a release
