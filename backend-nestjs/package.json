@@ -24,7 +24,7 @@
     "test:it": "vitest run --config vitest.it.config.ts",
     "test:watch": "vitest --config vitest.unit.config.ts",
     "test:coverage": "vitest run --config vitest.coverage.config.ts --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
+    "test:debug": "vitest --config vitest.unit.config.ts --inspect-brk"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -52,7 +52,6 @@
     "@nestjs/testing": "^11.0.1",
     "@testcontainers/postgresql": "^11.14.0",
     "@types/express": "^5.0.0",
-    "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.20.0",
     "@types/supertest": "^7.0.0",
@@ -62,37 +61,16 @@
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^17.0.0",
-    "jest": "^30.0.0",
     "knip": "^6.14.1",
     "prettier": "^3.4.2",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
     "testcontainers": "^11.14.0",
-    "ts-jest": "^29.2.5",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0",
     "vitest": "^4.1.6"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": "src",
-    "testRegex": ".*\\.unit\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node",
-    "passWithNoTests": true
   },
   "pnpm": {
     "onlyBuiltDependencies": [

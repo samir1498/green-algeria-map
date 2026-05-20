@@ -1,4 +1,4 @@
-import { Outlet, createRootRoute, Link } from '@tanstack/react-router'
+import { Outlet, createRootRoute, Link, useNavigate } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { Moon, Sun, LogOut, User, Loader2 } from 'lucide-react'
@@ -46,6 +46,7 @@ function ThemeToggle() {
 }
 
 function AuthNav() {
+  const navigate = useNavigate()
   const { user, isAuthenticated, isPending, signOut } = useAuth()
 
   if (isPending) {
@@ -79,7 +80,7 @@ function AuthNav() {
         onClick={async () => {
           const result = await signOut()
           if (!result.error) {
-            window.location.href = '/'
+            navigate({ to: '/' })
           }
         }}
         aria-label="Sign out"

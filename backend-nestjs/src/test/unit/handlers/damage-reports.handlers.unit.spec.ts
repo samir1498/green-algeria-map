@@ -34,9 +34,7 @@ describe('Damage report handlers', () => {
     };
   }
 
-  function makeReport(
-    overrides: Partial<DamageReportProps> = {},
-  ) {
+  function makeReport(overrides: Partial<DamageReportProps> = {}) {
     return DamageReport.create({
       zoneId: 'zone-1',
       type: 'fire',
