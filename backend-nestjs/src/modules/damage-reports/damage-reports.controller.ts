@@ -18,6 +18,8 @@ import { GetAllDamageReportsQuery } from './application/queries/get-all-damage-r
 import { GetDamageReportByIdQuery } from './application/queries/get-damage-report-by-id/get-damage-report-by-id.query';
 import { CreateDamageReportDto } from './dto/create-damage-report.dto';
 import { UpdateDamageReportStatusDto } from './dto/update-damage-report-status.dto';
+import { DamageReportResponseDto } from './dto/damage-report-response.dto';
+import { DamageReport } from './domain/damage-report';
 import {
   DAMAGE_REPORT_TYPES,
   DAMAGE_REPORT_SEVERITIES,
@@ -33,18 +35,24 @@ export class DamageReportsController {
   ) {}
 
   @Get()
-  findAll(@Query('zoneId') zoneId?: string) {
-    return this.queryBus.execute(new GetAllDamageReportsQuery(zoneId));
+  async findAll(@Query('zoneId') zoneId?: string) {
+    const reports = await this.queryBus.execute(
+      new GetAllDamageReportsQuery(zoneId),
+    ) as DamageReport[];
+    return reports.map(DamageReportResponseDto.fromDomain);
   }
 
   @Get(':id')
-  findById(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.queryBus.execute(new GetDamageReportByIdQuery(id));
+  async findById(@Param('id', new ParseUUIDPipe()) id: string) {
+    const report = await this.queryBus.execute(
+      new GetDamageReportByIdQuery(id),
+    ) as DamageReport;
+    return DamageReportResponseDto.fromDomain(report);
   }
 
   @Post()
-  create(@Body() dto: CreateDamageReportDto) {
-    return this.commandBus.execute(
+  async create(@Body() dto: CreateDamageReportDto) {
+    const report = await this.commandBus.execute(
       new CreateDamageReportCommand(
         dto.zoneId,
         dto.type as (typeof DAMAGE_REPORT_TYPES)[number],
@@ -55,23 +63,25 @@ export class DamageReportsController {
         dto.reportedBy,
       ),
     );
+    return DamageReportResponseDto.fromDomain(report);
   }
 
   @Patch(':id/status')
-  updateStatus(
+  async updateStatus(
     @Param('id', new ParseUUIDPipe()) id: string,
     @Body() dto: UpdateDamageReportStatusDto,
   ) {
-    return this.commandBus.execute(
+    const report = await this.commandBus.execute(
       new UpdateDamageReportStatusCommand(
         id,
         dto.status as (typeof DAMAGE_REPORT_STATUSES)[number],
       ),
-    );
+    ) as DamageReport;
+    return DamageReportResponseDto.fromDomain(report);
   }
 
   @Delete(':id')
-  delete(@Param('id', new ParseUUIDPipe()) id: string) {
-    return this.commandBus.execute(new DeleteDamageReportCommand(id));
+  async delete(@Param('id', new ParseUUIDPipe()) id: string) {
+    await this.commandBus.execute(new DeleteDamageReportCommand(id));
   }
 }
