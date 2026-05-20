@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterAll, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { screen, waitFor, cleanup } from '@testing-library/react'
 import { LoginPage } from './login'
 import { renderWithRouter } from '@/test/render-with-router'
@@ -18,26 +18,13 @@ vi.mock('sonner', () => ({
   },
 }))
 
-const originalLocation = window.location
-
 beforeEach(() => {
   vi.clearAllMocks()
   mockSignIn.mockResolvedValue({ data: { user: {} }, error: null })
-  Object.defineProperty(window, 'location', {
-    value: { href: '' },
-    writable: true,
-  })
 })
 
 afterEach(() => {
   cleanup()
-})
-
-afterAll(() => {
-  Object.defineProperty(window, 'location', {
-    value: originalLocation,
-    writable: true,
-  })
 })
 
 describe('LoginPage', () => {
@@ -118,7 +105,7 @@ describe('LoginPage', () => {
   it('shows success toast and redirects on success', async () => {
     mockSignIn.mockResolvedValueOnce({ data: { user: {} }, error: null })
 
-    const { user } = await renderWithRouter(<LoginPage />)
+    const { user, router } = await renderWithRouter(<LoginPage />)
 
     await user.type(screen.getByTestId('email-input'), 'test@example.com')
     await user.type(screen.getByTestId('password-input'), 'password123')
@@ -130,6 +117,6 @@ describe('LoginPage', () => {
         'Signed in successfully',
       )
     })
-    expect(window.location.href).toBe('/')
+    expect(router.state.location.href).toBe('/')
   })
 })
