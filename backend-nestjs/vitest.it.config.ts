@@ -1,5 +1,5 @@
-import { mergeConfig } from 'vitest/config'
-import baseConfig from './vitest.base'
+import { mergeConfig } from 'vitest/config';
+import baseConfig from './vitest.base';
 
 export default mergeConfig(baseConfig, {
   test: {
@@ -13,10 +13,12 @@ export default mergeConfig(baseConfig, {
       if (
         error instanceof Error &&
         (error.message.includes('57P01') ||
-          error.message.includes('terminating connection due to administrator command'))
+          error.message.includes(
+            'terminating connection due to administrator command',
+          ))
       ) {
         return false;
       }
     },
   },
-})
+});

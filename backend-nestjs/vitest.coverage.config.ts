@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
@@ -13,7 +13,9 @@ export default defineConfig({
       if (
         error instanceof Error &&
         (error.message.includes('57P01') ||
-          error.message.includes('terminating connection due to administrator command'))
+          error.message.includes(
+            'terminating connection due to administrator command',
+          ))
       ) {
         return false;
       }
@@ -39,4 +41,4 @@ export default defineConfig({
       ],
     },
   },
-})
+});
