@@ -1,11 +1,26 @@
+import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { betterAuth } from 'better-auth';
 import { Pool } from 'pg';
 
-export const pool = new Pool({
-  connectionString:
-    process.env.DATABASE_URL ??
-    'postgresql://greenalgeria:greenalgeria@localhost:5432/greenalgeria',
-});
+@Injectable()
+export class PoolService implements OnApplicationShutdown {
+  public readonly pool: Pool;
+
+  constructor() {
+    this.pool = new Pool({
+      connectionString:
+        process.env.DATABASE_URL ??
+        'postgresql://greenalgeria:greenalgeria@localhost:5432/greenalgeria',
+    });
+  }
+
+  async onApplicationShutdown() {
+    await this.pool.end();
+  }
+}
+
+export const poolService = new PoolService();
+export const pool = poolService.pool;
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:8080',

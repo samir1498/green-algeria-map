@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
-import { auth } from './auth';
+import { auth, PoolService, poolService } from './auth';
 import { ZonesModule } from './modules/zones/zones.module';
 import { DamageReportsModule } from './modules/damage-reports/damage-reports.module';
 
@@ -27,5 +27,6 @@ import { DamageReportsModule } from './modules/damage-reports/damage-reports.mod
     ZonesModule,
     DamageReportsModule,
   ],
+  providers: [{ provide: PoolService, useValue: poolService }],
 })
 export class AppModule {}
