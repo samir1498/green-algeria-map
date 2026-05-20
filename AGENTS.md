@@ -26,6 +26,8 @@ pnpm build        # Production build
 pnpm test         # Run unit + integration tests (both configs)
 pnpm test:unit    # Unit tests only
 pnpm test:it      # Integration tests only
+pnpm test:coverage      # Combined unit + integration coverage (no thresholds)
+pnpm test:coverage:unit # Unit coverage with 80% thresholds
 pnpm check        # Type check
 pnpm lint         # ESLint
 pnpm knip         # Dead code detection
