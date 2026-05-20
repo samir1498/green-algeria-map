@@ -19,23 +19,47 @@ export interface ZoneProps {
 
 export class Zone {
   readonly id?: string;
-  name: string;
-  type: ZoneType;
-  status: ZoneStatus;
   coordinates: Coordinates;
-  targetCount?: number;
-  currentCount?: number;
-  description: string;
+  private _name: string;
+  private _type: ZoneType;
+  private _status: ZoneStatus;
+  private _targetCount?: number;
+  private _currentCount: number;
+  private _description: string;
+
+  get name(): string {
+    return this._name;
+  }
+
+  get type(): ZoneType {
+    return this._type;
+  }
+
+  get status(): ZoneStatus {
+    return this._status;
+  }
+
+  get targetCount(): number | undefined {
+    return this._targetCount;
+  }
+
+  get currentCount(): number {
+    return this._currentCount;
+  }
+
+  get description(): string {
+    return this._description;
+  }
 
   private constructor(props: ZoneProps) {
     this.id = props.id;
-    this.name = props.name;
-    this.type = props.type;
-    this.status = props.status;
+    this._name = props.name;
+    this._type = props.type;
+    this._status = props.status;
     this.coordinates = props.coordinates;
-    this.targetCount = props.targetCount;
-    this.currentCount = props.currentCount ?? 0;
-    this.description = props.description;
+    this._targetCount = props.targetCount;
+    this._currentCount = props.currentCount ?? 0;
+    this._description = props.description;
   }
 
   static create(props: ZoneProps): Zone {
@@ -43,11 +67,19 @@ export class Zone {
   }
 
   rename(name: string): void {
-    this.name = name;
+    this._name = name;
   }
 
   updateType(type: ZoneType): void {
-    this.type = type;
+    this._type = type;
+  }
+
+  updateDescription(description: string): void {
+    this._description = description;
+  }
+
+  updateTargetCount(targetCount: number): void {
+    this._targetCount = targetCount;
   }
 
   reposition(lat: number, lng: number): void {
@@ -55,7 +87,7 @@ export class Zone {
   }
 
   canStart(): boolean {
-    return this.status === 'planned';
+    return this._status === 'planned';
   }
 
   markInProgress(): void {
@@ -64,21 +96,21 @@ export class Zone {
 
   changeStatus(status: ZoneStatus): void {
     if (status === 'in-progress' && !this.canStart()) {
-      throw new CannotStartZoneError(this.status);
+      throw new CannotStartZoneError(this._status);
     }
     if (status === 'completed' && !this.canComplete()) {
       throw new CannotCompleteZoneError(
-        this.currentCount ?? 0,
-        this.targetCount,
+        this._currentCount,
+        this._targetCount,
       );
     }
-    this.status = status;
+    this._status = status;
   }
 
   canComplete(): boolean {
-    if (this.status === 'completed') return false;
-    if (this.targetCount !== undefined && this.currentCount !== undefined) {
-      return this.currentCount >= this.targetCount;
+    if (this._status === 'completed') return false;
+    if (this._targetCount !== undefined && this._currentCount !== undefined) {
+      return this._currentCount >= this._targetCount;
     }
     return true;
   }
@@ -91,7 +123,7 @@ export class Zone {
     if (count < 0) {
       throw new NegativeCountError();
     }
-    this.currentCount = count;
+    this._currentCount = count;
     if (this.canComplete()) {
       this.markComplete();
     }
@@ -100,14 +132,14 @@ export class Zone {
   toJSON() {
     return {
       id: this.id,
-      name: this.name,
-      type: this.type,
-      status: this.status,
+      name: this._name,
+      type: this._type,
+      status: this._status,
       lat: this.coordinates.lat,
       lng: this.coordinates.lng,
-      targetCount: this.targetCount,
-      currentCount: this.currentCount,
-      description: this.description,
+      targetCount: this._targetCount,
+      currentCount: this._currentCount,
+      description: this._description,
     };
   }
 }
