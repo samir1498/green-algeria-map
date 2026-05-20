@@ -20,8 +20,6 @@ describe('CreateZoneHandler', () => {
     return { publish: vi.fn() };
   }
 
-  beforeEach(() => {});
-
   it('calls repository.save with zone created from command', async () => {
     let capturedZone: Zone | undefined;
     const mockRepository = makeRepository();

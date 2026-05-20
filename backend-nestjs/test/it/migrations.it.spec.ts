@@ -117,7 +117,7 @@ describe('Migrations (integration)', () => {
     }
   });
 
-  it('reverts last migration successfully', async () => {
+  it('reverts last three migrations successfully', async () => {
     const dataSource = await createTestDatabase(
       container,
       'test_migrations_revert',

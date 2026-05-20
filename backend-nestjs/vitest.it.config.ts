@@ -8,11 +8,14 @@ export default mergeConfig(baseConfig, {
     testTimeout: 120_000,
     hookTimeout: 120_000,
     pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
+    fileParallelism: false,
+    onUnhandledError(error) {
+      if (
+        error.message.includes('57P01') ||
+        error.message.includes('terminating connection due to administrator command')
+      ) {
+        return false;
+      }
     },
-    dangerouslyIgnoreUnhandledErrors: true,
   },
 })
