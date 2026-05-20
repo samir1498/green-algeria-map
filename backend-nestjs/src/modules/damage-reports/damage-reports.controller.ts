@@ -62,7 +62,7 @@ export class DamageReportsController {
         dto.description,
         dto.reportedBy,
       ),
-    );
+    ) as DamageReport;
     return DamageReportResponseDto.fromDomain(report);
   }
 
