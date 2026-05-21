@@ -9,7 +9,5 @@ export default {
     'eslint-plugin-react-hooks',
     'eslint-plugin-react-refresh',
     'lint-staged',
-    '@testing-library/dom',
-    '@testing-library/react',
   ],
 }

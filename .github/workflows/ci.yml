@@ -7,6 +7,9 @@ on:
   pull_request:
     paths: ['frontend/**', '.github/workflows/ci.yml']
 
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-slim
@@ -15,6 +18,8 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -33,6 +38,8 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -51,6 +58,8 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -71,6 +80,8 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -82,7 +93,7 @@ jobs:
       - run: pnpm install --frozen-lockfile --prefer-offline
       - run: pnpm depcruise
 
-  test:
+  test-unit:
     runs-on: ubuntu-slim
     needs: [check, lint, knip]
     defaults:
@@ -90,6 +101,8 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -99,16 +112,81 @@ jobs:
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile --prefer-offline
-      - run: pnpm test
+      - run: pnpm test:unit
 
-  build:
+  test-ui:
     runs-on: ubuntu-slim
-    needs: [test]
+    needs: [check, lint, knip]
     defaults:
       run:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm test:ui
+
+  test-it:
+    runs-on: ubuntu-slim
+    needs: [check, lint, knip]
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm test:it
+
+  coverage:
+    runs-on: ubuntu-slim
+    needs: [check, lint, knip]
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile --prefer-offline
+      - run: pnpm test:coverage:ci
+
+  build:
+    runs-on: ubuntu-slim
+    needs: [test-unit, test-ui, test-it, coverage]
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
         with:
           version: 10
