@@ -95,7 +95,7 @@ Pre-commit hook runs:
 CI runs per package:
 
 ### Frontend
-```
+```text
 check ──> lint ──> knip ──> test-unit ──> build
                         ├──> test-ui ────┘
                         ├──> test-it ────┘
@@ -103,7 +103,7 @@ check ──> lint ──> knip ──> test-unit ──> build
 ```
 
 ### Backend
-```
+```text
 check ──> lint ──> knip ──> test-unit ──> build
                         └──> test-it ────┘
 ```
