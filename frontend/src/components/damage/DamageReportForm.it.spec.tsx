@@ -1,12 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { screen, render, waitFor, cleanup } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import userEvent from '@testing-library/user-event'
 import { DamageReportForm } from './DamageReportForm'
 
 const mockCreate = vi.hoisted(() => vi.fn())
 
 vi.mock('@/api/damage-reports', () => ({
+  getAll: vi.fn(),
+  getById: vi.fn(),
+  getByZoneId: vi.fn(),
   create: mockCreate,
+  updateStatus: vi.fn(),
+  remove: vi.fn(),
 }))
 
 vi.mock('sonner', () => ({
@@ -15,6 +21,18 @@ vi.mock('sonner', () => ({
     success: vi.fn(),
   },
 }))
+
+function createWrapper() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  })
+  return function Wrapper({ children }: { children: React.ReactNode }) {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  }
+}
 
 afterEach(() => {
   cleanup()
@@ -26,7 +44,7 @@ beforeEach(() => {
 
 describe('DamageReportForm', () => {
   it('renders all form fields and submit button', () => {
-    render(<DamageReportForm zoneId="zone-1" lat={36.5} lng={3.0} />)
+    render(<DamageReportForm zoneId="zone-1" lat={36.5} lng={3.0} />, { wrapper: createWrapper() })
 
     expect(screen.getByTestId('damage-type-select')).toBeInTheDocument()
     expect(screen.getByTestId('severity-select')).toBeInTheDocument()
@@ -38,7 +56,7 @@ describe('DamageReportForm', () => {
   it('calls create with correct payload on submit', async () => {
     mockCreate.mockResolvedValueOnce({})
     const user = userEvent.setup()
-    render(<DamageReportForm zoneId="zone-1" lat={36.5} lng={3.0} />)
+    render(<DamageReportForm zoneId="zone-1" lat={36.5} lng={3.0} />, { wrapper: createWrapper() })
 
     await user.type(screen.getByTestId('description-input'), 'Fire damage in sector A')
     await user.type(screen.getByTestId('reported-by-input'), 'Volunteer-42')
@@ -61,7 +79,7 @@ describe('DamageReportForm', () => {
   it('shows success toast and resets form on successful submit', async () => {
     mockCreate.mockResolvedValueOnce({})
     const user = userEvent.setup()
-    render(<DamageReportForm zoneId="zone-1" lat={36.5} lng={3.0} />)
+    render(<DamageReportForm zoneId="zone-1" lat={36.5} lng={3.0} />, { wrapper: createWrapper() })
 
     await user.type(screen.getByTestId('description-input'), 'Fire damage')
     await user.type(screen.getByTestId('reported-by-input'), 'Volunteer-42')
@@ -78,7 +96,7 @@ describe('DamageReportForm', () => {
 
   it('shows validation error when required field is empty after user interaction', async () => {
     const user = userEvent.setup()
-    render(<DamageReportForm zoneId="zone-1" lat={36.5} lng={3.0} />)
+    render(<DamageReportForm zoneId="zone-1" lat={36.5} lng={3.0} />, { wrapper: createWrapper() })
 
     const descInput = screen.getByTestId('description-input')
     await user.type(descInput, 'Some text')
@@ -90,7 +108,7 @@ describe('DamageReportForm', () => {
   it('shows error toast and keeps form open on API failure', async () => {
     mockCreate.mockRejectedValueOnce(new Error('Network error'))
     const user = userEvent.setup()
-    render(<DamageReportForm zoneId="zone-1" lat={36.5} lng={3.0} />)
+    render(<DamageReportForm zoneId="zone-1" lat={36.5} lng={3.0} />, { wrapper: createWrapper() })
 
     await user.type(screen.getByTestId('description-input'), 'Fire damage')
     await user.type(screen.getByTestId('reported-by-input'), 'Volunteer-42')
@@ -112,7 +130,7 @@ describe('DamageReportForm', () => {
     mockCreate.mockReturnValueOnce(submitPromise)
 
     const user = userEvent.setup()
-    render(<DamageReportForm zoneId="zone-1" lat={36.5} lng={3.0} />)
+    render(<DamageReportForm zoneId="zone-1" lat={36.5} lng={3.0} />, { wrapper: createWrapper() })
 
     await user.type(screen.getByTestId('description-input'), 'Fire damage')
     await user.type(screen.getByTestId('reported-by-input'), 'Volunteer-42')
