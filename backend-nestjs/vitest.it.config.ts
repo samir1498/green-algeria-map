@@ -1,5 +1,5 @@
 import { mergeConfig } from 'vitest/config';
-import baseConfig from './vitest.base';
+import baseConfig, { COVERAGE_EXCLUDES } from './vitest.base';
 
 export default mergeConfig(baseConfig, {
   test: {
@@ -19,6 +19,18 @@ export default mergeConfig(baseConfig, {
       ) {
         return false;
       }
+    },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      reportsDirectory: './coverage/it',
+      thresholds: {
+        lines: 60,
+        branches: 50,
+        functions: 60,
+        statements: 60,
+      },
+      exclude: COVERAGE_EXCLUDES,
     },
   },
 });
