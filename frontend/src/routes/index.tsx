@@ -2,8 +2,8 @@ import { createFileRoute, useLoaderData } from '@tanstack/react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Map } from '@/components/map/Map'
-import { getAll } from '@/api/zones'
-import { getAll as getDamageReports } from '@/api/damage-reports'
+import { zoneService } from '@/services/zones'
+import { damageReportService } from '@/services/damage-reports'
 import { demoZones } from '@/components/map/demo-data'
 import { demoDamageReports } from '@/components/map/demo-damage-data'
 import { isValidCoordinate } from '@/components/map/helpers'
@@ -20,8 +20,8 @@ interface LoaderResult {
 export const Route = createFileRoute('/')({
   loader: async (): Promise<LoaderResult> => {
     const [zonesResult, damageResult] = await Promise.allSettled([
-      getAll(),
-      getDamageReports(),
+      zoneService.getAll(),
+      damageReportService.getAll(),
     ])
 
     const zonesResultData = zonesResult.status === 'fulfilled' ? zonesResult.value : null

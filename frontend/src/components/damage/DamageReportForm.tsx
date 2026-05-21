@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { create } from '@/api/damage-reports'
+import { damageReportService } from '@/services/damage-reports'
 import { damageTypeLabels, severityLabels } from '@/components/map/helpers'
 import type { DamageReport } from '@/types/damage-report'
 
@@ -25,7 +25,7 @@ export function DamageReportForm({ zoneId, lat, lng, onSuccess }: DamageReportFo
     },
     onSubmit: async ({ value }) => {
       try {
-        await create({
+        await damageReportService.create({
           zoneId,
           type: value.type,
           severity: value.severity,

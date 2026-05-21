@@ -6,7 +6,12 @@ import { DamageReportForm } from './DamageReportForm'
 const mockCreate = vi.hoisted(() => vi.fn())
 
 vi.mock('@/api/damage-reports', () => ({
+  getAll: vi.fn(),
+  getById: vi.fn(),
+  getByZoneId: vi.fn(),
   create: mockCreate,
+  updateStatus: vi.fn(),
+  remove: vi.fn(),
 }))
 
 vi.mock('sonner', () => ({
