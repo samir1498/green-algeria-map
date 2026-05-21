@@ -1,34 +1,32 @@
-import { defineConfig, mergeConfig } from 'vitest/config'
-import baseConfig from './vitest.base'
+import { defineConfig } from 'vitest/config'
+import viteReact from '@vitejs/plugin-react'
 
-export default mergeConfig(
-  baseConfig,
-  defineConfig({
-    test: {
-      include: [
-        'src/**/*.unit.spec.{ts,tsx}',
-        'src/**/*.test.{ts,tsx}',
-        'src/**/*.test.ts',
-      ],
-      coverage: {
-        provider: 'v8',
-        reporter: ['text', 'json', 'html'],
-        reportsDirectory: './coverage/unit',
-        thresholds: {
-          lines: 80,
-          branches: 75,
-          functions: 80,
-          statements: 80,
-        },
-        exclude: [
-          'src/components/ui/**',
-          'src/routeTree.gen.ts',
-          'src/routes/__root.tsx',
-          'src/main.tsx',
-          '**/node_modules/**',
-          '**/dist/**',
-        ],
+export default defineConfig({
+  resolve: { tsconfigPaths: true },
+  plugins: [viteReact()],
+  test: {
+    include: ['src/**/*.unit.spec.{ts,tsx}'],
+    environment: 'node',
+    setupFiles: [],
+    passWithNoTests: false,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      reportsDirectory: './coverage/unit',
+      thresholds: {
+        lines: 80,
+        branches: 75,
+        functions: 80,
+        statements: 80,
       },
+      exclude: [
+        'src/components/ui/**',
+        'src/routeTree.gen.ts',
+        'src/routes/__root.tsx',
+        'src/main.tsx',
+        '**/node_modules/**',
+        '**/dist/**',
+      ],
     },
-  }),
-)
+  },
+})
