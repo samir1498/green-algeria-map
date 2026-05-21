@@ -14,6 +14,7 @@ import {
   severityLabels,
   isValidCoordinate,
 } from './helpers'
+import { formatDate } from '@/helpers/formatDate'
 import { Legend } from './Legend'
 import { DamageReportForm } from '@/components/damage/DamageReportForm'
 
@@ -115,7 +116,7 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
                 <p className="mt-1 text-xs font-medium">Severity: {severityLabels[report.severity]}</p>
                 <p className="mt-1 text-xs text-muted-foreground">{report.description}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Reported: {new Date(report.reportedAt).toLocaleDateString()}
+                  Reported: {formatDate(report.reportedAt)}
                 </p>
               </div>
             </Popup>

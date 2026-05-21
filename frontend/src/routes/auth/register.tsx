@@ -1,6 +1,5 @@
-import { useState } from 'react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { toast } from 'sonner'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useRegisterForm } from '@/hooks/useRegisterForm'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,28 +11,8 @@ export const Route = createFileRoute('/auth/register')({
 })
 
 function RegisterPage() {
-  const navigate = useNavigate()
   const { signUp } = useAuth()
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-
-    const result = await signUp({ name, email, password })
-
-    if (result.error) {
-      toast.error(result.error.message)
-      setLoading(false)
-      return
-    }
-
-    toast.success('Account created successfully')
-    navigate({ to: '/' })
-  }
+  const { name, email, password, loading, handleSubmit, setName, setEmail, setPassword } = useRegisterForm({ signUp })
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
