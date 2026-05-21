@@ -18,6 +18,7 @@ import { GetAllZonesQuery } from './application/queries/get-all-zones.query';
 import { GetZoneByIdQuery } from './application/queries/get-zone-by-id.query';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
+import { ZoneResponseDto } from './dto/zone-response.dto';
 
 @ApiTags('Zones')
 @Controller('zones')
@@ -29,19 +30,21 @@ export class ZonesController {
 
   @Get()
   @Public()
-  findAll() {
-    return this.queryBus.execute(new GetAllZonesQuery());
+  async findAll() {
+    const zones = await this.queryBus.execute(new GetAllZonesQuery());
+    return zones.map((z) => ZoneResponseDto.fromDomain(z));
   }
 
   @Get(':id')
   @Public()
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.queryBus.execute(new GetZoneByIdQuery(id));
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const zone = await this.queryBus.execute(new GetZoneByIdQuery(id));
+    return ZoneResponseDto.fromDomain(zone);
   }
 
   @Post()
-  create(@Body() dto: CreateZoneDto) {
-    return this.commandBus.execute(
+  async create(@Body() dto: CreateZoneDto) {
+    const zone = await this.commandBus.execute(
       new CreateZoneCommand(
         dto.name,
         dto.type,
@@ -53,11 +56,15 @@ export class ZonesController {
         dto.description,
       ),
     );
+    return ZoneResponseDto.fromDomain(zone);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateZoneDto) {
-    return this.commandBus.execute(
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateZoneDto,
+  ) {
+    const zone = await this.commandBus.execute(
       new UpdateZoneCommand(
         id,
         dto.name,
@@ -70,10 +77,11 @@ export class ZonesController {
         dto.description,
       ),
     );
+    return ZoneResponseDto.fromDomain(zone);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.commandBus.execute(new DeleteZoneCommand(id));
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.commandBus.execute(new DeleteZoneCommand(id));
   }
 }

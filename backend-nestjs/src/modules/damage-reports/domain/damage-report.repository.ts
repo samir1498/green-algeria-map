@@ -1,13 +1,9 @@
+import { DamageReport } from './damage-report';
+
 export abstract class DamageReportRepository {
-  abstract findAll(): Promise<import('./damage-report').DamageReport[]>;
-  abstract findById(
-    id: string,
-  ): Promise<import('./damage-report').DamageReport | null>;
-  abstract findByZoneId(
-    zoneId: string,
-  ): Promise<import('./damage-report').DamageReport[]>;
-  abstract save(
-    report: import('./damage-report').DamageReport,
-  ): Promise<import('./damage-report').DamageReport>;
+  abstract findAll(): Promise<DamageReport[]>;
+  abstract findById(id: string): Promise<DamageReport | null>;
+  abstract findByZoneId(zoneId: string): Promise<DamageReport[]>;
+  abstract save(report: DamageReport): Promise<DamageReport>;
   abstract remove(id: string): Promise<void>;
 }

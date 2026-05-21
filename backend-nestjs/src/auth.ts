@@ -20,7 +20,7 @@ export class PoolService implements OnApplicationShutdown {
 }
 
 export const poolService = new PoolService();
-export const pool = poolService.pool;
+const pool = poolService.pool;
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:8080',

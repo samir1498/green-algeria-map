@@ -1,6 +1,8 @@
+import { Command } from '@nestjs/cqrs';
+import { Zone } from '../../domain/zone';
 import { ZoneType, ZoneStatus } from '../../domain/zone.types';
 
-export class CreateZoneCommand {
+export class CreateZoneCommand extends Command<Zone> {
   constructor(
     readonly name: string,
     readonly type: ZoneType,
@@ -10,5 +12,7 @@ export class CreateZoneCommand {
     readonly targetCount?: number,
     readonly currentCount?: number,
     readonly description?: string,
-  ) {}
+  ) {
+    super();
+  }
 }
