@@ -1,5 +1,5 @@
 import { mergeConfig } from 'vitest/config';
-import baseConfig from './vitest.base';
+import baseConfig, { COVERAGE_EXCLUDES } from './vitest.base';
 
 export default mergeConfig(baseConfig, {
   test: {
@@ -30,15 +30,7 @@ export default mergeConfig(baseConfig, {
         functions: 60,
         statements: 60,
       },
-      exclude: [
-        '**/*.entity.ts',
-        '**/*.module.ts',
-        '**/*.controller.ts',
-        '**/main.ts',
-        '**/data-source.ts',
-        '**/node_modules/**',
-        '**/dist/**',
-      ],
+      exclude: COVERAGE_EXCLUDES,
     },
   },
 });
