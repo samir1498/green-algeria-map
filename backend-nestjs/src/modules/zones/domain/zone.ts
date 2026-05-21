@@ -99,10 +99,7 @@ export class Zone {
       throw new CannotStartZoneError(this._status);
     }
     if (status === 'completed' && !this.canComplete()) {
-      throw new CannotCompleteZoneError(
-        this._currentCount,
-        this._targetCount,
-      );
+      throw new CannotCompleteZoneError(this._currentCount, this._targetCount);
     }
     this._status = status;
   }

@@ -19,7 +19,6 @@ import { GetDamageReportByIdQuery } from './application/queries/get-damage-repor
 import { CreateDamageReportDto } from './dto/create-damage-report.dto';
 import { UpdateDamageReportStatusDto } from './dto/update-damage-report-status.dto';
 import { DamageReportResponseDto } from './dto/damage-report-response.dto';
-import { DamageReport } from './domain/damage-report';
 import {
   DAMAGE_REPORT_TYPES,
   DAMAGE_REPORT_SEVERITIES,
@@ -38,15 +37,15 @@ export class DamageReportsController {
   async findAll(@Query('zoneId') zoneId?: string) {
     const reports = await this.queryBus.execute(
       new GetAllDamageReportsQuery(zoneId),
-    ) as DamageReport[];
-    return reports.map(DamageReportResponseDto.fromDomain);
+    );
+    return reports.map((r) => DamageReportResponseDto.fromDomain(r));
   }
 
   @Get(':id')
   async findById(@Param('id', new ParseUUIDPipe()) id: string) {
     const report = await this.queryBus.execute(
       new GetDamageReportByIdQuery(id),
-    ) as DamageReport;
+    );
     return DamageReportResponseDto.fromDomain(report);
   }
 
@@ -62,7 +61,7 @@ export class DamageReportsController {
         dto.description,
         dto.reportedBy,
       ),
-    ) as DamageReport;
+    );
     return DamageReportResponseDto.fromDomain(report);
   }
 
@@ -76,7 +75,7 @@ export class DamageReportsController {
         id,
         dto.status as (typeof DAMAGE_REPORT_STATUSES)[number],
       ),
-    ) as DamageReport;
+    );
     return DamageReportResponseDto.fromDomain(report);
   }
 

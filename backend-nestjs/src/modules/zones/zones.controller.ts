@@ -19,7 +19,6 @@ import { GetZoneByIdQuery } from './application/queries/get-zone-by-id.query';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
 import { ZoneResponseDto } from './dto/zone-response.dto';
-import { Zone } from './domain/zone';
 
 @ApiTags('Zones')
 @Controller('zones')
@@ -32,14 +31,14 @@ export class ZonesController {
   @Get()
   @Public()
   async findAll() {
-    const zones = await this.queryBus.execute(new GetAllZonesQuery()) as Zone[];
-    return zones.map(ZoneResponseDto.fromDomain);
+    const zones = await this.queryBus.execute(new GetAllZonesQuery());
+    return zones.map((z) => ZoneResponseDto.fromDomain(z));
   }
 
   @Get(':id')
   @Public()
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const zone = await this.queryBus.execute(new GetZoneByIdQuery(id)) as Zone;
+    const zone = await this.queryBus.execute(new GetZoneByIdQuery(id));
     return ZoneResponseDto.fromDomain(zone);
   }
 
@@ -56,12 +55,15 @@ export class ZonesController {
         dto.currentCount,
         dto.description,
       ),
-    ) as Zone;
+    );
     return ZoneResponseDto.fromDomain(zone);
   }
 
   @Patch(':id')
-  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateZoneDto) {
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateZoneDto,
+  ) {
     const zone = await this.commandBus.execute(
       new UpdateZoneCommand(
         id,
@@ -74,7 +76,7 @@ export class ZonesController {
         dto.currentCount,
         dto.description,
       ),
-    ) as Zone;
+    );
     return ZoneResponseDto.fromDomain(zone);
   }
 
