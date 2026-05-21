@@ -1,25 +1,9 @@
-import { useEffect, useState } from 'react'
 import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon } from 'lucide-react'
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
-
-function useTheme() {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() =>
-    document.documentElement.classList.contains('dark') ? 'dark' : 'light',
-  )
-
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setTheme(document.documentElement.classList.contains('dark') ? 'dark' : 'light')
-    })
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
-    return () => observer.disconnect()
-  }, [])
-
-  return theme
-}
+import { useTheme } from '@/hooks/useTheme'
 
 export function Toaster(props: ToasterProps) {
-  const theme = useTheme()
+  const { theme } = useTheme()
 
   return (
     <Sonner

@@ -2,10 +2,10 @@ import { Outlet, createRootRoute, Link, useNavigate } from '@tanstack/react-rout
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { Moon, Sun, LogOut, User, Loader2 } from 'lucide-react'
-import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { useAuth } from '@/services/auth'
+import { useTheme } from '@/hooks/useTheme'
 import { DefaultErrorBoundary } from '@/components/DefaultErrorBoundary'
 import { NotFound } from '@/components/NotFound'
 import '@/styles.css'
@@ -27,24 +27,11 @@ export const Route = createRootRoute({
 })
 
 function ThemeToggle() {
-  const [dark, setDark] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('theme')
-      if (stored) return stored === 'dark'
-      return window.matchMedia('(prefers-color-scheme: dark)').matches
-    }
-    return false
-  })
-
-  useEffect(() => {
-    const root = document.documentElement
-    root.classList.toggle('dark', dark)
-    localStorage.setItem('theme', dark ? 'dark' : 'light')
-  }, [dark])
+  const { theme, toggleTheme } = useTheme()
 
   return (
-    <Button variant="ghost" size="icon" onClick={() => setDark(!dark)} aria-label="Toggle theme">
-      {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+      {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </Button>
   )
 }

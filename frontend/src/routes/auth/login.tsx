@@ -1,6 +1,5 @@
-import { useState } from 'react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { toast } from 'sonner'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useLoginForm } from '@/hooks/useLoginForm'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,27 +11,8 @@ export const Route = createFileRoute('/auth/login')({
 })
 
 export function LoginPage() {
-  const navigate = useNavigate()
   const { signIn } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-
-    const result = await signIn({ email, password })
-
-    if (result.error) {
-      toast.error(result.error.message)
-      setLoading(false)
-      return
-    }
-
-    toast.success('Signed in successfully')
-    navigate({ to: '/' })
-  }
+  const { email, password, loading, handleSubmit, setEmail, setPassword } = useLoginForm({ signIn })
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">

@@ -7,6 +7,7 @@ import { getAll as getDamageReports } from '@/api/damage-reports'
 import { demoZones } from '@/components/map/demo-data'
 import { demoDamageReports } from '@/components/map/demo-damage-data'
 import { isValidCoordinate } from '@/components/map/helpers'
+import { computeProjectCounts } from '@/helpers/projectCounts'
 import type { Zone } from '@/types/zone'
 import type { DamageReport } from '@/types/damage-report'
 
@@ -62,12 +63,7 @@ function StatCard({ value, label }: { value: string; label: string }) {
 function Home() {
   const { zones, damageReports, demoMode } = useLoaderData({ from: '/' })
 
-  const projectCounts = {
-    total: zones.length,
-    planting: zones.filter((z) => z.type === 'planting').length,
-    trees: zones.reduce((sum, z) => sum + (z.currentCount ?? 0), 0),
-    treeTarget: zones.reduce((sum, z) => sum + (z.targetCount ?? 0), 0),
-  }
+  const projectCounts = computeProjectCounts(zones)
 
   return (
     <div>
