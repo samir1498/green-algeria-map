@@ -1,10 +1,9 @@
 import { useForm } from '@tanstack/react-form'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { create } from '@/api/damage-reports'
+import { useCreateDamageReport } from '@/hooks/useCreateDamageReport'
 import { damageTypeLabels, severityLabels } from '@/components/map/helpers'
 import type { DamageReport } from '@/types/damage-report'
 
@@ -16,6 +15,8 @@ interface DamageReportFormProps {
 }
 
 export function DamageReportForm({ zoneId, lat, lng, onSuccess }: DamageReportFormProps) {
+  const createMutation = useCreateDamageReport(onSuccess)
+
   const form = useForm({
     defaultValues: {
       type: 'fire' as DamageReport['type'],
@@ -25,7 +26,7 @@ export function DamageReportForm({ zoneId, lat, lng, onSuccess }: DamageReportFo
     },
     onSubmit: async ({ value }) => {
       try {
-        await create({
+        await createMutation.mutateAsync({
           zoneId,
           type: value.type,
           severity: value.severity,
@@ -36,11 +37,9 @@ export function DamageReportForm({ zoneId, lat, lng, onSuccess }: DamageReportFo
           reportedBy: value.reportedBy.trim(),
         })
 
-        toast.success('Damage report submitted')
         form.reset()
-        onSuccess?.()
       } catch {
-        toast.error('Failed to submit damage report')
+        // Error handled by mutation's onError
       }
     },
   })
@@ -151,7 +150,7 @@ export function DamageReportForm({ zoneId, lat, lng, onSuccess }: DamageReportFo
           />
 
           <form.Subscribe
-            selector={(state) => ({ canSubmit: state.canSubmit, isSubmitting: state.isSubmitting })}
+            selector={(state) => ({ canSubmit: state.canSubmit, isSubmitting: state.isSubmitting || createMutation.isPending })}
             children={({ canSubmit, isSubmitting }) => (
               <Button
                 type="submit"

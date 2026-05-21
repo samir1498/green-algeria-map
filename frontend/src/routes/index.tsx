@@ -1,49 +1,12 @@
-import { createFileRoute, useLoaderData } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Map } from '@/components/map/Map'
-import { getAll } from '@/api/zones'
-import { getAll as getDamageReports } from '@/api/damage-reports'
-import { demoZones } from '@/components/map/demo-data'
-import { demoDamageReports } from '@/components/map/demo-damage-data'
-import { isValidCoordinate } from '@/components/map/helpers'
+import { useZones } from '@/hooks/useZones'
+import { useDamageReports } from '@/hooks/useDamageReports'
 import { computeProjectCounts } from '@/helpers/projectCounts'
-import type { Zone } from '@/types/zone'
-import type { DamageReport } from '@/types/damage-report'
-
-interface LoaderResult {
-  zones: Zone[]
-  damageReports: DamageReport[]
-  demoMode: boolean
-}
 
 export const Route = createFileRoute('/')({
-  loader: async (): Promise<LoaderResult> => {
-    const [zonesResult, damageResult] = await Promise.allSettled([
-      getAll(),
-      getDamageReports(),
-    ])
-
-    const zonesResultData = zonesResult.status === 'fulfilled' ? zonesResult.value : null
-    const damageResultData = damageResult.status === 'fulfilled' ? damageResult.value : null
-
-    if (zonesResultData) {
-      console.info(`[${new Date().toISOString()}] Zones loaded from backend`)
-      return {
-        zones: zonesResultData,
-        damageReports: damageResultData ?? [],
-        demoMode: false,
-      }
-    }
-
-    const reason = zonesResult.status === 'rejected' ? zonesResult.reason : 'unknown error'
-    console.error(`[${new Date().toISOString()}] Backend unavailable, using demo data:`, reason)
-    return {
-      zones: demoZones.filter((z) => isValidCoordinate(z.lat, z.lng)),
-      damageReports: damageResultData ?? demoDamageReports,
-      demoMode: true,
-    }
-  },
   component: Home,
 })
 
@@ -61,7 +24,8 @@ function StatCard({ value, label }: { value: string; label: string }) {
 }
 
 function Home() {
-  const { zones, damageReports, demoMode } = useLoaderData({ from: '/' })
+  const { zones, demoMode } = useZones()
+  const { damageReports } = useDamageReports()
 
   const projectCounts = computeProjectCounts(zones)
 
