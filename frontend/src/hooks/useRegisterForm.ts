@@ -26,6 +26,7 @@ export function useRegisterForm({ signUp }: UseRegisterFormOptions) {
     }
 
     toast.success('Account created successfully')
+    setLoading(false)
     navigate({ to: '/' })
   }
 

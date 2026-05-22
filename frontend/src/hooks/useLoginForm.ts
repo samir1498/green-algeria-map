@@ -25,6 +25,7 @@ export function useLoginForm({ signIn }: UseLoginFormOptions) {
     }
 
     toast.success('Signed in successfully')
+    setLoading(false)
     navigate({ to: '/' })
   }
 
