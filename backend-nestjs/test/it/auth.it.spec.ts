@@ -6,6 +6,7 @@ import {
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
 import supertest from 'supertest';
+import { DataSource } from 'typeorm';
 import { User } from '../../src/modules/auth/infrastructure/entities/user.entity';
 import { Session } from '../../src/modules/auth/infrastructure/entities/session.entity';
 import { Account } from '../../src/modules/auth/infrastructure/entities/account.entity';
@@ -68,7 +69,11 @@ describe('Auth (integration)', () => {
   }, 120000);
 
   afterAll(async () => {
-    if (app) await app.close();
+    if (app) {
+      const dataSource = app.get(DataSource);
+      await dataSource.destroy();
+      await app.close();
+    }
     if (container) await container.stop();
     delete process.env.DB_HOST;
     delete process.env.DB_PORT;

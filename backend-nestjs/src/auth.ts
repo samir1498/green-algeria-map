@@ -7,6 +7,8 @@ const pool = new Pool({
     'postgresql://greenalgeria:greenalgeria@localhost:5432/greenalgeria',
 });
 
+pool.on('error', () => {});
+
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:8080',
   basePath: '/api/auth',
