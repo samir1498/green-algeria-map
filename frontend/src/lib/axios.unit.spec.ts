@@ -2,10 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { api } from './axios'
 import type { AxiosError } from 'axios'
 
-const mockInterceptors = vi.hoisted(() => ({
-  use: vi.fn(),
-}))
-
 vi.mock('axios', () => {
   const mockAxiosInstance = {
     get: vi.fn(),
