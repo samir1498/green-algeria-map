@@ -12,7 +12,7 @@ import {
   InvalidDamageReportTypeError,
   InvalidDamageReportSeverityError,
   InvalidDamageReportStatusError,
-} from '../../../lib/domain/damage-report-errors';
+} from '../domain/damage-report-errors';
 
 export class DamageReportMapper {
   static toDomain(orm: DamageReportOrmEntity): DamageReport {

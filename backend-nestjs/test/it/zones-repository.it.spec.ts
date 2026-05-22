@@ -6,8 +6,7 @@ import {
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
 import { ZoneOrmEntity } from '../../src/modules/zones/infrastructure/zone.orm-entity';
-import { ZoneRepositoryImpl } from '../../src/modules/zones/infrastructure/zone.repository.impl';
-import { ZoneRepository } from '../../src/modules/zones/domain/zone.repository';
+import { ZoneRepository } from '../../src/modules/zones/infrastructure/zone.repository';
 import { Zone } from '../../src/modules/zones/domain/zone';
 import { Coordinates } from '../../src/modules/zones/domain/coordinates.value-object';
 
@@ -39,12 +38,7 @@ describe('ZoneRepository (integration)', () => {
         TypeOrmModule.forFeature([ZoneOrmEntity]),
         CqrsModule,
       ],
-      providers: [
-        {
-          provide: ZoneRepository,
-          useClass: ZoneRepositoryImpl,
-        },
-      ],
+      providers: [ZoneRepository],
     }).compile();
 
     repository = moduleRef.get<ZoneRepository>(ZoneRepository);

@@ -1,7 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
 import { GetDamageReportByIdQuery } from './get-damage-report-by-id.query';
-import { DamageReportRepository } from '../../../domain/damage-report.repository';
+import { DamageReportRepository } from '../../../infrastructure/damage-report.repository';
 import { DamageReport } from '../../../domain/damage-report';
 
 @QueryHandler(GetDamageReportByIdQuery)

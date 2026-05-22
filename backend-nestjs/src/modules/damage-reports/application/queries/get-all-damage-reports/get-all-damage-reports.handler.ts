@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetAllDamageReportsQuery } from './get-all-damage-reports.query';
-import { DamageReportRepository } from '../../../domain/damage-report.repository';
+import { DamageReportRepository } from '../../../infrastructure/damage-report.repository';
 import { DamageReport } from '../../../domain/damage-report';
 
 @QueryHandler(GetAllDamageReportsQuery)

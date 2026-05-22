@@ -2,8 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CqrsModule } from '@nestjs/cqrs';
 import { ZoneOrmEntity } from './infrastructure/zone.orm-entity';
-import { ZoneRepositoryImpl } from './infrastructure/zone.repository.impl';
-import { ZoneRepository } from './domain/zone.repository';
+import { ZoneRepository } from './infrastructure/zone.repository';
 import { CreateZoneHandler } from './application/commands/create-zone.handler';
 import { UpdateZoneHandler } from './application/commands/update-zone.handler';
 import { DeleteZoneHandler } from './application/commands/delete-zone.handler';
@@ -24,10 +23,7 @@ const EventHandlers = [ZoneCreatedHandler];
   imports: [TypeOrmModule.forFeature([ZoneOrmEntity]), CqrsModule],
   controllers: [ZonesController],
   providers: [
-    {
-      provide: ZoneRepository,
-      useClass: ZoneRepositoryImpl,
-    },
+    ZoneRepository,
     ...CommandHandlers,
     ...QueryHandlers,
     ...EventHandlers,

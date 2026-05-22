@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from '@thallesp/nestjs-better-auth';
-import { auth, PoolService, poolService } from './auth';
 import { ZonesModule } from './modules/zones/zones.module';
 import { DamageReportsModule } from './modules/damage-reports/damage-reports.module';
-import { AUTH_SERVICE, BetterAuthAdapter } from './lib/auth';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -24,13 +22,9 @@ import { AUTH_SERVICE, BetterAuthAdapter } from './lib/auth';
         synchronize: false,
       }),
     }),
-    AuthModule.forRoot({ auth }),
+    AuthModule,
     ZonesModule,
     DamageReportsModule,
-  ],
-  providers: [
-    { provide: PoolService, useValue: poolService },
-    { provide: AUTH_SERVICE, useClass: BetterAuthAdapter },
   ],
 })
 export class AppModule {}

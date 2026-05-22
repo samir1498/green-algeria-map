@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { CreateDamageReportCommand } from './create-damage-report.command';
-import { DamageReportRepository } from '../../../domain/damage-report.repository';
+import { DamageReportRepository } from '../../../infrastructure/damage-report.repository';
 import { DamageReport } from '../../../domain/damage-report';
 import { DamageReportCreatedEvent } from '../../events/damage-report-created.event';
 

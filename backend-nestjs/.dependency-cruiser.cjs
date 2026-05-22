@@ -15,6 +15,26 @@ module.exports = {
       from: { orphan: true, pathNot: ['^src/migrations/', '^src/data-source\\.ts$', '^src/seed\\.ts$', '^src/auth\\.ts$'] },
       to: {},
     },
+    {
+      name: 'domain-not-to-higher-layers',
+      severity: 'error',
+      comment: 'domain layer must not import application, infrastructure, or dto',
+      from: { path: '^src/modules/[^/]+/domain/' },
+      to: {
+        path: [
+          '^src/modules/[^/]+/application/',
+          '^src/modules/[^/]+/infrastructure/',
+          '^src/modules/[^/]+/dto/',
+        ],
+      },
+    },
+    {
+      name: 'infrastructure-not-to-application',
+      severity: 'error',
+      comment: 'infrastructure must not import application',
+      from: { path: '^src/modules/[^/]+/infrastructure/' },
+      to: { path: '^src/modules/[^/]+/application/' },
+    },
   ],
   options: {
     doNotFollow: { dependencyTypes: ['npm', 'npm-dev', 'npm-optional', 'npm-peer'] },

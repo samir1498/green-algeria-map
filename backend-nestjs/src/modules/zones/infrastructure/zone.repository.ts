@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ZoneRepository } from '../domain/zone.repository';
 import { Zone } from '../domain/zone';
 import { ZoneOrmEntity } from './zone.orm-entity';
 import { ZoneMapper } from './zone.mapper';
 
 @Injectable()
-export class ZoneRepositoryImpl implements ZoneRepository {
+export class ZoneRepository {
   constructor(
     @InjectRepository(ZoneOrmEntity)
     private readonly repo: Repository<ZoneOrmEntity>,

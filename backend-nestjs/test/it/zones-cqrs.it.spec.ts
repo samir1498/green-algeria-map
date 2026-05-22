@@ -8,7 +8,7 @@ import {
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
 import { ZoneOrmEntity } from '../../src/modules/zones/infrastructure/zone.orm-entity';
-import { TestZonesModule } from '../setup/test-zones.module';
+import { ZonesModule } from '../../src/modules/zones/zones.module';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateZoneCommand } from '../../src/modules/zones/application/commands/create-zone.command';
 import { UpdateZoneCommand } from '../../src/modules/zones/application/commands/update-zone.command';
@@ -46,7 +46,7 @@ describe('Zones CQRS (integration)', () => {
           entities: [ZoneOrmEntity],
           synchronize: true,
         }),
-        TestZonesModule,
+        ZonesModule,
       ],
     }).compile();
 

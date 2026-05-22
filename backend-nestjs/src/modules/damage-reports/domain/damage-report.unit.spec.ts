@@ -3,7 +3,7 @@ import {
   InvalidDamageReportTypeError,
   InvalidDamageReportSeverityError,
   InvalidStatusTransitionError,
-} from '../../../lib/domain/damage-report-errors';
+} from './damage-report-errors';
 
 describe('DamageReport', () => {
   function makeReport(
