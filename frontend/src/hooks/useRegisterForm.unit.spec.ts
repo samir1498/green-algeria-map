@@ -1,6 +1,7 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act, cleanup } from '@testing-library/react'
-import { useLoginForm } from './useLoginForm'
+import { useRegisterForm } from './useRegisterForm'
 
 const mockNavigate = vi.fn()
 
@@ -15,7 +16,7 @@ vi.mock('sonner', () => ({
   },
 }))
 
-const mockSignIn = vi.fn()
+const mockSignUp = vi.fn()
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -25,46 +26,37 @@ afterEach(() => {
   cleanup()
 })
 
-describe('useLoginForm', () => {
+describe('useRegisterForm', () => {
   it('initializes with empty fields', () => {
-    const { result } = renderHook(() => useLoginForm({ signIn: mockSignIn }))
+    const { result } = renderHook(() => useRegisterForm({ signUp: mockSignUp }))
 
+    expect(result.current.name).toBe('')
     expect(result.current.email).toBe('')
     expect(result.current.password).toBe('')
     expect(result.current.loading).toBe(false)
   })
 
-  it('updates email and password via setters', () => {
-    const { result } = renderHook(() => useLoginForm({ signIn: mockSignIn }))
-
-    act(() => result.current.setEmail('test@example.com'))
-    act(() => result.current.setPassword('password123'))
-
-    expect(result.current.email).toBe('test@example.com')
-    expect(result.current.password).toBe('password123')
-  })
-
-  it('calls signIn and navigates on success', async () => {
-    mockSignIn.mockResolvedValueOnce({ data: { user: {} }, error: null })
-    const { result } = renderHook(() => useLoginForm({ signIn: mockSignIn }))
+  it('calls signUp and navigates on success', async () => {
+    mockSignUp.mockResolvedValueOnce({ data: { user: {} }, error: null })
+    const { result } = renderHook(() => useRegisterForm({ signUp: mockSignUp }))
 
     const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent
     await act(async () => {
       await result.current.handleSubmit(mockEvent)
     })
 
-    expect(mockSignIn).toHaveBeenCalledWith({ email: '', password: '' })
+    expect(mockSignUp).toHaveBeenCalledWith({ name: '', email: '', password: '' })
     const { toast } = await import('sonner')
-    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Signed in successfully')
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Account created successfully')
     expect(mockNavigate).toHaveBeenCalledWith({ to: '/' })
   })
 
-  it('shows error toast and does not navigate on failure', async () => {
-    mockSignIn.mockResolvedValueOnce({
+  it('shows error toast on failure', async () => {
+    mockSignUp.mockResolvedValueOnce({
       data: null,
-      error: { message: 'Invalid credentials' },
+      error: { message: 'Email already in use' },
     })
-    const { result } = renderHook(() => useLoginForm({ signIn: mockSignIn }))
+    const { result } = renderHook(() => useRegisterForm({ signUp: mockSignUp }))
 
     const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent
     await act(async () => {
@@ -72,14 +64,13 @@ describe('useLoginForm', () => {
     })
 
     const { toast } = await import('sonner')
-    expect(vi.mocked(toast.error)).toHaveBeenCalledWith('Invalid credentials')
+    expect(vi.mocked(toast.error)).toHaveBeenCalledWith('Email already in use')
     expect(mockNavigate).not.toHaveBeenCalled()
-    expect(result.current.loading).toBe(false)
   })
 
   it('resets loading to false after submission completes', async () => {
-    mockSignIn.mockResolvedValueOnce({ data: { user: {} }, error: null })
-    const { result } = renderHook(() => useLoginForm({ signIn: mockSignIn }))
+    mockSignUp.mockResolvedValueOnce({ data: { user: {} }, error: null })
+    const { result } = renderHook(() => useRegisterForm({ signUp: mockSignUp }))
 
     const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent
     await act(async () => {
