@@ -6,10 +6,11 @@ import {
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
 import supertest from 'supertest';
-import { User } from '../../src/modules/auth/entities/user.entity';
-import { Session } from '../../src/modules/auth/entities/session.entity';
-import { Account } from '../../src/modules/auth/entities/account.entity';
-import { Verification } from '../../src/modules/auth/entities/verification.entity';
+import { DataSource } from 'typeorm';
+import { User } from '../../src/modules/auth/infrastructure/entities/user.entity';
+import { Session } from '../../src/modules/auth/infrastructure/entities/session.entity';
+import { Account } from '../../src/modules/auth/infrastructure/entities/account.entity';
+import { Verification } from '../../src/modules/auth/infrastructure/entities/verification.entity';
 import { ZoneOrmEntity } from '../../src/modules/zones/infrastructure/zone.orm-entity';
 import { DamageReportOrmEntity } from '../../src/modules/damage-reports/infrastructure/damage-report.orm-entity';
 
@@ -68,7 +69,11 @@ describe('Auth (integration)', () => {
   }, 120000);
 
   afterAll(async () => {
-    if (app) await app.close();
+    if (app) {
+      const dataSource = app.get(DataSource);
+      await dataSource.destroy();
+      await app.close();
+    }
     if (container) await container.stop();
     delete process.env.DB_HOST;
     delete process.env.DB_PORT;

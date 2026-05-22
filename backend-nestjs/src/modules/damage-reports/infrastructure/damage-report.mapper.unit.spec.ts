@@ -5,7 +5,7 @@ import {
   InvalidDamageReportTypeError,
   InvalidDamageReportSeverityError,
   InvalidDamageReportStatusError,
-} from '../../../lib/domain/damage-report-errors';
+} from '../domain/damage-report-errors';
 
 describe('DamageReportMapper', () => {
   function makeOrm(

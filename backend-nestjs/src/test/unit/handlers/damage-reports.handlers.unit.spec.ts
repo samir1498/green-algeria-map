@@ -5,7 +5,7 @@ import {
   DamageReport,
   type DamageReportProps,
 } from '../../../modules/damage-reports/domain/damage-report';
-import { DamageReportRepository } from '../../../modules/damage-reports/domain/damage-report.repository';
+import { DamageReportRepository } from '../../../modules/damage-reports/infrastructure/damage-report.repository';
 import { CreateDamageReportCommand } from '../../../modules/damage-reports/application/commands/create-damage-report/create-damage-report.command';
 import { CreateDamageReportHandler } from '../../../modules/damage-reports/application/commands/create-damage-report/create-damage-report.handler';
 import { UpdateDamageReportStatusCommand } from '../../../modules/damage-reports/application/commands/update-damage-report-status/update-damage-report-status.command';

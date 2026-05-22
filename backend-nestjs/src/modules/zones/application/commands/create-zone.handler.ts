@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { CreateZoneCommand } from './create-zone.command';
-import { ZoneRepository } from '../../domain/zone.repository';
+import { ZoneRepository } from '../../infrastructure/zone.repository';
 import { Zone } from '../../domain/zone';
 import { Coordinates } from '../../domain/coordinates.value-object';
 import { ZoneCreatedEvent } from '../events/zone-created.event';

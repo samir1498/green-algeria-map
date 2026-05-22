@@ -9,7 +9,7 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { Public } from '../../lib/auth';
+import { Public } from '../auth/infrastructure/public.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateZoneCommand } from './application/commands/create-zone.command';
 import { UpdateZoneCommand } from './application/commands/update-zone.command';

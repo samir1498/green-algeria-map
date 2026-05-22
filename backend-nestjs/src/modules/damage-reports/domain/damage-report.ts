@@ -11,7 +11,7 @@ import {
   InvalidDamageReportSeverityError,
   InvalidDamageReportStatusError,
   InvalidStatusTransitionError,
-} from '../../../lib/domain/damage-report-errors';
+} from './damage-report-errors';
 
 export interface DamageReportProps {
   id?: string;

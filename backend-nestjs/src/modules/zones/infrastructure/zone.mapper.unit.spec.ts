@@ -5,7 +5,7 @@ import { ZoneOrmEntity } from './zone.orm-entity';
 import {
   InvalidZoneTypeError,
   InvalidZoneStatusError,
-} from '../../../lib/domain/zone-errors';
+} from '../domain/zone-errors';
 
 describe('ZoneMapper', () => {
   function makeOrmEntity(

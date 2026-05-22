@@ -6,10 +6,10 @@ import {
 } from '@testcontainers/postgresql';
 import { DataSource } from 'typeorm';
 import { ZoneOrmEntity } from '../../src/modules/zones/infrastructure/zone.orm-entity';
-import { User } from '../../src/modules/auth/entities/user.entity';
-import { Session } from '../../src/modules/auth/entities/session.entity';
-import { Account } from '../../src/modules/auth/entities/account.entity';
-import { Verification } from '../../src/modules/auth/entities/verification.entity';
+import { User } from '../../src/modules/auth/infrastructure/entities/user.entity';
+import { Session } from '../../src/modules/auth/infrastructure/entities/session.entity';
+import { Account } from '../../src/modules/auth/infrastructure/entities/account.entity';
+import { Verification } from '../../src/modules/auth/infrastructure/entities/verification.entity';
 
 const execAsync = promisify(exec);
 

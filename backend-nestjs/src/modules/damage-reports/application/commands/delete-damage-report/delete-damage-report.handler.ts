@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
 import { DeleteDamageReportCommand } from './delete-damage-report.command';
-import { DamageReportRepository } from '../../../domain/damage-report.repository';
+import { DamageReportRepository } from '../../../infrastructure/damage-report.repository';
 
 @CommandHandler(DeleteDamageReportCommand)
 export class DeleteDamageReportHandler implements ICommandHandler<

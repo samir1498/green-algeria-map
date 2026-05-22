@@ -2,7 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ZoneOrmEntity } from '../../src/modules/zones/infrastructure/zone.orm-entity';
-import { TestZonesModule } from './test-zones.module';
+import { DamageReportOrmEntity } from '../../src/modules/damage-reports/infrastructure/damage-report.orm-entity';
+import { ZonesModule } from '../../src/modules/zones/zones.module';
+import { DamageReportsModule } from '../../src/modules/damage-reports/damage-reports.module';
 
 interface CreateTestingModuleOptions {
   host: string;
@@ -31,10 +33,11 @@ export async function createTestingModule({
         username,
         password,
         database,
-        entities: [ZoneOrmEntity],
+        entities: [ZoneOrmEntity, DamageReportOrmEntity],
         synchronize: true,
       }),
-      TestZonesModule,
+      ZonesModule,
+      DamageReportsModule,
     ],
   }).compile();
 

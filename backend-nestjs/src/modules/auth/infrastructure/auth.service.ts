@@ -1,11 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import type { AuthPort, UserSession } from './auth-port';
-import { auth } from '../../auth';
+import { auth } from '../../../auth';
 
-export const AUTH_SERVICE = 'AUTH_SERVICE';
+export interface UserSession {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  image?: string | null;
+}
 
 @Injectable()
-export class BetterAuthAdapter implements AuthPort {
+export class AuthService {
   async getSessionUser(token: string): Promise<UserSession | null> {
     const session = await auth.api.getSession({
       headers: { authorization: `Bearer ${token}` },
