@@ -14,7 +14,7 @@ import {
   severityLabels,
   isValidCoordinate,
 } from './helpers'
-import { formatDate } from '@/helpers/formatDate'
+import { formatDate } from '@/utils/formatDate'
 import { Legend } from './Legend'
 import { DamageReportForm } from '@/components/damage/DamageReportForm'
 
@@ -41,7 +41,7 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
   return (
     <div className="relative">
       {demoMode && (
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[1000] bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200 rounded-lg px-3 py-1.5 text-sm font-medium shadow">
+        <div className="absolute top-2 left-1/2 z-[1000] -translate-x-1/2 rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-800 shadow dark:bg-amber-900 dark:text-amber-200">
           Showing demo data — backend unavailable
         </div>
       )}
@@ -83,7 +83,7 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
                 )}
                 <button
                   onClick={() => openReportForm(zone)}
-                  className="mt-2 w-full rounded bg-red-600 px-2 py-1 text-xs font-medium text-white hover:bg-red-700 transition-colors"
+                  className="mt-2 w-full rounded bg-red-600 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-red-700"
                   data-testid="report-damage-button"
                 >
                   Report Damage
@@ -113,9 +113,11 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
                 >
                   {report.status}
                 </span>
-                <p className="mt-1 text-xs font-medium">Severity: {severityLabels[report.severity]}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{report.description}</p>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-xs font-medium">
+                  Severity: {severityLabels[report.severity]}
+                </p>
+                <p className="text-muted-foreground mt-1 text-xs">{report.description}</p>
+                <p className="text-muted-foreground mt-1 text-xs">
                   Reported: {formatDate(report.reportedAt)}
                 </p>
               </div>
@@ -127,7 +129,7 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
 
       {reportingZone && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md mx-4">
+          <div className="mx-4 w-full max-w-md">
             <DamageReportForm
               zoneId={reportingZone.id}
               lat={reportingZone.lat}
@@ -139,7 +141,7 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
             />
             <button
               onClick={() => setReportingZone(null)}
-              className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm hover:bg-muted transition-colors"
+              className="border-input bg-background hover:bg-muted mt-2 w-full rounded-md border px-3 py-2 text-sm transition-colors"
             >
               Cancel
             </button>
