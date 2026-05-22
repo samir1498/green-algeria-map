@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { EventBus } from '@nestjs/cqrs';
 import { CreateZoneHandler } from '../../../modules/zones/application/commands/create-zone.handler';
 import { CreateZoneCommand } from '../../../modules/zones/application/commands/create-zone.command';
-import { ZoneRepository } from '../../../modules/zones/domain/zone.repository';
+import { ZoneRepository } from '../../../modules/zones/infrastructure/zone.repository';
 import { Zone } from '../../../modules/zones/domain/zone';
 
 describe('CreateZoneHandler', () => {

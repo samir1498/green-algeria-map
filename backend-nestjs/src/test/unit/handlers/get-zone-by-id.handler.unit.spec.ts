@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
 import { GetZoneByIdHandler } from '../../../modules/zones/application/queries/get-zone-by-id.handler';
 import { GetZoneByIdQuery } from '../../../modules/zones/application/queries/get-zone-by-id.query';
-import { ZoneRepository } from '../../../modules/zones/domain/zone.repository';
+import { ZoneRepository } from '../../../modules/zones/infrastructure/zone.repository';
 import { Zone } from '../../../modules/zones/domain/zone';
 
 describe('GetZoneByIdHandler', () => {

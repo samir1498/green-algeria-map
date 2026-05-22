@@ -80,12 +80,11 @@ describe('Damage Reports HTTP (integration)', () => {
         .post('/damage-reports')
         .send({
           zoneId: 'zone-2',
-          type: 'trash',
+          type: 'fire',
           severity: 'low',
-          status: 'reported',
           lat: 35.7,
           lng: -0.64,
-          description: 'Trash near Oran',
+          description: 'Fire near Oran',
           reportedBy: 'Volunteer-002',
         })
         .expect(201)
@@ -115,12 +114,11 @@ describe('Damage Reports HTTP (integration)', () => {
         .post('/damage-reports')
         .send({
           zoneId: 'zone-lookup',
-          type: 'pest',
+          type: 'disease',
           severity: 'high',
-          status: 'reported',
           lat: 36.0,
           lng: 1.0,
-          description: 'Pest infestation',
+          description: 'Disease infestation',
           reportedBy: 'Volunteer-003',
         });
       reportId = res.body.id;
@@ -159,7 +157,6 @@ describe('Damage Reports HTTP (integration)', () => {
           zoneId: 'zone-update',
           type: 'fire',
           severity: 'medium',
-          status: 'reported',
           lat: 34.0,
           lng: 2.0,
           description: 'Before update',
@@ -171,10 +168,10 @@ describe('Damage Reports HTTP (integration)', () => {
     it('updates damage report status', () => {
       return supertest(app.getHttpServer())
         .patch(`/damage-reports/${reportId}/status`)
-        .send({ status: 'in-progress' })
+        .send({ status: 'verified' })
         .expect(200)
         .then((res) => {
-          expect(res.body.status).toBe('in-progress');
+          expect(res.body.status).toBe('verified');
           expect(res.body.id).toBe(reportId);
         });
     });
@@ -202,9 +199,8 @@ describe('Damage Reports HTTP (integration)', () => {
         .post('/damage-reports')
         .send({
           zoneId: 'zone-delete',
-          type: 'trash',
+          type: 'vandalism',
           severity: 'low',
-          status: 'reported',
           lat: 33.0,
           lng: 4.0,
           description: 'To be deleted',

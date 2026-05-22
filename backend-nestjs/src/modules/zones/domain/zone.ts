@@ -4,7 +4,7 @@ import {
   CannotStartZoneError,
   CannotCompleteZoneError,
   NegativeCountError,
-} from '../../../lib/domain/zone-errors';
+} from './zone-errors';
 
 export interface ZoneProps {
   id?: string;

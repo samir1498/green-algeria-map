@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
 import { DeleteZoneHandler } from '../../../modules/zones/application/commands/delete-zone.handler';
 import { DeleteZoneCommand } from '../../../modules/zones/application/commands/delete-zone.command';
-import { ZoneRepository } from '../../../modules/zones/domain/zone.repository';
+import { ZoneRepository } from '../../../modules/zones/infrastructure/zone.repository';
 import { Zone } from '../../../modules/zones/domain/zone';
 
 describe('DeleteZoneHandler', () => {

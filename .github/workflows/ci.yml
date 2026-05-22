@@ -197,9 +197,3 @@ jobs:
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile --prefer-offline
       - run: pnpm build
-
-  gate-frontend:
-    runs-on: ubuntu-slim
-    needs: [build]
-    steps:
-      - run: echo "All frontend CI checks passed"

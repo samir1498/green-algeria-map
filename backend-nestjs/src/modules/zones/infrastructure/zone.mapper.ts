@@ -10,7 +10,7 @@ import {
 import {
   InvalidZoneTypeError,
   InvalidZoneStatusError,
-} from '../../../lib/domain/zone-errors';
+} from '../domain/zone-errors';
 
 export class ZoneMapper {
   static toDomain(orm: ZoneOrmEntity): Zone {

@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
 import { UpdateZoneCommand } from './update-zone.command';
-import { ZoneRepository } from '../../domain/zone.repository';
+import { ZoneRepository } from '../../infrastructure/zone.repository';
 import { Zone } from '../../domain/zone';
 
 @CommandHandler(UpdateZoneCommand)

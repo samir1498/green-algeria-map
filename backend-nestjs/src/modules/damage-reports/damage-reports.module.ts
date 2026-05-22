@@ -2,8 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CqrsModule } from '@nestjs/cqrs';
 import { DamageReportsController } from './damage-reports.controller';
-import { DamageReportRepository } from './domain/damage-report.repository';
-import { DamageReportRepositoryImpl } from './infrastructure/damage-report.repository.impl';
+import { DamageReportRepository } from './infrastructure/damage-report.repository';
 import { DamageReportOrmEntity } from './infrastructure/damage-report.orm-entity';
 import { CreateDamageReportHandler } from './application/commands/create-damage-report/create-damage-report.handler';
 import { UpdateDamageReportStatusHandler } from './application/commands/update-damage-report-status/update-damage-report-status.handler';
@@ -16,7 +15,7 @@ import { DamageReportCreatedHandler } from './application/events/damage-report-c
   imports: [TypeOrmModule.forFeature([DamageReportOrmEntity]), CqrsModule],
   controllers: [DamageReportsController],
   providers: [
-    { provide: DamageReportRepository, useClass: DamageReportRepositoryImpl },
+    DamageReportRepository,
     CreateDamageReportHandler,
     UpdateDamageReportStatusHandler,
     DeleteDamageReportHandler,

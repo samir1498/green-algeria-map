@@ -1,7 +1,7 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
 import { GetZoneByIdQuery } from './get-zone-by-id.query';
-import { ZoneRepository } from '../../domain/zone.repository';
+import { ZoneRepository } from '../../infrastructure/zone.repository';
 import { Zone } from '../../domain/zone';
 
 @QueryHandler(GetZoneByIdQuery)

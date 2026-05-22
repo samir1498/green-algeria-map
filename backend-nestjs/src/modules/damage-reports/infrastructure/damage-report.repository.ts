@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DamageReportRepository } from '../domain/damage-report.repository';
 import { DamageReport } from '../domain/damage-report';
 import { DamageReportOrmEntity } from './damage-report.orm-entity';
 import { DamageReportMapper } from './damage-report.mapper';
 
 @Injectable()
-export class DamageReportRepositoryImpl implements DamageReportRepository {
+export class DamageReportRepository {
   constructor(
     @InjectRepository(DamageReportOrmEntity)
     private readonly repo: Repository<DamageReportOrmEntity>,

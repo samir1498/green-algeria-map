@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
 import { UpdateZoneHandler } from '../../../modules/zones/application/commands/update-zone.handler';
 import { UpdateZoneCommand } from '../../../modules/zones/application/commands/update-zone.command';
-import { ZoneRepository } from '../../../modules/zones/domain/zone.repository';
+import { ZoneRepository } from '../../../modules/zones/infrastructure/zone.repository';
 import { Zone } from '../../../modules/zones/domain/zone';
 
 describe('UpdateZoneHandler', () => {

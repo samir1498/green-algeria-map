@@ -73,11 +73,5 @@
     "typescript-eslint": "^8.20.0",
     "vitest": "^4.1.6"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@nestjs/core",
-      "@nestjs/cli",
-      "unrs-resolver"
-    ]
-  }
+  "pnpm": {}
 }
