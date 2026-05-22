@@ -25,3 +25,19 @@ export class NegativeCountError extends DomainError {
     super('Count cannot be negative');
   }
 }
+
+export class InvalidZoneTypeError extends DomainError {
+  readonly category = 'validation';
+
+  constructor(type: string) {
+    super(`Invalid zone type: ${type}`);
+  }
+}
+
+export class InvalidZoneStatusError extends DomainError {
+  readonly category = 'validation';
+
+  constructor(status: string) {
+    super(`Invalid zone status: ${status}`);
+  }
+}

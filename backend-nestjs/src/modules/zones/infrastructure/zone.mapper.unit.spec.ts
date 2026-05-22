@@ -1,8 +1,11 @@
-import { BadRequestException } from '@nestjs/common';
 import { Zone } from '../domain/zone';
 import { Coordinates } from '../domain/coordinates.value-object';
 import { ZoneMapper } from './zone.mapper';
 import { ZoneOrmEntity } from './zone.orm-entity';
+import {
+  InvalidZoneTypeError,
+  InvalidZoneStatusError,
+} from '../../../lib/domain/zone-errors';
 
 describe('ZoneMapper', () => {
   function makeOrmEntity(
@@ -60,16 +63,16 @@ describe('ZoneMapper', () => {
       expect(zone.currentCount).toBe(0);
     });
 
-    it('throws BadRequestException for invalid type', () => {
+    it('throws InvalidZoneTypeError for invalid type', () => {
       const entity = makeOrmEntity({ type: 'invalid-type' });
 
-      expect(() => ZoneMapper.toDomain(entity)).toThrow(BadRequestException);
+      expect(() => ZoneMapper.toDomain(entity)).toThrow(InvalidZoneTypeError);
     });
 
-    it('throws BadRequestException for invalid status', () => {
+    it('throws InvalidZoneStatusError for invalid status', () => {
       const entity = makeOrmEntity({ status: 'invalid-status' });
 
-      expect(() => ZoneMapper.toDomain(entity)).toThrow(BadRequestException);
+      expect(() => ZoneMapper.toDomain(entity)).toThrow(InvalidZoneStatusError);
     });
   });
 

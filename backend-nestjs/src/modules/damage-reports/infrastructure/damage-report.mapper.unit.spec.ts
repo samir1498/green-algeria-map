@@ -1,7 +1,11 @@
-import { BadRequestException } from '@nestjs/common';
 import { DamageReportMapper } from './damage-report.mapper';
 import { DamageReportOrmEntity } from './damage-report.orm-entity';
 import { DamageReport } from '../domain/damage-report';
+import {
+  InvalidDamageReportTypeError,
+  InvalidDamageReportSeverityError,
+  InvalidDamageReportStatusError,
+} from '../../../lib/domain/damage-report-errors';
 
 describe('DamageReportMapper', () => {
   function makeOrm(
@@ -44,7 +48,7 @@ describe('DamageReportMapper', () => {
       const orm = makeOrm({ type: 'invalid' });
 
       expect(() => DamageReportMapper.toDomain(orm)).toThrow(
-        BadRequestException,
+        InvalidDamageReportTypeError,
       );
     });
 
@@ -52,7 +56,7 @@ describe('DamageReportMapper', () => {
       const orm = makeOrm({ severity: 'invalid' });
 
       expect(() => DamageReportMapper.toDomain(orm)).toThrow(
-        BadRequestException,
+        InvalidDamageReportSeverityError,
       );
     });
 
@@ -60,7 +64,7 @@ describe('DamageReportMapper', () => {
       const orm = makeOrm({ status: 'invalid' });
 
       expect(() => DamageReportMapper.toDomain(orm)).toThrow(
-        BadRequestException,
+        InvalidDamageReportStatusError,
       );
     });
   });
