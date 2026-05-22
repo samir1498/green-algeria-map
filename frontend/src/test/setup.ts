@@ -1,13 +1,17 @@
 import * as matchers from '@testing-library/jest-dom/matchers'
-import { expect, beforeAll, vi } from 'vitest'
+import { expect, beforeAll, beforeEach, vi } from 'vitest'
 
 expect.extend(matchers)
 
+const store: Record<string, string> = {}
+
 const localStorageMock = {
-  getItem: vi.fn(() => null),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
+  getItem: vi.fn((key: string) => store[key] ?? null),
+  setItem: vi.fn((key: string, value: string) => { store[key] = value }),
+  removeItem: vi.fn((key: string) => { delete store[key] }),
+  clear: vi.fn(() => { for (const k of Object.keys(store)) delete store[k] }),
+  get length() { return Object.keys(store).length },
+  key: vi.fn((index: number) => Object.keys(store)[index] ?? null),
 }
 
 const matchMediaMock = (query: string) => ({
@@ -30,6 +34,10 @@ beforeAll(() => {
     writable: true,
     value: matchMediaMock,
   })
+})
+
+beforeEach(() => {
+  for (const k of Object.keys(store)) delete store[k]
 })
 
 vi.mock('@tanstack/devtools', async (actual) => {
