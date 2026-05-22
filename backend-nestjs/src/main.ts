@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { AppModule } from './app.module';
@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule, { bodyParser: false });
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
@@ -48,7 +49,7 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 8080;
   await app.listen(port);
-  console.log(`Running on http://localhost:${port}`);
-  console.log(`API docs at http://localhost:${port}/api/docs`);
+  logger.log(`Running on http://localhost:${port}`);
+  logger.log(`API docs at http://localhost:${port}/api/docs`);
 }
 void bootstrap();
