@@ -138,3 +138,9 @@ jobs:
           cache-dependency-path: backend-nestjs/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile --prefer-offline
       - run: pnpm build
+
+  gate-backend:
+    runs-on: ubuntu-slim
+    needs: [build]
+    steps:
+      - run: echo "All backend CI checks passed"
