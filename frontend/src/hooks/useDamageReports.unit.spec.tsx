@@ -1,17 +1,18 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useZones } from './useZones'
+import { useDamageReports } from './useDamageReports'
 import type { ReactNode } from 'react'
 
 const mockGetAll = vi.hoisted(() => vi.fn())
 
-vi.mock('@/api/zones', () => ({
+vi.mock('@/api/damage-reports', () => ({
   getAll: mockGetAll,
 }))
 
-vi.mock('@/components/map/demo-data', () => ({
-  demoZones: [],
+vi.mock('@/components/map/demo-damage-data', () => ({
+  demoDamageReports: [],
 }))
 
 function createWrapper() {
@@ -27,25 +28,24 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
-describe('useZones', () => {
-  it('returns zones on success', async () => {
-    mockGetAll.mockResolvedValueOnce([{ id: '1', name: 'Zone A' }])
-    const { result } = renderHook(() => useZones(), { wrapper: createWrapper() })
+describe('useDamageReports', () => {
+  it('returns damage reports on success', async () => {
+    mockGetAll.mockResolvedValueOnce([{ id: '1', description: 'Fire damage' }])
+    const { result } = renderHook(() => useDamageReports(), { wrapper: createWrapper() })
 
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
-    expect(result.current.zones).toEqual([{ id: '1', name: 'Zone A' }])
+    expect(result.current.damageReports).toEqual([{ id: '1', description: 'Fire damage' }])
     expect(result.current.demoMode).toBe(false)
   })
 
   it('falls back to demo data on error', async () => {
     mockGetAll.mockRejectedValueOnce(new Error('Network error'))
-    const { result } = renderHook(() => useZones(), { wrapper: createWrapper() })
+    const { result } = renderHook(() => useDamageReports(), { wrapper: createWrapper() })
 
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
-    expect(result.current.zones).toEqual([])
+    expect(result.current.damageReports).toEqual([])
     expect(result.current.demoMode).toBe(true)
-    expect(result.current.error).toBeDefined()
   })
 })
