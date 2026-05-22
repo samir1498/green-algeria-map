@@ -43,65 +43,53 @@ describe('normalizeApiError', () => {
     vi.unstubAllGlobals()
   })
 
+function getInterceptor() {
+  return (vi.mocked(api.interceptors.response.use).mock.calls[0]?.[1]) as (err: AxiosError) => Promise<unknown>
+}
+
   it('classifies network errors', async () => {
     const mockAxiosError = new Error('Network Error') as AxiosError
     mockAxiosError.response = undefined
 
-    try {
-      const interceptor = (vi.mocked(api.interceptors.response.use).mock.calls[0]?.[1]) as (err: AxiosError) => Promise<unknown>
-      await interceptor(mockAxiosError)
-    } catch (appError: unknown) {
-      const err = appError as { message: string; code: string; category: string }
-      expect(err.message).toBe('Unable to connect to the server. Please check your connection.')
-      expect(err.code).toBe('NETWORK_ERROR')
-      expect(err.category).toBe('network')
-    }
+    await expect(getInterceptor()(mockAxiosError)).rejects.toMatchObject({
+      message: 'Unable to connect to the server. Please check your connection.',
+      code: 'NETWORK_ERROR',
+      category: 'network',
+    })
   })
 
-  it('classifies 401 errors and redirects to login', async () => {
+  it('classifies 401 errors', async () => {
     const mockAxiosError = new Error('Unauthorized') as AxiosError
     mockAxiosError.response = { status: 401, data: {} } as any
 
-    try {
-      const interceptor = (vi.mocked(api.interceptors.response.use).mock.calls[0]?.[1]) as (err: AxiosError) => Promise<unknown>
-      await interceptor(mockAxiosError)
-    } catch (appError: unknown) {
-      const err = appError as { message: string; code: string; category: string; status: number }
-      expect(err.message).toBe('Unauthorized')
-      expect(err.code).toBe('UNAUTHORIZED')
-      expect(err.category).toBe('auth')
-      expect(err.status).toBe(401)
-    }
+    await expect(getInterceptor()(mockAxiosError)).rejects.toMatchObject({
+      message: 'Unauthorized',
+      code: 'UNAUTHORIZED',
+      category: 'auth',
+      status: 401,
+    })
   })
 
   it('classifies 500 errors', async () => {
     const mockAxiosError = new Error('Server Error') as AxiosError
     mockAxiosError.response = { status: 500, data: {} } as any
 
-    try {
-      const interceptor = (vi.mocked(api.interceptors.response.use).mock.calls[0]?.[1]) as (err: AxiosError) => Promise<unknown>
-      await interceptor(mockAxiosError)
-    } catch (appError: unknown) {
-      const err = appError as { message: string; code: string; category: string }
-      expect(err.message).toBe('Server error. Please try again later.')
-      expect(err.code).toBe('SERVER_ERROR')
-      expect(err.category).toBe('server')
-    }
+    await expect(getInterceptor()(mockAxiosError)).rejects.toMatchObject({
+      message: 'Server error. Please try again later.',
+      code: 'SERVER_ERROR',
+      category: 'server',
+    })
   })
 
   it('classifies 422 errors', async () => {
     const mockAxiosError = new Error('Validation Error') as AxiosError
     mockAxiosError.response = { status: 422, data: { message: 'Invalid input' } } as any
 
-    try {
-      const interceptor = (vi.mocked(api.interceptors.response.use).mock.calls[0]?.[1]) as (err: AxiosError) => Promise<unknown>
-      await interceptor(mockAxiosError)
-    } catch (appError: unknown) {
-      const err = appError as { message: string; code: string; category: string }
-      expect(err.message).toBe('Invalid input')
-      expect(err.code).toBe('VALIDATION_ERROR')
-      expect(err.category).toBe('validation')
-    }
+    await expect(getInterceptor()(mockAxiosError)).rejects.toMatchObject({
+      message: 'Invalid input',
+      code: 'VALIDATION_ERROR',
+      category: 'validation',
+    })
   })
 
   it('does not redirect when already on login page', async () => {
@@ -110,11 +98,6 @@ describe('normalizeApiError', () => {
     const mockAxiosError = new Error('Unauthorized') as AxiosError
     mockAxiosError.response = { status: 401, data: {} } as any
 
-    try {
-      const interceptor = (vi.mocked(api.interceptors.response.use).mock.calls[0]?.[1]) as (err: AxiosError) => Promise<unknown>
-      await interceptor(mockAxiosError)
-    } catch {
-      // Expected
-    }
+    await expect(getInterceptor()(mockAxiosError)).rejects.toBeDefined()
   })
 })

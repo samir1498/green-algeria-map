@@ -45,6 +45,8 @@ describe('useRegisterForm', () => {
     })
 
     expect(mockSignUp).toHaveBeenCalledWith({ name: '', email: '', password: '' })
+    const { toast } = await import('sonner')
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Account created successfully')
     expect(mockNavigate).toHaveBeenCalledWith({ to: '/' })
   })
 

@@ -54,6 +54,8 @@ describe('useLoginForm', () => {
     })
 
     expect(mockSignIn).toHaveBeenCalledWith({ email: '', password: '' })
+    const { toast } = await import('sonner')
+    expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Signed in successfully')
     expect(mockNavigate).toHaveBeenCalledWith({ to: '/' })
   })
 

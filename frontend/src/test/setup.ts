@@ -1,5 +1,5 @@
 import * as matchers from '@testing-library/jest-dom/matchers'
-import { expect, beforeAll, vi } from 'vitest'
+import { expect, beforeAll, beforeEach, vi } from 'vitest'
 
 expect.extend(matchers)
 
@@ -34,6 +34,10 @@ beforeAll(() => {
     writable: true,
     value: matchMediaMock,
   })
+})
+
+beforeEach(() => {
+  for (const k of Object.keys(store)) delete store[k]
 })
 
 vi.mock('@tanstack/devtools', async (actual) => {
