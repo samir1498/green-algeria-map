@@ -175,7 +175,7 @@ jobs:
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile --prefer-offline
-      - run: pnpm test:coverage:ci
+      - run: pnpm test:coverage
 
   build:
     runs-on: ubuntu-slim
