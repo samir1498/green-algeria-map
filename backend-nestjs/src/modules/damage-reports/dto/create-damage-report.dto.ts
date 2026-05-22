@@ -1,4 +1,4 @@
-import { IsString, IsIn, IsNumber, IsPositive } from 'class-validator';
+import { IsString, IsIn, IsNumber, Min, Max } from 'class-validator';
 import {
   DAMAGE_REPORT_TYPES,
   DAMAGE_REPORT_SEVERITIES,
@@ -15,11 +15,13 @@ export class CreateDamageReportDto {
   severity: string;
 
   @IsNumber()
-  @IsPositive()
+  @Min(-90)
+  @Max(90)
   lat: number;
 
   @IsNumber()
-  @IsPositive()
+  @Min(-180)
+  @Max(180)
   lng: number;
 
   @IsString()
