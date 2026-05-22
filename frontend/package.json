@@ -16,7 +16,6 @@
     "test:it": "vitest run --config vitest.it.config.ts",
     "test:coverage": "vitest run --config vitest.unit.config.ts --coverage && vitest run --config vitest.ui.config.ts --coverage && vitest run --config vitest.it.config.ts --coverage",
     "test:coverage:unit": "vitest run --config vitest.unit.config.ts --coverage",
-    "test:coverage:ci": "vitest run --config vitest.unit.config.ts --coverage --coverage.thresholds.lines=0 --coverage.thresholds.branches=0 --coverage.thresholds.functions=0 --coverage.thresholds.statements=0; vitest run --config vitest.ui.config.ts --coverage --coverage.thresholds.lines=0 --coverage.thresholds.branches=0 --coverage.thresholds.functions=0 --coverage.thresholds.statements=0; vitest run --config vitest.it.config.ts --coverage --coverage.thresholds.lines=0 --coverage.thresholds.branches=0 --coverage.thresholds.functions=0 --coverage.thresholds.statements=0",
     "check": "tsc --noEmit",
     "lint": "eslint . --quiet",
     "knip": "knip",
