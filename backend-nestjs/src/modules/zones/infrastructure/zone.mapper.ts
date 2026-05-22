@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import { Zone } from '../domain/zone';
 import { Coordinates } from '../domain/coordinates.value-object';
 import { ZoneOrmEntity } from './zone.orm-entity';
@@ -8,14 +7,18 @@ import {
   type ZoneType,
   type ZoneStatus,
 } from '../domain/zone.types';
+import {
+  InvalidZoneTypeError,
+  InvalidZoneStatusError,
+} from '../../../lib/domain/zone-errors';
 
 export class ZoneMapper {
   static toDomain(orm: ZoneOrmEntity): Zone {
     if (!ZONE_TYPES.includes(orm.type as ZoneType)) {
-      throw new BadRequestException(`Invalid zone type: ${orm.type}`);
+      throw new InvalidZoneTypeError(orm.type);
     }
     if (!ZONE_STATUSES.includes(orm.status as ZoneStatus)) {
-      throw new BadRequestException(`Invalid zone status: ${orm.status}`);
+      throw new InvalidZoneStatusError(orm.status);
     }
     return Zone.create({
       id: orm.id,

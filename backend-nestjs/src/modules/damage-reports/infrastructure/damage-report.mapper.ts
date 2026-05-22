@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import { DamageReport } from '../domain/damage-report';
 import { DamageReportOrmEntity } from './damage-report.orm-entity';
 import {
@@ -9,23 +8,24 @@ import {
   type DamageReportSeverity,
   type DamageReportStatus,
 } from '../domain/damage-report.types';
+import {
+  InvalidDamageReportTypeError,
+  InvalidDamageReportSeverityError,
+  InvalidDamageReportStatusError,
+} from '../../../lib/domain/damage-report-errors';
 
 export class DamageReportMapper {
   static toDomain(orm: DamageReportOrmEntity): DamageReport {
     if (!DAMAGE_REPORT_TYPES.includes(orm.type as DamageReportType)) {
-      throw new BadRequestException(`Invalid damage report type: ${orm.type}`);
+      throw new InvalidDamageReportTypeError(orm.type);
     }
     if (
       !DAMAGE_REPORT_SEVERITIES.includes(orm.severity as DamageReportSeverity)
     ) {
-      throw new BadRequestException(
-        `Invalid damage report severity: ${orm.severity}`,
-      );
+      throw new InvalidDamageReportSeverityError(orm.severity);
     }
     if (!DAMAGE_REPORT_STATUSES.includes(orm.status as DamageReportStatus)) {
-      throw new BadRequestException(
-        `Invalid damage report status: ${orm.status}`,
-      );
+      throw new InvalidDamageReportStatusError(orm.status);
     }
 
     return DamageReport.create({
