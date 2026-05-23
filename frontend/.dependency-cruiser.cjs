@@ -19,42 +19,38 @@ module.exports = {
     {
       name: 'api-not-to-higher-layers',
       severity: 'error',
-      comment:
-        'api/ is the bottom layer and must not import hooks, components, routes, or services',
-      from: { path: '^src/api/' },
-      to: { path: '^(src/hooks/|src/components/|src/routes/|src/services/)' },
+      comment: 'api/ is the bottom layer and must not import hooks, components, or routes',
+      from: { path: '^src/features/[^/]+/api/' },
+      to: {
+        path: '^src/(features/[^/]+/hooks/|features/[^/]+/components/|shared/hooks/|shared/components/|routes/)',
+      },
     },
     {
       name: 'components-not-to-api',
       severity: 'error',
       comment: 'components must use TanStack Query hooks, not call api/ directly',
-      from: { path: '^src/components/' },
-      to: { path: '^src/api/' },
+      from: { path: '^src/(features/[^/]+/components/|shared/components/)' },
+      to: { path: '^src/features/[^/]+/api/' },
     },
     {
       name: 'routes-not-to-api',
       severity: 'error',
       comment: 'routes must use TanStack Query hooks, not call api/ directly',
       from: { path: '^src/routes/' },
-      to: { path: '^src/api/' },
+      to: {
+        path: '^src/features/[^/]+/api/',
+        pathNot: '^src/features/auth/api/',
+      },
     },
     {
       name: 'hooks-not-to-components',
       severity: 'error',
       comment: 'hooks must not import from components to stay reusable',
-      from: { path: '^src/hooks/' },
+      from: { path: '^src/(features/[^/]+/hooks/|shared/hooks/)' },
       to: {
-        path: '^src/components/',
-        pathNot: '^src/components/[^/]+/(helpers?\\.tsx?|demo-.+\\.ts)$',
+        path: '^src/(features/[^/]+/components/|shared/components/)',
+        pathNot: '^src/features/map/components/(helpers?\\.tsx?|demo-.+\\.ts)$',
       },
-    },
-    {
-      name: 'services-not-to-hooks-components-routes',
-      severity: 'error',
-      comment:
-        'services are infrastructure and must not depend on React-specific or page-level code',
-      from: { path: '^src/services/' },
-      to: { path: '^(src/hooks/|src/components/|src/routes/)' },
     },
   ],
   options: {
@@ -75,15 +71,18 @@ module.exports = {
         theme: {
           modules: [
             {
-              criteria: { source: '^src/components/map' },
+              criteria: { source: '^src/features/map/components' },
               attributes: { color: '#22c55e', shape: 'box' },
             },
             {
-              criteria: { source: '^src/components/ui' },
+              criteria: { source: '^src/shared/components/ui' },
               attributes: { color: '#3b82f6', shape: 'box' },
             },
             { criteria: { source: '^src/routes' }, attributes: { color: '#f59e0b', shape: 'box' } },
-            { criteria: { source: '^src/lib' }, attributes: { color: '#a855f7', shape: 'box' } },
+            {
+              criteria: { source: '^src/shared/lib' },
+              attributes: { color: '#a855f7', shape: 'box' },
+            },
           ],
         },
       },

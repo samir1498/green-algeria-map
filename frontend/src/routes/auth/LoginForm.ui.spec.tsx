@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { screen, waitFor, cleanup } from '@testing-library/react'
 import { LoginPage } from './login'
-import { renderWithRouter } from '@/test/render-with-router'
+import { renderWithRouter } from '@/shared/test/render-with-router'
 
 const mockSignIn = vi.fn().mockResolvedValue({ data: { user: {} }, error: null })
 
-vi.mock('@/services/auth', () => ({
+vi.mock('@/features/auth/api', () => ({
   useAuth: () => ({
     signIn: mockSignIn,
   }),
@@ -40,10 +40,7 @@ describe('LoginPage', () => {
   it('shows sign up link', async () => {
     await renderWithRouter(<LoginPage />)
 
-    expect(screen.getByTestId('sign-up-link')).toHaveAttribute(
-      'href',
-      '/auth/register',
-    )
+    expect(screen.getByTestId('sign-up-link')).toHaveAttribute('href', '/auth/register')
   })
 
   it('calls signIn with form values on submit', async () => {
@@ -95,9 +92,7 @@ describe('LoginPage', () => {
 
     const { toast } = await import('sonner')
     await waitFor(() => {
-      expect(vi.mocked(toast.error)).toHaveBeenCalledWith(
-        'Invalid email or password',
-      )
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith('Invalid email or password')
     })
     expect(screen.getByTestId('submit-button')).not.toBeDisabled()
   })
@@ -113,9 +108,7 @@ describe('LoginPage', () => {
 
     const { toast } = await import('sonner')
     await waitFor(() => {
-      expect(vi.mocked(toast.success)).toHaveBeenCalledWith(
-        'Signed in successfully',
-      )
+      expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Signed in successfully')
     })
     expect(router.state.location.href).toBe('/')
   })

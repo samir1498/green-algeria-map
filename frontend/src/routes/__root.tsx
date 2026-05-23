@@ -2,12 +2,12 @@ import { Outlet, createRootRoute, Link, useNavigate } from '@tanstack/react-rout
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { Moon, Sun, LogOut, User, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Toaster } from '@/components/ui/sonner'
-import { useAuth } from '@/services/auth'
-import { useTheme } from '@/hooks/useTheme'
-import { DefaultErrorBoundary } from '@/components/DefaultErrorBoundary'
-import { NotFound } from '@/components/NotFound'
+import { Button } from '@/shared/components/ui/button'
+import { Toaster } from '@/shared/components/ui/sonner'
+import { useAuth } from '@/features/auth/api'
+import { useTheme } from '@/shared/hooks/useTheme'
+import { DefaultErrorBoundary } from '@/shared/components/DefaultErrorBoundary'
+import { NotFound } from '@/shared/components/NotFound'
 import '@/styles.css'
 
 export const Route = createRootRoute({
@@ -15,11 +15,12 @@ export const Route = createRootRoute({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { name: 'description', content: 'Map-based platform for tracking reforestation efforts across Algeria' },
+      {
+        name: 'description',
+        content: 'Map-based platform for tracking reforestation efforts across Algeria',
+      },
     ],
-    links: [
-      { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
-    ],
+    links: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
   }),
   component: RootComponent,
   errorComponent: DefaultErrorBoundary,
@@ -41,14 +42,16 @@ function AuthNav() {
   const { user, isAuthenticated, isPending, signOut } = useAuth()
 
   if (isPending) {
-    return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+    return <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
   }
 
   if (!isAuthenticated) {
     return (
       <div className="flex items-center gap-2">
         <Link to="/auth/login">
-          <Button variant="ghost" size="sm">Sign In</Button>
+          <Button variant="ghost" size="sm">
+            Sign In
+          </Button>
         </Link>
         <Link to="/auth/register">
           <Button size="sm">Sign Up</Button>
@@ -84,19 +87,23 @@ function AuthNav() {
 
 function RootComponent() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b bg-background">
-        <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <a href="/" className="flex items-center gap-2 font-semibold text-lg">
-              <svg className="w-6 h-6 text-green-600" viewBox="0 0 32 32" fill="currentColor">
-                <circle cx="16" cy="16" r="14" />
-                <path d="M16 8c-2 4-6 8-6 12a6 6 0 0012 0c0-4-4-8-6-12z" />
-              </svg>
+    <div className="flex min-h-screen flex-col">
+      <header className="bg-background border-b">
+        <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+          <a href="/" className="flex items-center gap-2 text-lg font-semibold">
+            <svg className="h-6 w-6 text-green-600" viewBox="0 0 32 32" fill="currentColor">
+              <circle cx="16" cy="16" r="14" />
+              <path d="M16 8c-2 4-6 8-6 12a6 6 0 0012 0c0-4-4-8-6-12z" />
+            </svg>
             Green Algeria Map
           </a>
           <div className="flex items-center gap-4">
-            <a href="/" className="text-sm font-medium hover:text-foreground/80">Map</a>
-            <a href="/about" className="text-sm font-medium hover:text-foreground/80">About</a>
+            <a href="/" className="hover:text-foreground/80 text-sm font-medium">
+              Map
+            </a>
+            <a href="/about" className="hover:text-foreground/80 text-sm font-medium">
+              About
+            </a>
             <AuthNav />
             <ThemeToggle />
           </div>
@@ -105,7 +112,7 @@ function RootComponent() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <footer className="border-t py-6 text-center text-sm text-muted-foreground">
+      <footer className="text-muted-foreground border-t py-6 text-center text-sm">
         <p>Green Algeria Map — Tracking reforestation efforts</p>
       </footer>
       <div id="portal-root" />

@@ -1,5 +1,5 @@
 export default {
-  entry: ['src/styles.css', 'src/routes/**/*.{ts,tsx}', 'src/api/**/*.ts'],
+  entry: ['src/styles.css', 'src/routes/**/*.{ts,tsx}', 'src/features/*/api/**/*.ts'],
   project: ['src/**/*.{ts,tsx,css}'],
   ignoreExportsUsedInFile: true,
   ignoreBinaries: ['dot'],

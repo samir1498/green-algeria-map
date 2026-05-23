@@ -1,10 +1,16 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useLoginForm } from '@/hooks/useLoginForm'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '@/services/auth'
+import { useLoginForm } from '@/features/auth/hooks/useLoginForm'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/ui/card'
+import { useAuth } from '@/features/auth/api'
 
 export const Route = createFileRoute('/auth/login')({
   component: LoginPage,
@@ -50,9 +56,13 @@ export function LoginPage() {
             <Button type="submit" className="w-full" disabled={loading} data-testid="submit-button">
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-center text-sm">
               Don&apos;t have an account?{' '}
-              <Link to="/auth/register" className="text-primary hover:underline" data-testid="sign-up-link">
+              <Link
+                to="/auth/register"
+                className="text-primary hover:underline"
+                data-testid="sign-up-link"
+              >
                 Sign up
               </Link>
             </p>

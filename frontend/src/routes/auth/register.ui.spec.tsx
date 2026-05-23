@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { screen, waitFor, cleanup } from '@testing-library/react'
 import { RegisterPage } from './register'
-import { renderWithRouter } from '@/test/render-with-router'
+import { renderWithRouter } from '@/shared/test/render-with-router'
 
 const mockSignUp = vi.fn().mockResolvedValue({ data: { user: {} }, error: null })
 
-vi.mock('@/services/auth', () => ({
+vi.mock('@/features/auth/api', () => ({
   useAuth: () => ({
     signUp: mockSignUp,
   }),
