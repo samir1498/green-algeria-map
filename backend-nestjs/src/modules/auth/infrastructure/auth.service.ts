@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { auth } from '../../../auth';
+import { auth } from './better-auth.config';
 
 export interface UserSession {
   id: string;

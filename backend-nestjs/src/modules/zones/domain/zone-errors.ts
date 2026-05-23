@@ -1,4 +1,4 @@
-import { DomainError } from '../../../lib/domain-error';
+import { DomainError } from '@/lib/domain-error';
 
 export class CannotStartZoneError extends DomainError {
   readonly category = 'validation';
