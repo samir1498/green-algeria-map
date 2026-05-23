@@ -11,7 +11,7 @@ vi.mock('@/features/zones/api/zones', () => ({
   getAll: mockGetAll,
 }))
 
-vi.mock('@/features/map/components/demo-data', () => ({
+vi.mock('@/shared/demo/zones', () => ({
   demoZones: [],
 }))
 

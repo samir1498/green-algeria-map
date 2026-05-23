@@ -11,7 +11,7 @@ vi.mock('@/features/damage-reports/api/damage-reports', () => ({
   getAll: mockGetAll,
 }))
 
-vi.mock('@/features/map/components/demo-damage-data', () => ({
+vi.mock('@/shared/demo/damage-reports', () => ({
   demoDamageReports: [],
 }))
 

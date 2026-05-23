@@ -5,7 +5,7 @@ import { renderWithRouter } from '@/shared/test/render-with-router'
 
 const mockSignIn = vi.fn().mockResolvedValue({ data: { user: {} }, error: null })
 
-vi.mock('@/features/auth/api', () => ({
+vi.mock('@/features/auth/hooks/useAuth', () => ({
   useAuth: () => ({
     signIn: mockSignIn,
   }),

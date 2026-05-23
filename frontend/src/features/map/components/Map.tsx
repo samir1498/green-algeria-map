@@ -4,16 +4,14 @@ import 'leaflet/dist/leaflet.css'
 import { toast } from 'sonner'
 import type { Zone } from '@/shared/types/zone'
 import type { DamageReport } from '@/shared/types/damage-report'
+import { statusColors, typeLabels, statusBadgeClasses } from '@/shared/constants/zones'
 import {
-  statusColors,
-  typeLabels,
-  statusBadgeClasses,
   damageSeverityColors,
   damageStatusBadgeClasses,
   damageTypeLabels,
   severityLabels,
-  isValidCoordinate,
-} from './helpers'
+} from '@/shared/constants/damage-reports'
+import { isValidCoordinate } from '@/shared/utils/coordinates'
 import { formatDate } from '@/shared/utils/formatDate'
 import { Legend } from './Legend'
 import { DamageReportForm } from '@/features/damage-reports/components/DamageReportForm'

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isValidCoordinate } from './helpers'
+import { isValidCoordinate } from './coordinates'
 
 describe('isValidCoordinate', () => {
   it('returns true for valid coordinates', () => {

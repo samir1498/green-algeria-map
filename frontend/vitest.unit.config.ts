@@ -20,7 +20,7 @@ export default defineConfig({
         statements: 80,
       },
       exclude: [
-        'src/components/ui/**',
+        'src/shared/components/ui/**',
         'src/routeTree.gen.ts',
         'src/routes/__root.tsx',
         'src/main.tsx',
