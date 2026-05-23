@@ -12,7 +12,7 @@ module.exports = {
       name: 'no-orphans',
       severity: 'warn',
       comment: 'orphan modules that are not imported by anything',
-      from: { orphan: true, pathNot: ['^src/migrations/', '^src/data-source\\.ts$', '^src/seed\\.ts$', '^src/auth\\.ts$'] },
+      from: { orphan: true, pathNot: ['^src/migrations/', '^src/data-source\\.ts$', '^src/seed\\.ts$'] },
       to: {},
     },
     {
