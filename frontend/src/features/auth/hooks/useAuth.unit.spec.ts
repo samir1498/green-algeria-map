@@ -1,8 +1,9 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
-import { useAuth } from './index'
-import * as sessionModule from './session-service.impl'
-import * as authModule from './auth-service.impl'
+import { useAuth } from './useAuth'
+import * as sessionModule from '../api/session-service.impl'
+import * as authModule from '../api/auth-service.impl'
 
 const mockUser = {
   id: 'user-1',
@@ -14,13 +15,13 @@ const mockUser = {
   updatedAt: new Date(),
 }
 
-vi.mock('./session-service.impl', () => ({
+vi.mock('../api/session-service.impl', () => ({
   betterAuthSessionService: {
     useSession: vi.fn(),
   },
 }))
 
-vi.mock('./auth-service.impl', () => ({
+vi.mock('../api/auth-service.impl', () => ({
   betterAuthService: {
     signIn: vi.fn(),
     signUp: vi.fn(),

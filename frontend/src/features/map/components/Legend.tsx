@@ -1,4 +1,4 @@
-import { legendItems } from './helpers'
+import { legendItems } from './legend-items'
 
 export function Legend() {
   return (

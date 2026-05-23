@@ -4,7 +4,7 @@ import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { useCreateDamageReport } from '@/features/damage-reports/hooks/useCreateDamageReport'
-import { damageTypeLabels, severityLabels } from '@/features/map/components/helpers'
+import { damageTypeLabels, severityLabels } from '@/shared/constants/damage-reports'
 import type { DamageReport } from '@/shared/types/damage-report'
 
 interface DamageReportFormProps {

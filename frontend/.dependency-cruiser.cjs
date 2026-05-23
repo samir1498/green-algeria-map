@@ -47,10 +47,7 @@ module.exports = {
       severity: 'error',
       comment: 'hooks must not import from components to stay reusable',
       from: { path: '^src/(features/[^/]+/hooks/|shared/hooks/)' },
-      to: {
-        path: '^src/(features/[^/]+/components/|shared/components/)',
-        pathNot: '^src/features/map/components/(helpers?\\.tsx?|demo-.+\\.ts)$',
-      },
+      to: { path: '^src/(features/[^/]+/components/|shared/components/)' },
     },
   ],
   options: {
