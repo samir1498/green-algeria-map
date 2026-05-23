@@ -4,7 +4,7 @@ NestJS 11 API with CQRS, BetterAuth, TypeORM, and PostgreSQL 18.
 
 ## Architecture
 
-```
+```text
 Controller → CommandBus / QueryBus → Handlers → Repository → TypeORM
                                               ↑
                                         Domain entity
