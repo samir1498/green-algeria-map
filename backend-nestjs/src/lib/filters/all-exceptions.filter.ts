@@ -28,6 +28,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         statusCode: status,
         error: exception.name,
         message: exception.message,
+        category: exception.category,
         timestamp: new Date().toISOString(),
         path: request.url,
       });
@@ -46,6 +47,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
             ? exceptionResponse
             : ((exceptionResponse as Record<string, unknown>).message ??
               exception.message),
+        category:
+          status >= 500 ? 'server' : status >= 400 ? 'validation' : 'unknown',
         timestamp: new Date().toISOString(),
         path: request.url,
       });
@@ -61,6 +64,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         error: 'InternalServerError',
         message: 'An unexpected error occurred',
+        category: 'server',
         timestamp: new Date().toISOString(),
         path: request.url,
       });
@@ -71,6 +75,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       error: 'InternalServerError',
       message: 'An unexpected error occurred',
+      category: 'server',
       timestamp: new Date().toISOString(),
       path: request.url,
     });
