@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { getAll } from '@/features/zones/api/zones'
-import { demoZones } from '@/features/map/components/demo-data'
-import { isValidCoordinate } from '@/features/map/components/helpers'
+import { demoZones } from '@/shared/demo/zones'
+import { isValidCoordinate } from '@/shared/utils/coordinates'
 
 export function useZones() {
   const result = useQuery({

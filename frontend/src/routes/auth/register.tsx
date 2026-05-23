@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card'
-import { useAuth } from '@/features/auth/api'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 
 export const Route = createFileRoute('/auth/register')({
   component: RegisterPage,
