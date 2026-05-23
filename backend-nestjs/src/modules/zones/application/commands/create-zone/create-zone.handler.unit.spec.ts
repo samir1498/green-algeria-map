@@ -2,8 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { EventBus } from '@nestjs/cqrs';
 import { CreateZoneHandler } from './create-zone.handler';
 import { CreateZoneCommand } from './create-zone.command';
-import { ZoneRepository } from '../../infrastructure/zone.repository';
-import { Zone } from '../../domain/zone';
+import { ZoneRepository } from '../../../infrastructure/zone.repository';
+import { Zone } from '../../../domain/zone';
 
 describe('CreateZoneHandler', () => {
   function makeRepository(): ZoneRepository {

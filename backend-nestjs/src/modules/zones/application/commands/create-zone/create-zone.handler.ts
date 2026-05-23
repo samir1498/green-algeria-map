@@ -1,9 +1,9 @@
 import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { CreateZoneCommand } from './create-zone.command';
-import { ZoneRepository } from '../../infrastructure/zone.repository';
-import { Zone } from '../../domain/zone';
-import { Coordinates } from '../../domain/coordinates.value-object';
-import { ZoneCreatedEvent } from '../events/zone-created.event';
+import { ZoneRepository } from '../../../infrastructure/zone.repository';
+import { Zone } from '../../../domain/zone';
+import { Coordinates } from '../../../domain/coordinates.value-object';
+import { ZoneCreatedEvent } from '../../events/zone-created/zone-created.event';
 
 @CommandHandler(CreateZoneCommand)
 export class CreateZoneHandler implements ICommandHandler<
