@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Map } from '@/components/map/Map'
-import { useZones } from '@/hooks/useZones'
-import { useDamageReports } from '@/hooks/useDamageReports'
-import { computeProjectCounts } from '@/utils/projectCounts'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Badge } from '@/shared/components/ui/badge'
+import { Map } from '@/features/map/components/Map'
+import { useZones } from '@/features/zones/hooks/useZones'
+import { useDamageReports } from '@/features/damage-reports/hooks/useDamageReports'
+import { computeProjectCounts } from '@/shared/utils/projectCounts'
 
 export const Route = createFileRoute('/')({
   component: Home,

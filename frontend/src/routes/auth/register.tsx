@@ -1,10 +1,16 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useRegisterForm } from '@/hooks/useRegisterForm'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '@/services/auth'
+import { useRegisterForm } from '@/features/auth/hooks/useRegisterForm'
+import { Button } from '@/shared/components/ui/button'
+import { Input } from '@/shared/components/ui/input'
+import { Label } from '@/shared/components/ui/label'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/shared/components/ui/card'
+import { useAuth } from '@/features/auth/api'
 
 export const Route = createFileRoute('/auth/register')({
   component: RegisterPage,
@@ -12,7 +18,8 @@ export const Route = createFileRoute('/auth/register')({
 
 export function RegisterPage() {
   const { signUp } = useAuth()
-  const { name, email, password, loading, handleSubmit, setName, setEmail, setPassword } = useRegisterForm({ signUp })
+  const { name, email, password, loading, handleSubmit, setName, setEmail, setPassword } =
+    useRegisterForm({ signUp })
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
@@ -60,7 +67,7 @@ export function RegisterPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Creating account...' : 'Sign Up'}
             </Button>
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-center text-sm">
               Already have an account?{' '}
               <Link to="/auth/login" className="text-primary hover:underline">
                 Sign in

@@ -7,7 +7,7 @@ export default mergeConfig(
     test: {
       include: ['src/**/*.it.spec.{ts,tsx}', 'test/**/*.it.spec.{ts,tsx}'],
       environment: 'jsdom',
-      setupFiles: ['./src/test/setup.ts'],
+      setupFiles: ['./src/shared/test/setup.ts'],
       coverage: {
         provider: 'v8',
         reporter: ['text', 'json', 'html'],
@@ -19,7 +19,7 @@ export default mergeConfig(
           statements: 60,
         },
         exclude: [
-          'src/components/ui/**',
+          'src/shared/components/ui/**',
           'src/routeTree.gen.ts',
           'src/routes/__root.tsx',
           'src/main.tsx',

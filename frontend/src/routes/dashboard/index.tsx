@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Route as DashboardRoute } from '../dashboard'
 
 export const Route = createFileRoute('/dashboard/')({
@@ -29,7 +29,7 @@ function DashboardPage() {
             <CardTitle className="text-sm font-medium">Email</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">{user.email}</p>
+            <p className="text-muted-foreground text-sm">{user.email}</p>
           </CardContent>
         </Card>
         <Card>
@@ -37,7 +37,7 @@ function DashboardPage() {
             <CardTitle className="text-sm font-medium">Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {user.emailVerified ? 'Verified' : 'Pending verification'}
             </p>
           </CardContent>

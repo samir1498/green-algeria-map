@@ -1,5 +1,5 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
-import { sessionService } from '@/services/auth'
+import { sessionService } from '@/features/auth/api'
 
 export const Route = createFileRoute('/dashboard')({
   beforeLoad: async () => {
@@ -16,7 +16,7 @@ export const Route = createFileRoute('/dashboard')({
 
 function DashboardLayout() {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8">
       <Outlet />
     </div>
   )
