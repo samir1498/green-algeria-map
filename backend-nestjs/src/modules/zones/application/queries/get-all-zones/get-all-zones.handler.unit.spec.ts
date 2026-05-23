@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { GetAllZonesHandler } from './get-all-zones.handler';
 import { GetAllZonesQuery } from './get-all-zones.query';
-import { Zone } from '../../domain/zone';
+import { Zone } from '../../../domain/zone';
 
 describe('GetAllZonesHandler', () => {
   function makeZone(name: string) {

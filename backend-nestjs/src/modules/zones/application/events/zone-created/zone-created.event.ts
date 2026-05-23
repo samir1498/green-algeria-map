@@ -1,4 +1,4 @@
-import { ZoneType } from '../../domain/zone.types';
+import { ZoneType } from '../../../domain/zone.types';
 
 export class ZoneCreatedEvent {
   constructor(

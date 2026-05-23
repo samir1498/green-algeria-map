@@ -2,8 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
 import { DeleteZoneHandler } from './delete-zone.handler';
 import { DeleteZoneCommand } from './delete-zone.command';
-import { ZoneRepository } from '../../infrastructure/zone.repository';
-import { Zone } from '../../domain/zone';
+import { ZoneRepository } from '../../../infrastructure/zone.repository';
+import { Zone } from '../../../domain/zone';
 
 describe('DeleteZoneHandler', () => {
   function makeRepository(): ZoneRepository {
