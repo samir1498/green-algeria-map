@@ -35,7 +35,7 @@ Same nested layout is used for `damage-reports`.
 
 ## Modules
 
-```
+```text
 src/modules/
 ├── auth/             # BetterAuth config + entities (no application layer)
 ├── zones/
