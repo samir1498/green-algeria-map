@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
-import { UpdateZoneHandler } from '../../../modules/zones/application/commands/update-zone.handler';
-import { UpdateZoneCommand } from '../../../modules/zones/application/commands/update-zone.command';
-import { ZoneRepository } from '../../../modules/zones/infrastructure/zone.repository';
-import { Zone } from '../../../modules/zones/domain/zone';
+import { UpdateZoneHandler } from './update-zone.handler';
+import { UpdateZoneCommand } from './update-zone.command';
+import { ZoneRepository } from '../../infrastructure/zone.repository';
+import { Zone } from '../../domain/zone';
 
 describe('UpdateZoneHandler', () => {
   function makeRepository(): ZoneRepository {

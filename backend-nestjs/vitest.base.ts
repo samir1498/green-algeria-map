@@ -1,4 +1,8 @@
+import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 import { defineConfig } from 'vitest/config';
+
+const root = fileURLToPath(new URL('.', import.meta.url));
 
 export const COVERAGE_EXCLUDES = [
   '**/*.entity.ts',
@@ -11,6 +15,11 @@ export const COVERAGE_EXCLUDES = [
 ];
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': resolve(root, 'src'),
+    },
+  },
   test: {
     globals: true,
     passWithNoTests: true,
