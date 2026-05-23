@@ -1,6 +1,6 @@
 import { Command } from '@nestjs/cqrs';
-import { Zone } from '../../domain/zone';
-import { ZoneType, ZoneStatus } from '../../domain/zone.types';
+import { Zone } from '../../../domain/zone';
+import { ZoneType, ZoneStatus } from '../../../domain/zone.types';
 
 export class UpdateZoneCommand extends Command<Zone> {
   constructor(

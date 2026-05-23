@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
 import { DeleteZoneCommand } from './delete-zone.command';
-import { ZoneRepository } from '../../infrastructure/zone.repository';
+import { ZoneRepository } from '../../../infrastructure/zone.repository';
 
 @CommandHandler(DeleteZoneCommand)
 export class DeleteZoneHandler implements ICommandHandler<

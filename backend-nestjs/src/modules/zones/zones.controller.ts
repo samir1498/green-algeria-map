@@ -11,11 +11,11 @@ import {
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { Public } from '../auth/infrastructure/public.decorator';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateZoneCommand } from './application/commands/create-zone.command';
-import { UpdateZoneCommand } from './application/commands/update-zone.command';
-import { DeleteZoneCommand } from './application/commands/delete-zone.command';
-import { GetAllZonesQuery } from './application/queries/get-all-zones.query';
-import { GetZoneByIdQuery } from './application/queries/get-zone-by-id.query';
+import { CreateZoneCommand } from './application/commands/create-zone/create-zone.command';
+import { UpdateZoneCommand } from './application/commands/update-zone/update-zone.command';
+import { DeleteZoneCommand } from './application/commands/delete-zone/delete-zone.command';
+import { GetAllZonesQuery } from './application/queries/get-all-zones/get-all-zones.query';
+import { GetZoneByIdQuery } from './application/queries/get-zone-by-id/get-zone-by-id.query';
 import { CreateZoneDto } from './dto/create-zone.dto';
 import { UpdateZoneDto } from './dto/update-zone.dto';
 import { ZoneResponseDto } from './dto/zone-response.dto';
