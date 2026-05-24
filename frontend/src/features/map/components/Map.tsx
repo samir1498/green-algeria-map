@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { toast } from 'sonner'
@@ -15,6 +15,8 @@ import { isValidCoordinate } from '@/shared/utils/coordinates'
 import { formatDate } from '@/shared/utils/formatDate'
 import { Legend } from './Legend'
 import { DamageReportForm } from '@/features/damage-reports/components/DamageReportForm'
+import { TreeInfoModal } from '@/features/tree-info/components/TreeInfoModal'
+import { useTreeLookup } from '@/features/tree-info/hooks/useTreeLookup'
 
 const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
 
@@ -27,6 +29,11 @@ interface MapProps {
 
 export function Map({ zones, damageReports = [], demoMode = false, onDamageReported }: MapProps) {
   const [reportingZone, setReportingZone] = useState<Zone | null>(null)
+  const [treeInfoModal, setTreeInfoModal] = useState<{
+    taxonId: number
+    scientificName: string
+  } | null>(null)
+  const { lookupSpecies } = useTreeLookup()
 
   const openReportForm = (zone: Zone) => {
     if (!isValidCoordinate(zone.lat, zone.lng)) {
@@ -35,6 +42,22 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
     }
     setReportingZone(zone)
   }
+
+  const openTreeInfo = useCallback(
+    async (scientificName: string) => {
+      try {
+        const result = await lookupSpecies(scientificName)
+        if (result) {
+          setTreeInfoModal(result)
+        } else {
+          toast.error('Species information not available')
+        }
+      } catch {
+        toast.error('Failed to look up species information')
+      }
+    },
+    [lookupSpecies],
+  )
 
   return (
     <div className="relative">
@@ -78,6 +101,15 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
                   <p className="mt-1 text-xs">
                     {zone.currentCount} / {zone.targetCount} trees
                   </p>
+                )}
+                {zone.treeSpecies && (
+                  <button
+                    onClick={() => openTreeInfo(zone.treeSpecies!)}
+                    className="mt-1 block text-left text-xs text-green-700 underline hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
+                    data-testid="tree-species-link"
+                  >
+                    {zone.treeSpecies}
+                  </button>
                 )}
                 <button
                   onClick={() => openReportForm(zone)}
@@ -145,6 +177,14 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
             </button>
           </div>
         </div>
+      )}
+
+      {treeInfoModal && (
+        <TreeInfoModal
+          taxonId={treeInfoModal.taxonId}
+          scientificName={treeInfoModal.scientificName}
+          onClose={() => setTreeInfoModal(null)}
+        />
       )}
     </div>
   )

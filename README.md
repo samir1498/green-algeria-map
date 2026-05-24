@@ -134,29 +134,45 @@ API docs at `http://localhost:8080/api/docs` (Scalar, moon theme).
 ```
 green-algeria-map/
 ├── frontend/                 # React SPA
-│   ├── src/
-│   │   ├── api/              # API client modules
-│   │   ├── components/       # Map components + shadcn/ui
-│   │   ├── hooks/            # Custom hooks
-│   │   ├── lib/              # Utilities
-│   │   ├── routes/           # TanStack Router routes
-│   │   └── types/            # Shared TypeScript types
-│   └── ...
+│   └── src/
+│       ├── app/              # App shell (router.tsx)
+│       ├── features/         # Domain feature slices
+│       │   ├── auth/         #   api/ + hooks/
+│       │   ├── zones/        #   api/ + hooks/
+│       │   ├── damage-reports/ # api/ + hooks/ + components/
+│       │   ├── map/          #   components/ (Map, Legend)
+│       │   └── tree-info/    #   api/ + hooks/ + components/
+│       ├── routes/           # TanStack Router route files (thin)
+│       ├── shared/           # Cross-cutting shared code
+│       │   ├── components/   #   shadcn/ui primitives
+│       │   ├── constants/    #   Domain constants
+│       │   ├── demo/         #   Mock data
+│       │   ├── hooks/        #   Shared hooks
+│       │   ├── lib/          #   Axios, query client, utils
+│       │   ├── test/         #   Test utilities
+│       │   ├── types/        #   Domain types
+│       │   └── utils/        #   Pure utility functions
+│       ├── main.tsx
+│       ├── routeTree.gen.ts
+│       └── styles.css
 ├── backend-nestjs/           # NestJS CQRS API
 │   ├── src/
-│   │   ├── auth.ts           # BetterAuth instance
+│   │   ├── lib/              # Shared: DomainError, exception filters
 │   │   ├── data-source.ts    # TypeORM DataSource for migrations
 │   │   ├── seed.ts           # Demo data seeder
 │   │   ├── migrations/       # TypeORM migrations
-│   │   └── modules/zones/
-│   │       ├── domain/       # Zone entity, value objects, repository interface
-│   │       ├── application/  # Commands, queries, events, handlers
-│   │       ├── infrastructure/ # TypeORM entity, mapper, repository impl
-│   │       ├── dto/          # Request validation DTOs
-│   │       ├── zones.controller.ts
-│   │       └── zones.module.ts
-│   └── ...
-├── .github/workflows/        # CI (frontend + backend)
+│   │   └── modules/
+│   │       ├── zones/        # domain/ + application/ + infrastructure/ + dto/
+│   │       ├── damage-reports/ # domain/ + application/ + infrastructure/ + dto/
+│   │       └── auth/         # infrastructure/ only (BetterAuth)
+│   └── test/
+│       ├── it/               # Integration tests (Testcontainers + Postgres)
+│       └── setup/            # Test module helper
+├── backend-springboot/       # Spring Boot (pending)
+├── .github/workflows/        # CI (frontend + backend with path filters)
+├── .skills/                  # Project-specific AI skills
+├── .husky/                   # Pre-commit hooks
+├── CONTEXT.md                # Domain architecture documentation
 ├── start-dev.sh              # Dev environment launcher
 └── .tmux.conf                # Tmux config
 ```
@@ -175,10 +191,14 @@ green-algeria-map/
 - NestJS 11 backend with CQRS + TypeORM + PostgreSQL
 - BetterAuth email/password authentication
 - Zone CRUD API + Scalar docs
+- Damage reporting: types, API, red markers, form modal, severity colors, status badges
+- Tree species info lookup (iNaturalist autocomplete + species detail + GBIF Algeria observations)
+- Tree search input with debounced autocomplete
 - TypeORM migration workflow + seed script
-- CI split, depcruise, pre-commit hooks
+- CI split (frontend/backend), depcruise, pre-commit hooks
 - Clean architecture: domain/application/infrastructure layers
 - Frontend auth integration (sign-in/up pages, protected routes)
+- Full test suite: unit, UI, integration
 
 ## License
 

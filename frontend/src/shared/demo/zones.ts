@@ -11,6 +11,7 @@ export const demoZones: Zone[] = [
     targetCount: 5000,
     currentCount: 1200,
     description: 'Reforestation of cedar forests destroyed by wildfires.',
+    treeSpecies: 'Cedrus atlantica',
   },
   {
     id: '2',
@@ -22,6 +23,7 @@ export const demoZones: Zone[] = [
     targetCount: 3000,
     currentCount: 0,
     description: 'Restoring Mediterranean pine and oak ecosystems.',
+    treeSpecies: 'Pinus halepensis',
   },
   {
     id: '3',
@@ -33,6 +35,7 @@ export const demoZones: Zone[] = [
     targetCount: 8000,
     currentCount: 8000,
     description: 'Completed cork oak and wetland reforestation.',
+    treeSpecies: 'Quercus suber',
   },
   {
     id: '4',
@@ -71,6 +74,7 @@ export const demoZones: Zone[] = [
     targetCount: 2000,
     currentCount: 0,
     description: 'Acacia and drought-resistant tree planting in the Sahara.',
+    treeSpecies: 'Acacia tortilis',
   },
   {
     id: '8',
@@ -82,6 +86,7 @@ export const demoZones: Zone[] = [
     targetCount: 1500,
     currentCount: 600,
     description: 'Community olive tree planting project.',
+    treeSpecies: 'Olea europaea',
   },
   {
     id: '9',
@@ -102,5 +107,6 @@ export const demoZones: Zone[] = [
     targetCount: 4000,
     currentCount: 1500,
     description: 'Mixed oak and pine reforestation in Kabylie region.',
+    treeSpecies: 'Quercus suber',
   },
 ]
