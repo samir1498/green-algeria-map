@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: green-algeria-db
+    environment:
+      POSTGRES_USER: greenalgeria
+      POSTGRES_PASSWORD: greenalgeria
+      POSTGRES_DB: greenalgeria
+    volumes:
+      - pgdata:/var/lib/postgresql
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U greenalgeria -d greenalgeria']
+      interval: 3s
+      timeout: 2s
+      retries: 15
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: green-algeria-rustfs
+    environment:
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+      RUSTFS_CONSOLE_ENABLE: 'true'
+      RUSTFS_ACCESS_KEY: greenalgeria-access
+      RUSTFS_SECRET_KEY: greenalgeria-secret-change-me
+    volumes:
+      - rustfs_data:/data
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q --spider http://127.0.0.1:9000/ || exit 0']
+      interval: 3s
+      timeout: 2s
+      retries: 10
+
+volumes:
+  pgdata:
+  rustfs_data:
