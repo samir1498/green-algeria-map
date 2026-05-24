@@ -17,6 +17,7 @@ import { Legend } from './Legend'
 import { DamageReportForm } from '@/features/damage-reports/components/DamageReportForm'
 import { TreeInfoModal } from '@/features/tree-info/components/TreeInfoModal'
 import { useTreeLookup } from '@/features/tree-info/hooks/useTreeLookup'
+import { ZonePhotoUploader } from '@/features/zones/components/ZonePhotoUploader'
 
 const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
 
@@ -111,6 +112,7 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
                     {zone.treeSpecies}
                   </button>
                 )}
+                <ZonePhotoUploader zoneId={zone.id} />
                 <button
                   onClick={() => openReportForm(zone)}
                   className="mt-2 w-full rounded bg-red-600 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-red-700"

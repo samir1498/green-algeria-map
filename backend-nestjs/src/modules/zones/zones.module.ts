@@ -9,12 +9,14 @@ import { DeleteZoneHandler } from './application/commands/delete-zone/delete-zon
 import { GetAllZonesHandler } from './application/queries/get-all-zones/get-all-zones.handler';
 import { GetZoneByIdHandler } from './application/queries/get-zone-by-id/get-zone-by-id.handler';
 import { ZoneCreatedHandler } from './application/events/zone-created/zone-created.handler';
+import { AddPhotoToZoneHandler } from './application/commands/add-photo-to-zone/add-photo-to-zone.handler';
 import { ZonesController } from './zones.controller';
 
 const CommandHandlers = [
   CreateZoneHandler,
   UpdateZoneHandler,
   DeleteZoneHandler,
+  AddPhotoToZoneHandler,
 ];
 const QueryHandlers = [GetAllZonesHandler, GetZoneByIdHandler];
 const EventHandlers = [ZoneCreatedHandler];

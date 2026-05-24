@@ -13,6 +13,7 @@ describe('Zone', () => {
       status: 'planned',
       coordinates: validCoords,
       description: 'A test zone',
+      photos: [],
       ...overrides,
     });
   }
@@ -258,6 +259,7 @@ describe('Zone', () => {
         targetCount: 20,
         currentCount: 5,
         description: 'A test zone',
+        photos: [],
       });
     });
   });

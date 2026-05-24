@@ -10,6 +10,7 @@ export class ZoneResponseDto {
   targetCount?: number;
   currentCount: number;
   description: string;
+  photos?: string[];
 
   static fromDomain(zone: Zone): ZoneResponseDto {
     const dto = new ZoneResponseDto();
@@ -22,6 +23,7 @@ export class ZoneResponseDto {
     dto.targetCount = zone.targetCount;
     dto.currentCount = zone.currentCount;
     dto.description = zone.description;
+    dto.photos = zone.photos;
     return dto;
   }
 }

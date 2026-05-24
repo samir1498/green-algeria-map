@@ -15,6 +15,7 @@ export interface ZoneProps {
   targetCount?: number;
   currentCount?: number;
   description: string;
+  photos?: string[];
 }
 
 export class Zone {
@@ -26,6 +27,7 @@ export class Zone {
   private _targetCount?: number;
   private _currentCount: number;
   private _description: string;
+  private _photos: string[];
 
   get name(): string {
     return this._name;
@@ -51,6 +53,10 @@ export class Zone {
     return this._description;
   }
 
+  get photos(): string[] {
+    return [...this._photos];
+  }
+
   private constructor(props: ZoneProps) {
     this.id = props.id;
     this._name = props.name;
@@ -60,6 +66,7 @@ export class Zone {
     this._targetCount = props.targetCount;
     this._currentCount = props.currentCount ?? 0;
     this._description = props.description;
+    this._photos = props.photos ?? [];
   }
 
   static create(props: ZoneProps): Zone {
@@ -126,6 +133,15 @@ export class Zone {
     }
   }
 
+  addPhoto(photoUrl: string): void {
+    if (!photoUrl) return;
+    this._photos.push(photoUrl);
+  }
+
+  removePhoto(photoUrl: string): void {
+    this._photos = this._photos.filter((url) => url !== photoUrl);
+  }
+
   toJSON() {
     return {
       id: this.id,
@@ -137,6 +153,7 @@ export class Zone {
       targetCount: this._targetCount,
       currentCount: this._currentCount,
       description: this._description,
+      photos: [...this._photos],
     };
   }
 }
