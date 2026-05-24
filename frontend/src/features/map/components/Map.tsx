@@ -16,7 +16,7 @@ import { formatDate } from '@/shared/utils/formatDate'
 import { Legend } from './Legend'
 import { DamageReportForm } from '@/features/damage-reports/components/DamageReportForm'
 import { TreeInfoModal } from '@/features/tree-info/components/TreeInfoModal'
-import { searchTreeSpecies } from '@/features/tree-info/api/tree-info'
+import { useTreeLookup } from '@/features/tree-info/hooks/useTreeLookup'
 
 const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
 
@@ -33,6 +33,7 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
     taxonId: number
     scientificName: string
   } | null>(null)
+  const { lookupSpecies } = useTreeLookup()
 
   const openReportForm = (zone: Zone) => {
     if (!isValidCoordinate(zone.lat, zone.lng)) {
@@ -42,18 +43,21 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
     setReportingZone(zone)
   }
 
-  const openTreeInfo = useCallback(async (scientificName: string) => {
-    try {
-      const results = await searchTreeSpecies(scientificName)
-      if (results.length > 0) {
-        setTreeInfoModal({ taxonId: results[0].id, scientificName })
-      } else {
-        toast.error('Species information not available')
+  const openTreeInfo = useCallback(
+    async (scientificName: string) => {
+      try {
+        const result = await lookupSpecies(scientificName)
+        if (result) {
+          setTreeInfoModal(result)
+        } else {
+          toast.error('Species information not available')
+        }
+      } catch {
+        toast.error('Failed to look up species information')
       }
-    } catch {
-      toast.error('Failed to look up species information')
-    }
-  }, [])
+    },
+    [lookupSpecies],
+  )
 
   return (
     <div className="relative">

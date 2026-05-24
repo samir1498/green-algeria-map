@@ -17,7 +17,7 @@ Map-based platform for Green Algeria association. Volunteers, donors, and organi
 
 Feature-sliced: `features/{domain}/{api,hooks,components}/`
 
-```
+```text
 api/        →   hooks/        →   components/   |   routes/
 (data)          (query hook)      (UI)           |   (page shells)
 ```

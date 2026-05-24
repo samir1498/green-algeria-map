@@ -76,6 +76,7 @@ export function TreeSearchInput({
           ) : (
             results.map((r) => (
               <button
+                type="button"
                 key={r.id}
                 onClick={() => handleSelect(r.name, r.commonName)}
                 className="hover:bg-muted w-full px-3 py-2 text-left text-sm transition-colors"
