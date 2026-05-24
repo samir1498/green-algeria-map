@@ -8,4 +8,5 @@ export interface Zone {
   targetCount?: number | null
   currentCount?: number | null
   description: string
+  treeSpecies?: string | null
 }
