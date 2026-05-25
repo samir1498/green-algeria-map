@@ -91,7 +91,7 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
             }}
           >
             <Popup>
-              <div className="text-sm">
+              <div className="max-h-[50vh] overflow-y-auto text-sm md:max-h-none">
                 <p className="font-semibold">{zone.name}</p>
                 <p className="text-muted-foreground">{typeLabels[zone.type]}</p>
                 <span
@@ -139,7 +139,7 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
             }}
           >
             <Popup>
-              <div className="text-sm">
+              <div className="max-h-[50vh] overflow-y-auto text-sm md:max-h-none">
                 <p className="font-semibold text-red-600 dark:text-red-400">Damage Report</p>
                 <p className="text-muted-foreground">{damageTypeLabels[report.type]}</p>
                 <span

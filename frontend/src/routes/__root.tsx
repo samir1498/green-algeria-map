@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { Outlet, createRootRoute, Link, useNavigate } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { Moon, Sun, LogOut, User, Loader2 } from 'lucide-react'
+import { Moon, Sun, LogOut, User, Loader2, Menu, X } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Toaster } from '@/shared/components/ui/sonner'
 import { useAuth } from '@/features/auth/hooks/useAuth'
@@ -86,6 +87,8 @@ function AuthNav() {
 }
 
 function RootComponent() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="bg-background border-b">
@@ -95,9 +98,10 @@ function RootComponent() {
               <circle cx="16" cy="16" r="14" />
               <path d="M16 8c-2 4-6 8-6 12a6 6 0 0012 0c0-4-4-8-6-12z" />
             </svg>
-            Green Algeria Map
+            <span className="hidden sm:inline">Green Algeria Map</span>
+            <span className="sm:hidden">GAM</span>
           </a>
-          <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-4 md:flex">
             <a href="/" className="hover:text-foreground/80 text-sm font-medium">
               Map
             </a>
@@ -107,7 +111,41 @@ function RootComponent() {
             <AuthNav />
             <ThemeToggle />
           </div>
+          <div className="flex items-center gap-2 md:hidden">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
         </nav>
+        {mobileMenuOpen && (
+          <div className="border-t px-4 pt-2 pb-4 md:hidden">
+            <div className="flex flex-col gap-2">
+              <a
+                href="/"
+                className="hover:text-foreground/80 rounded px-2 py-1.5 text-sm font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Map
+              </a>
+              <a
+                href="/about"
+                className="hover:text-foreground/80 rounded px-2 py-1.5 text-sm font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                About
+              </a>
+              <div className="border-t pt-2">
+                <AuthNav />
+              </div>
+            </div>
+          </div>
+        )}
       </header>
       <main className="flex-1">
         <Outlet />
