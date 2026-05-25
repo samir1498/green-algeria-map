@@ -30,6 +30,7 @@ export function ZoneCtaPanel({ zone }: ZoneCtaPanelProps) {
           <button
             key={action}
             onClick={() => setShowContact(true)}
+            data-testid={`cta-${action}`}
             className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
               action === 'volunteer'
                 ? 'bg-green-600 text-white hover:bg-green-700'
