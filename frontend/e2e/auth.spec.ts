@@ -17,6 +17,7 @@ async function apiSignUp(page: any, name: string, email: string): Promise<void> 
 
 async function apiSignOut(page: any): Promise<void> {
   await page.request.post(`${AUTH_BASE}/sign-out`)
+  await page.context().clearCookies()
 }
 
 async function uiRegister(page: any, name: string, email: string): Promise<void> {
