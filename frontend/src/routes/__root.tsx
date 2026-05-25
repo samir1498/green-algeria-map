@@ -57,7 +57,7 @@ function AuthNav() {
     return (
       <div className="flex items-center gap-2">
         <Link to="/auth/login">
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" data-testid="nav-sign-in">
             Sign In
           </Button>
         </Link>

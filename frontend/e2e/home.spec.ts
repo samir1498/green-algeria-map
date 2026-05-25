@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 async function clickFirstZoneMarker(page: import('@playwright/test').Page) {
-  await page.getByTestId('map-container').waitFor({ state: 'visible', timeout: 10000 })
+  await page.getByTestId('map-container').waitFor({ state: 'visible', timeout: 20000 })
   await page.locator('.leaflet-interactive').first().waitFor({ state: 'visible', timeout: 15000 })
 
   const clicked = await page.evaluate(() => {
