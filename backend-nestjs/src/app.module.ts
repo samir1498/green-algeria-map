@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TerminusModule } from '@nestjs/terminus';
 import { ZonesModule } from './modules/zones/zones.module';
 import { DamageReportsModule } from './modules/damage-reports/damage-reports.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { StorageModule } from './modules/storage/storage.module';
-import { HealthController } from './health/health.controller';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -25,14 +24,11 @@ import { HealthController } from './health/health.controller';
         synchronize: false,
       }),
     }),
-    TerminusModule.forRoot({
-      errorLogStyle: 'json',
-    }),
     AuthModule,
     ZonesModule,
     DamageReportsModule,
     StorageModule,
+    HealthModule,
   ],
-  controllers: [HealthController],
 })
 export class AppModule {}
