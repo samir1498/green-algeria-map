@@ -26,10 +26,19 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
-    command: 'pnpm preview --port 4173',
-    url: 'http://localhost:4173',
-    reuseExistingServer: !process.env.CI,
-    cwd: '.',
-  },
+  webServer: [
+    {
+      command: 'scripts/e2e-start.sh',
+      url: 'http://localhost:8080/api/health/live',
+      reuseExistingServer: !process.env.CI,
+      cwd: '../backend-nestjs',
+      timeout: 120_000,
+    },
+    {
+      command: 'pnpm preview --port 4173',
+      url: 'http://localhost:4173',
+      reuseExistingServer: !process.env.CI,
+      cwd: '.',
+    },
+  ],
 })
