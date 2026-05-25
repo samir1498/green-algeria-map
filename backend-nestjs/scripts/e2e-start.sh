@@ -43,9 +43,3 @@ async function main() {
 }
 
 main().catch(err => { console.error(err); process.exit(1) })
-
-echo "Running migrations..."
-pnpm migration:run
-
-echo "Starting backend..."
-CLIENT_URL=http://localhost:4173 pnpm start
