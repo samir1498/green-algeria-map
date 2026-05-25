@@ -36,6 +36,13 @@ async function main() {
     migration.on('error', err => reject(err))
   })
 
+  console.log('Seeding demo zones...')
+  const seed = spawn('pnpm seed', { cwd, stdio: 'inherit', shell: true, env: safeEnv })
+  await new Promise((resolve, reject) => {
+    seed.on('exit', code => code === 0 ? resolve() : reject(new Error(`Seed failed with code ${code}`)))
+    seed.on('error', err => reject(err))
+  })
+
   console.log('Starting backend...')
   const server = spawn('pnpm start', {
     cwd,
