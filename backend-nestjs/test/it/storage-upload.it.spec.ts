@@ -31,7 +31,13 @@ async function createBucket(
   const baseUrl = endpoint.replace(/\/+$/, '');
   for (let i = 0; i < retries; i++) {
     try {
-      const headers = signS3CreateBucket(endpoint, bucket, accessKey, secretKey, region);
+      const headers = signS3CreateBucket(
+        endpoint,
+        bucket,
+        accessKey,
+        secretKey,
+        region,
+      );
       await axios.put(`${baseUrl}/${bucket}`, Buffer.alloc(0), { headers });
       return;
     } catch (err) {
@@ -105,7 +111,9 @@ describe('Storage upload (integration)', () => {
     }).compile();
 
     app = module.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
     await app.init();
   });
 
@@ -148,7 +156,10 @@ describe('Storage upload (integration)', () => {
       expect(getRes.body.photos).toContain(uploadRes.body.photoUrl);
 
       // Verify file is stored in RustFS with correct content
-      const objectKey = uploadRes.body.photoUrl.replace(`${rustfsEndpoint}/${RUSTFS_BUCKET}/`, '');
+      const objectKey = uploadRes.body.photoUrl.replace(
+        `${rustfsEndpoint}/${RUSTFS_BUCKET}/`,
+        '',
+      );
       const getHeaders = signS3Get(
         rustfsEndpoint,
         RUSTFS_BUCKET,

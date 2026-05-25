@@ -66,7 +66,7 @@ export class Zone {
     this._targetCount = props.targetCount;
     this._currentCount = props.currentCount ?? 0;
     this._description = props.description;
-    this._photos = props.photos ?? [];
+    this._photos = props.photos ? [...props.photos] : [];
   }
 
   static create(props: ZoneProps): Zone {
@@ -134,7 +134,13 @@ export class Zone {
   }
 
   addPhoto(photoUrl: string): void {
-    if (!photoUrl) return;
+    if (!photoUrl || !photoUrl.trim()) return;
+    if (this._photos.includes(photoUrl)) return;
+    try {
+      new URL(photoUrl);
+    } catch {
+      return;
+    }
     this._photos.push(photoUrl);
   }
 

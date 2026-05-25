@@ -8,7 +8,12 @@ function hmac(key: string | Buffer, data: string): Buffer {
   return createHmac('sha256', key).update(data).digest();
 }
 
-function signingKey(secret: string, date: string, region: string, service: string): Buffer {
+function signingKey(
+  secret: string,
+  date: string,
+  region: string,
+  service: string,
+): Buffer {
   const kDate = hmac('AWS4' + secret, date);
   const kRegion = hmac(kDate, region);
   const kService = hmac(kRegion, service);
@@ -19,7 +24,10 @@ function encodeS3Key(key: string): string {
   return key
     .split('/')
     .map((seg) =>
-      encodeURIComponent(seg).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`),
+      encodeURIComponent(seg).replace(
+        /[!'()*]/g,
+        (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
+      ),
     )
     .join('/');
 }
@@ -55,11 +63,26 @@ function signS3Request(
     .join('');
   const signedHeaders = sortedKeys.join(';');
 
-  const canonicalRequest = [method, pathname, '', canonicalHeaders, signedHeaders, payloadHash].join('\n');
+  const canonicalRequest = [
+    method,
+    pathname,
+    '',
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash,
+  ].join('\n');
   const credentialScope = `${dateStamp}/${region}/s3/aws4_request`;
-  const stringToSign = ['AWS4-HMAC-SHA256', amzDate, credentialScope, sha256Hex(canonicalRequest)].join('\n');
+  const stringToSign = [
+    'AWS4-HMAC-SHA256',
+    amzDate,
+    credentialScope,
+    sha256Hex(canonicalRequest),
+  ].join('\n');
 
-  const signature = hmac(signingKey(secretKey, dateStamp, region, 's3'), stringToSign).toString('hex');
+  const signature = hmac(
+    signingKey(secretKey, dateStamp, region, 's3'),
+    stringToSign,
+  ).toString('hex');
   const authorization = `AWS4-HMAC-SHA256 Credential=${accessKey}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
   return { ...allHeaders, Authorization: authorization };
@@ -74,7 +97,15 @@ export function signS3Get(
   region: string,
 ): Record<string, string> {
   const url = new URL(endpoint);
-  return signS3Request('GET', `/${bucket}/${encodeS3Key(key)}`, { host: url.host }, Buffer.alloc(0), accessKey, secretKey, region);
+  return signS3Request(
+    'GET',
+    `/${bucket}/${encodeS3Key(key)}`,
+    { host: url.host },
+    Buffer.alloc(0),
+    accessKey,
+    secretKey,
+    region,
+  );
 }
 
 export function signS3CreateBucket(
@@ -85,5 +116,13 @@ export function signS3CreateBucket(
   region: string,
 ): Record<string, string> {
   const url = new URL(endpoint);
-  return signS3Request('PUT', `/${bucket}`, { host: url.host }, Buffer.alloc(0), accessKey, secretKey, region);
+  return signS3Request(
+    'PUT',
+    `/${bucket}`,
+    { host: url.host },
+    Buffer.alloc(0),
+    accessKey,
+    secretKey,
+    region,
+  );
 }

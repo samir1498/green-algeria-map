@@ -44,7 +44,15 @@ export function signS3Put(
     'content-type': contentType,
     'content-length': String(body.length),
   };
-  const result = signS3Request('PUT', pathname, headers, body, accessKey, secretKey, region);
+  const result = signS3Request(
+    'PUT',
+    pathname,
+    headers,
+    body,
+    accessKey,
+    secretKey,
+    region,
+  );
   delete result.signedHeaders;
   return result;
 }

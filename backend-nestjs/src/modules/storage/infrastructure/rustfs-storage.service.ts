@@ -15,16 +15,26 @@ export class RustFsStorageService implements StorageService {
   private readonly region: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.rustfsEndpoint = this.configService
-      .get<string>('OO_OBJECT_STORAGE_ENDPOINT')!
-      .replace(/\/+$/, '');
-    this.bucket = this.configService.get<string>('OO_OBJECT_STORAGE_BUCKET')!;
-    this.accessKey = this.configService.get<string>(
+    const endpoint = this.configService.get<string>(
+      'OO_OBJECT_STORAGE_ENDPOINT',
+    );
+    const bucket = this.configService.get<string>('OO_OBJECT_STORAGE_BUCKET');
+    const accessKey = this.configService.get<string>(
       'OO_OBJECT_STORAGE_ACCESS_KEY',
-    )!;
-    this.secretKey = this.configService.get<string>(
+    );
+    const secretKey = this.configService.get<string>(
       'OO_OBJECT_STORAGE_SECRET_KEY',
-    )!;
+    );
+
+    if (!endpoint) throw new Error('Missing OO_OBJECT_STORAGE_ENDPOINT');
+    if (!bucket) throw new Error('Missing OO_OBJECT_STORAGE_BUCKET');
+    if (!accessKey) throw new Error('Missing OO_OBJECT_STORAGE_ACCESS_KEY');
+    if (!secretKey) throw new Error('Missing OO_OBJECT_STORAGE_SECRET_KEY');
+
+    this.rustfsEndpoint = endpoint.replace(/\/+$/, '');
+    this.bucket = bucket;
+    this.accessKey = accessKey;
+    this.secretKey = secretKey;
     this.region =
       this.configService.get<string>('OO_OBJECT_STORAGE_REGION') ?? 'us-east-1';
   }
