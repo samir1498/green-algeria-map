@@ -29,6 +29,7 @@ async function main() {
   const migration = spawn('pnpm', ['migration:run'], { cwd, stdio: 'inherit', shell: true })
   await new Promise((resolve, reject) => {
     migration.on('exit', code => code === 0 ? resolve() : reject(new Error(`Migration failed with code ${code}`)))
+    migration.on('error', err => reject(err))
   })
 
   console.log('Starting backend...')
