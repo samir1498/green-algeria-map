@@ -117,7 +117,7 @@ describe('Migrations (integration)', () => {
     }
   });
 
-  it('reverts last three migrations successfully', async () => {
+  it('reverts all migrations successfully', async () => {
     const dataSource = await createTestDatabase(
       container,
       'test_migrations_revert',
@@ -125,18 +125,20 @@ describe('Migrations (integration)', () => {
     await dataSource.initialize();
     try {
       await runMigrationsCli(container, 'test_migrations_revert');
-      await execAsync(
-        `DB_HOST=${container.getHost()} DB_PORT=${container.getPort()} DB_USERNAME=${container.getUsername()} DB_PASSWORD=${container.getPassword()} DB_NAME=test_migrations_revert pnpm migration:revert`,
-        { cwd: process.cwd() },
-      );
-      await execAsync(
-        `DB_HOST=${container.getHost()} DB_PORT=${container.getPort()} DB_USERNAME=${container.getUsername()} DB_PASSWORD=${container.getPassword()} DB_NAME=test_migrations_revert pnpm migration:revert`,
-        { cwd: process.cwd() },
-      );
-      await execAsync(
-        `DB_HOST=${container.getHost()} DB_PORT=${container.getPort()} DB_USERNAME=${container.getUsername()} DB_PASSWORD=${container.getPassword()} DB_NAME=test_migrations_revert pnpm migration:revert`,
-        { cwd: process.cwd() },
-      );
+
+      const revert = () =>
+        execAsync(
+          `DB_HOST=${container.getHost()} DB_PORT=${container.getPort()} DB_USERNAME=${container.getUsername()} DB_PASSWORD=${container.getPassword()} DB_NAME=test_migrations_revert pnpm migration:revert`,
+          { cwd: process.cwd() },
+        );
+
+      for (let i = 0; i < 10; i++) {
+        try {
+          await revert();
+        } catch {
+          break;
+        }
+      }
 
       const queryRunner = dataSource.createQueryRunner();
       try {

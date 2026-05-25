@@ -28,4 +28,7 @@ export class ZoneOrmEntity {
 
   @Column('text')
   description: string;
+
+  @Column('simple-array', { nullable: true })
+  photos?: string[];
 }
