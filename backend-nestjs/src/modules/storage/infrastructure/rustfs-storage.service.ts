@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { randomUUID } from 'node:crypto';
 import axios from 'axios';
 import { StorageService } from '../domain/storage.service';
 import { UploadFileError } from '../domain/storage.errors';
@@ -34,10 +35,11 @@ export class RustFsStorageService implements StorageService {
     mimetype: string,
   ): Promise<{ fileId: string; url: string }> {
     try {
+      const uniqueKey = `${randomUUID()}-${filename}`;
       const signedHeaders = signS3Put(
         this.rustfsEndpoint,
         this.bucket,
-        filename,
+        uniqueKey,
         file,
         mimetype,
         this.accessKey,
@@ -45,7 +47,7 @@ export class RustFsStorageService implements StorageService {
         this.region,
       );
 
-      const url = `${this.rustfsEndpoint}/${this.bucket}/${filename}`;
+      const url = `${this.rustfsEndpoint}/${this.bucket}/${uniqueKey}`;
       const response = await axios.put(url, file, {
         headers: signedHeaders,
         maxContentLength: Infinity,
@@ -58,9 +60,8 @@ export class RustFsStorageService implements StorageService {
         );
       }
 
-      const fileId = filename;
-      const downloadUrl = `${this.rustfsEndpoint}/${this.bucket}/${fileId}`;
-      return { fileId, url: downloadUrl };
+      const downloadUrl = `${this.rustfsEndpoint}/${this.bucket}/${uniqueKey}`;
+      return { fileId: uniqueKey, url: downloadUrl };
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new UploadFileError(`Failed to upload file: ${error.message}`);

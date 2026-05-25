@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { CqrsModule } from '@nestjs/cqrs';
 import { RustFsStorageService } from './infrastructure/rustfs-storage.service';
 import { StorageController } from './storage.controller';
-
-export const STORAGE_SERVICE = 'STORAGE_SERVICE';
+import { STORAGE_SERVICE } from './tokens';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, CqrsModule],
   controllers: [StorageController],
   providers: [
     {

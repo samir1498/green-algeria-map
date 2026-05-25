@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   BadRequestException,
   Inject,
+  HttpException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiConsumes, ApiBody } from '@nestjs/swagger';
@@ -15,7 +16,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { AddPhotoToZoneCommand } from '../zones/application/commands/add-photo-to-zone/add-photo-to-zone.command';
 import { UploadFileDto } from './dto/upload-file.dto';
 import type { Express } from 'express';
-import { STORAGE_SERVICE } from './storage.module';
+import { STORAGE_SERVICE } from './tokens';
 
 @ApiTags('Storage')
 @Controller('storage')
@@ -56,6 +57,7 @@ export class StorageController {
 
       return { photoUrl };
     } catch (error) {
+      if (error instanceof HttpException) throw error;
       if (error instanceof Error) {
         throw new BadRequestException(error.message);
       }

@@ -5,7 +5,7 @@ export interface StorageService {
    * @param filename - Original filename (used for key)
    * @param mimetype - MIME type of the file
    * @returns Promise with fileId and download URL
-   * @throws StorageError if upload fails
+   * @throws UploadFileError if upload fails
    */
   uploadFile(
     file: Buffer,

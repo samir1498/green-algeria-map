@@ -37,35 +37,51 @@ export function signS3Put(
   secretKey: string,
   region: string,
 ): Record<string, string> {
-  const now = new Date();
-  const amzDate = now.toISOString().replace(/[-:]|\.\d{3}/g, '');
-  const dateStamp = amzDate.slice(0, 8);
-
   const url = new URL(endpoint);
   const pathname = `/${bucket}/${encodeS3Key(key)}`;
-  const payloadHash = sha256Hex(body);
-
   const headers: Record<string, string> = {
     host: url.host,
     'content-type': contentType,
     'content-length': String(body.length),
+  };
+  const result = signS3Request('PUT', pathname, headers, body, accessKey, secretKey, region);
+  delete result.signedHeaders;
+  return result;
+}
+
+function signS3Request(
+  method: string,
+  pathname: string,
+  headers: Record<string, string>,
+  body: Buffer,
+  accessKey: string,
+  secretKey: string,
+  region: string,
+): Record<string, string> {
+  const now = new Date();
+  const amzDate = now.toISOString().replace(/[-:]|\.\d{3}/g, '');
+  const dateStamp = amzDate.slice(0, 8);
+  const payloadHash = sha256Hex(body.length > 0 ? body : '');
+
+  const allHeaders: Record<string, string> = {
     'x-amz-content-sha256': payloadHash,
     'x-amz-date': amzDate,
+    ...headers,
   };
 
-  const sortedKeys = Object.keys(headers)
+  const sortedKeys = Object.keys(allHeaders)
     .map((k) => k.toLowerCase())
     .sort();
   const canonicalHeaders = sortedKeys
     .map(
       (k) =>
-        `${k}:${headers[Object.keys(headers).find((h) => h.toLowerCase() === k)!].trim().replace(/\s+/g, ' ')}\n`,
+        `${k}:${allHeaders[Object.keys(allHeaders).find((h) => h.toLowerCase() === k)!].trim().replace(/\s+/g, ' ')}\n`,
     )
     .join('');
   const signedHeaders = sortedKeys.join(';');
 
   const canonicalRequest = [
-    'PUT',
+    method,
     pathname,
     '',
     canonicalHeaders,
@@ -87,8 +103,9 @@ export function signS3Put(
   const authorization = `AWS4-HMAC-SHA256 Credential=${accessKey}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
   return {
-    ...headers,
+    ...allHeaders,
     Authorization: authorization,
+    signedHeaders,
   };
 }
 
