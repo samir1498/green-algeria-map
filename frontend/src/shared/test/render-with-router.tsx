@@ -1,17 +1,16 @@
 import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   Outlet,
   RouterProvider,
   createMemoryHistory,
-  createRootRoute,
+  createRootRouteWithContext,
   createRoute,
   createRouter,
 } from '@tanstack/react-router'
 import type { ReactElement } from 'react'
-import type { Router, AnyRoute } from '@tanstack/react-router'
+import type { AuthState } from '@/routes/__root'
 
 export function createTestQueryClient() {
   return new QueryClient({
@@ -22,50 +21,48 @@ export function createTestQueryClient() {
   })
 }
 
-interface RenderWithRouterResult {
-  user: ReturnType<typeof userEvent.setup>
-  rerender: (ui: ReactElement) => void
-  unmount: () => void
-  container: HTMLElement
-  router: Router<AnyRoute>
+interface RenderAuthRouteOptions {
+  initialEntries?: string[]
+  validateSearch?: (search: Record<string, unknown>) => Record<string, unknown>
 }
 
-export async function renderWithRouter(component: ReactElement): Promise<RenderWithRouterResult> {
-  const rootRoute = createRootRoute({
+export async function renderAuthRoute(
+  path: string,
+  component: ReactElement,
+  options?: RenderAuthRouteOptions,
+) {
+  const auth: AuthState = { user: null, isAuthenticated: false, isPending: false }
+  const rootRoute = createRootRouteWithContext<{ auth: AuthState }>()({
     component: () => <Outlet />,
   })
 
-  const testRoute = createRoute({
+  const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/',
-    component: () => component,
+    component: () => <div>Home</div>,
   })
 
-  const routeTree = rootRoute.addChildren([testRoute])
-  const history = createMemoryHistory({ initialEntries: ['/'] })
-  const router = createRouter({
-    routeTree,
-    history,
-    defaultPendingMs: 0,
+  const route = createRoute({
+    getParentRoute: () => rootRoute,
+    path,
+    component: () => component,
+    validateSearch: options?.validateSearch,
   })
+
+  const routeTree = rootRoute.addChildren([indexRoute, route])
+  const history = createMemoryHistory({ initialEntries: options?.initialEntries ?? [path] })
+  const router = createRouter({ routeTree, history, context: { auth }, defaultPendingMs: 0 })
 
   await router.load()
 
   const queryClient = createTestQueryClient()
-
-  const { rerender, unmount, container } = render(
+  const { container } = render(
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
     </QueryClientProvider>,
   )
 
-  return {
-    user: userEvent.setup(),
-    rerender,
-    unmount,
-    container,
-    router,
-  }
+  return { user: userEvent.setup(), router, container }
 }
 
 export { screen, waitFor, act } from '@testing-library/react'

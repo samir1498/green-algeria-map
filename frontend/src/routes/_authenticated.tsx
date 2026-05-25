@@ -1,23 +1,16 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { sessionService } from '@/features/auth/api'
 
-export const Route = createFileRoute('/dashboard')({
-  beforeLoad: async () => {
+export const Route = createFileRoute('/_authenticated')({
+  beforeLoad: async ({ location }) => {
     const session = await sessionService.getSession()
     if (!session?.user) {
       throw redirect({
         to: '/auth/login',
+        search: { redirect: location.href },
       })
     }
     return { user: session.user }
   },
-  component: DashboardLayout,
+  component: Outlet,
 })
-
-function DashboardLayout() {
-  return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <Outlet />
-    </div>
-  )
-}

@@ -8,9 +8,10 @@ interface UseRegisterFormOptions {
     email: string
     password: string
   }) => Promise<{ error?: { message: string } | null }>
+  redirectTo?: string
 }
 
-export function useRegisterForm({ signUp }: UseRegisterFormOptions) {
+export function useRegisterForm({ signUp, redirectTo = '/' }: UseRegisterFormOptions) {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -21,17 +22,21 @@ export function useRegisterForm({ signUp }: UseRegisterFormOptions) {
     e.preventDefault()
     setLoading(true)
 
-    const result = await signUp({ name, email, password })
+    try {
+      const result = await signUp({ name, email, password })
 
-    if (result.error) {
-      toast.error(result.error.message)
+      if (result.error) {
+        toast.error(result.error.message)
+        return
+      }
+
+      toast.success('Account created successfully')
+      navigate({ to: redirectTo })
+    } catch {
+      toast.error('Sign up failed. Please try again.')
+    } finally {
       setLoading(false)
-      return
     }
-
-    toast.success('Account created successfully')
-    setLoading(false)
-    navigate({ to: '/' })
   }
 
   return { name, email, password, loading, handleSubmit, setName, setEmail, setPassword }

@@ -1,5 +1,7 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { useLoginForm } from '@/features/auth/hooks/useLoginForm'
+import { sessionService } from '@/features/auth/api'
+import { sanitizeRedirect } from '@/shared/utils/sanitize-redirect'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
@@ -13,12 +15,27 @@ import {
 import { useAuth } from '@/features/auth/hooks/useAuth'
 
 export const Route = createFileRoute('/auth/login')({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+    return typeof search.redirect === 'string'
+      ? { redirect: sanitizeRedirect(search.redirect) }
+      : {}
+  },
+  beforeLoad: async () => {
+    const session = await sessionService.getSession()
+    if (session?.user) {
+      throw redirect({ to: '/' })
+    }
+  },
   component: LoginPage,
 })
 
 export function LoginPage() {
   const { signIn } = useAuth()
-  const { email, password, loading, handleSubmit, setEmail, setPassword } = useLoginForm({ signIn })
+  const search = Route.useSearch()
+  const { email, password, loading, handleSubmit, setEmail, setPassword } = useLoginForm({
+    signIn,
+    redirectTo: search.redirect,
+  })
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">

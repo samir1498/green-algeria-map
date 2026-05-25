@@ -1,17 +1,24 @@
 import { useState } from 'react'
-import { Outlet, createRootRoute, Link, useNavigate } from '@tanstack/react-router'
+import { Outlet, createRootRouteWithContext, Link, useNavigate } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { Moon, Sun, LogOut, User, Loader2, Menu, X } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { Toaster } from '@/shared/components/ui/sonner'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import type { AuthUser } from '@/features/auth/api/types'
 import { useTheme } from '@/shared/hooks/useTheme'
 import { DefaultErrorBoundary } from '@/shared/components/DefaultErrorBoundary'
 import { NotFound } from '@/shared/components/NotFound'
 import '@/styles.css'
 
-export const Route = createRootRoute({
+export interface AuthState {
+  user: AuthUser | null
+  isAuthenticated: boolean
+  isPending: boolean
+}
+
+export const Route = createRootRouteWithContext<{ auth: AuthState }>()({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
