@@ -34,6 +34,11 @@ describe('Auth (integration)', () => {
     process.env.DATABASE_URL = `postgresql://${container.getUsername()}:${container.getPassword()}@${container.getHost()}:${container.getPort()}/${container.getDatabase()}`;
     process.env.BETTER_AUTH_URL = 'http://localhost:8080';
     process.env.CLIENT_URL = 'http://localhost:3000';
+    process.env.OO_OBJECT_STORAGE_ENDPOINT = 'http://localhost:9000';
+    process.env.OO_OBJECT_STORAGE_REGION = 'us-east-1';
+    process.env.OO_OBJECT_STORAGE_BUCKET = 'test-bucket';
+    process.env.OO_OBJECT_STORAGE_ACCESS_KEY = 'test-access';
+    process.env.OO_OBJECT_STORAGE_SECRET_KEY = 'test-secret';
 
     // @ts-ignore - dynamic ESM import, works at runtime but not resolvable by tsc
     const { AppModule } = await import('../../src/app.module');

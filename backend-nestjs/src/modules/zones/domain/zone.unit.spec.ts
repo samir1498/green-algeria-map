@@ -13,6 +13,7 @@ describe('Zone', () => {
       status: 'planned',
       coordinates: validCoords,
       description: 'A test zone',
+      photos: [],
       ...overrides,
     });
   }
@@ -239,6 +240,83 @@ describe('Zone', () => {
     });
   });
 
+  describe('addPhoto', () => {
+    it('adds a photo URL to the zone', () => {
+      const zone = makeZone();
+      zone.addPhoto('https://example.com/photo.jpg');
+
+      expect(zone.photos).toEqual(['https://example.com/photo.jpg']);
+    });
+
+    it('appends to existing photos', () => {
+      const zone = makeZone({ photos: ['https://example.com/photo1.jpg'] });
+      zone.addPhoto('https://example.com/photo2.jpg');
+
+      expect(zone.photos).toEqual([
+        'https://example.com/photo1.jpg',
+        'https://example.com/photo2.jpg',
+      ]);
+    });
+
+    it('skips empty photo URL', () => {
+      const zone = makeZone();
+      zone.addPhoto('');
+      zone.addPhoto('   ');
+
+      expect(zone.photos).toEqual([]);
+    });
+
+    it('skips undefined photo URL', () => {
+      const zone = makeZone();
+      zone.addPhoto(undefined as unknown as string);
+
+      expect(zone.photos).toEqual([]);
+    });
+
+    it('skips invalid URL format', () => {
+      const zone = makeZone();
+      zone.addPhoto('not-a-url');
+
+      expect(zone.photos).toEqual([]);
+    });
+
+    it('does not add duplicate photo URLs', () => {
+      const zone = makeZone();
+      zone.addPhoto('https://example.com/photo.jpg');
+      zone.addPhoto('https://example.com/photo.jpg');
+
+      expect(zone.photos).toEqual(['https://example.com/photo.jpg']);
+    });
+  });
+
+  describe('removePhoto', () => {
+    it('removes an existing photo', () => {
+      const zone = makeZone({ photos: ['https://example.com/photo.jpg'] });
+      zone.removePhoto('https://example.com/photo.jpg');
+
+      expect(zone.photos).toEqual([]);
+    });
+
+    it('removes only the matching photo', () => {
+      const zone = makeZone({
+        photos: [
+          'https://example.com/photo1.jpg',
+          'https://example.com/photo2.jpg',
+        ],
+      });
+      zone.removePhoto('https://example.com/photo1.jpg');
+
+      expect(zone.photos).toEqual(['https://example.com/photo2.jpg']);
+    });
+
+    it('does nothing when photo is not found', () => {
+      const zone = makeZone({ photos: ['https://example.com/photo.jpg'] });
+      zone.removePhoto('https://example.com/nonexistent.jpg');
+
+      expect(zone.photos).toEqual(['https://example.com/photo.jpg']);
+    });
+  });
+
   describe('toJSON', () => {
     it('returns flat object with lat/lng', () => {
       const zone = makeZone({
@@ -258,6 +336,7 @@ describe('Zone', () => {
         targetCount: 20,
         currentCount: 5,
         description: 'A test zone',
+        photos: [],
       });
     });
   });

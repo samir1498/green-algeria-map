@@ -2,5 +2,5 @@
   "entry": ["src/main.ts", "src/data-source.ts", "src/seed.ts"],
   "project": ["src/**/*.ts"],
   "ignore": ["src/migrations/*.ts"],
-  "ignoreDependencies": ["source-map-support", "ts-loader", "testcontainers"]
+  "ignoreDependencies": ["source-map-support", "ts-loader", "@types/multer"]
 }
