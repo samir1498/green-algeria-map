@@ -16,6 +16,7 @@ export interface ZoneProps {
   currentCount?: number;
   description: string;
   photos?: string[];
+  organizerContact?: string;
 }
 
 export class Zone {
@@ -28,6 +29,7 @@ export class Zone {
   private _currentCount: number;
   private _description: string;
   private _photos: string[];
+  private _organizerContact?: string;
 
   get name(): string {
     return this._name;
@@ -57,6 +59,10 @@ export class Zone {
     return [...this._photos];
   }
 
+  get organizerContact(): string | undefined {
+    return this._organizerContact;
+  }
+
   private constructor(props: ZoneProps) {
     this.id = props.id;
     this._name = props.name;
@@ -67,6 +73,7 @@ export class Zone {
     this._currentCount = props.currentCount ?? 0;
     this._description = props.description;
     this._photos = props.photos ? [...props.photos] : [];
+    this._organizerContact = props.organizerContact;
   }
 
   static create(props: ZoneProps): Zone {
@@ -83,6 +90,10 @@ export class Zone {
 
   updateDescription(description: string): void {
     this._description = description;
+  }
+
+  updateOrganizerContact(contact: string | undefined): void {
+    this._organizerContact = contact;
   }
 
   updateTargetCount(targetCount: number): void {
@@ -160,6 +171,7 @@ export class Zone {
       currentCount: this._currentCount,
       description: this._description,
       photos: [...this._photos],
+      organizerContact: this._organizerContact,
     };
   }
 }

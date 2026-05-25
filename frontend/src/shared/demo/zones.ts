@@ -12,6 +12,7 @@ export const demoZones: Zone[] = [
     currentCount: 1200,
     description: 'Reforestation of cedar forests destroyed by wildfires.',
     treeSpecies: 'Cedrus atlantica',
+    organizerContact: 'Fatima Ouali — fatima.ouali@greenalgeria.dz',
   },
   {
     id: '2',
@@ -45,6 +46,7 @@ export const demoZones: Zone[] = [
     lat: 36.7509,
     lng: 5.0859,
     description: 'Beach and coastal trash collection point.',
+    organizerContact: 'Karim Bensaid — karim.bensaid@greenalgeria.dz',
   },
   {
     id: '5',
