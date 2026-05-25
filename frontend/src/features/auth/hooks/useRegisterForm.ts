@@ -8,9 +8,10 @@ interface UseRegisterFormOptions {
     email: string
     password: string
   }) => Promise<{ error?: { message: string } | null }>
+  redirectTo?: string
 }
 
-export function useRegisterForm({ signUp }: UseRegisterFormOptions) {
+export function useRegisterForm({ signUp, redirectTo = '/' }: UseRegisterFormOptions) {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -31,7 +32,7 @@ export function useRegisterForm({ signUp }: UseRegisterFormOptions) {
 
     toast.success('Account created successfully')
     setLoading(false)
-    navigate({ to: '/' })
+    navigate({ to: redirectTo })
   }
 
   return { name, email, password, loading, handleSubmit, setName, setEmail, setPassword }

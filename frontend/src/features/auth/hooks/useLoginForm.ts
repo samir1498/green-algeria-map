@@ -7,9 +7,10 @@ interface UseLoginFormOptions {
     email: string
     password: string
   }) => Promise<{ error?: { message: string } | null }>
+  redirectTo?: string
 }
 
-export function useLoginForm({ signIn }: UseLoginFormOptions) {
+export function useLoginForm({ signIn, redirectTo = '/' }: UseLoginFormOptions) {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -29,7 +30,7 @@ export function useLoginForm({ signIn }: UseLoginFormOptions) {
 
     toast.success('Signed in successfully')
     setLoading(false)
-    navigate({ to: '/' })
+    navigate({ to: redirectTo })
   }
 
   return { email, password, loading, handleSubmit, setEmail, setPassword }

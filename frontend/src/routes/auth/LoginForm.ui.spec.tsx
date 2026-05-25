@@ -1,7 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { screen, waitFor, cleanup } from '@testing-library/react'
 import { LoginPage } from './login'
-import { renderWithRouter } from '@/shared/test/render-with-router'
+import {
+  createMemoryHistory,
+  createRootRouteWithContext,
+  createRoute,
+  createRouter,
+  RouterProvider,
+  Outlet,
+} from '@tanstack/react-router'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { render } from '@testing-library/react'
+import { createTestQueryClient } from '@/shared/test/render-with-router'
+import userEvent from '@testing-library/user-event'
 
 const mockSignIn = vi.fn().mockResolvedValue({ data: { user: {} }, error: null })
 
@@ -18,6 +29,12 @@ vi.mock('sonner', () => ({
   },
 }))
 
+vi.mock('@/features/auth/api', () => ({
+  sessionService: {
+    getSession: vi.fn().mockResolvedValue(null),
+  },
+}))
+
 beforeEach(() => {
   vi.clearAllMocks()
   mockSignIn.mockResolvedValue({ data: { user: {} }, error: null })
@@ -27,9 +44,43 @@ afterEach(() => {
   cleanup()
 })
 
+async function renderLoginPage() {
+  const auth = { user: null, isAuthenticated: false, isPending: false }
+  const rootRoute = createRootRouteWithContext<{ auth: typeof auth }>()({
+    component: () => <Outlet />,
+  })
+
+  const loginRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/auth/login',
+    component: LoginPage,
+  })
+
+  const routeTree = rootRoute.addChildren([loginRoute])
+  const history = createMemoryHistory({ initialEntries: ['/auth/login'] })
+  const router = createRouter({ routeTree, history, context: { auth }, defaultPendingMs: 0 })
+
+  await router.load()
+
+  const queryClient = createTestQueryClient()
+  const { rerender, unmount, container } = render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+
+  return {
+    user: userEvent.setup(),
+    rerender,
+    unmount,
+    container,
+    router,
+  }
+}
+
 describe('LoginPage', () => {
   it('renders form with all inputs and button', async () => {
-    await renderWithRouter(<LoginPage />)
+    await renderLoginPage()
 
     expect(screen.getByTestId('email-input')).toBeInTheDocument()
     expect(screen.getByTestId('password-input')).toBeInTheDocument()
@@ -38,13 +89,13 @@ describe('LoginPage', () => {
   })
 
   it('shows sign up link', async () => {
-    await renderWithRouter(<LoginPage />)
+    await renderLoginPage()
 
     expect(screen.getByTestId('sign-up-link')).toHaveAttribute('href', '/auth/register')
   })
 
   it('calls signIn with form values on submit', async () => {
-    const { user } = await renderWithRouter(<LoginPage />)
+    const { user } = await renderLoginPage()
 
     await user.type(screen.getByTestId('email-input'), 'test@example.com')
     await user.type(screen.getByTestId('password-input'), 'password123')
@@ -64,7 +115,7 @@ describe('LoginPage', () => {
         ),
     )
 
-    const { user } = await renderWithRouter(<LoginPage />)
+    const { user } = await renderLoginPage()
 
     await user.type(screen.getByTestId('email-input'), 'test@example.com')
     await user.type(screen.getByTestId('password-input'), 'password123')
@@ -84,7 +135,7 @@ describe('LoginPage', () => {
       },
     })
 
-    const { user } = await renderWithRouter(<LoginPage />)
+    const { user } = await renderLoginPage()
 
     await user.type(screen.getByTestId('email-input'), 'wrong@example.com')
     await user.type(screen.getByTestId('password-input'), 'wrong')
@@ -100,7 +151,7 @@ describe('LoginPage', () => {
   it('shows success toast and redirects on success', async () => {
     mockSignIn.mockResolvedValueOnce({ data: { user: {} }, error: null })
 
-    const { user, router } = await renderWithRouter(<LoginPage />)
+    const { user, router } = await renderLoginPage()
 
     await user.type(screen.getByTestId('email-input'), 'test@example.com')
     await user.type(screen.getByTestId('password-input'), 'password123')

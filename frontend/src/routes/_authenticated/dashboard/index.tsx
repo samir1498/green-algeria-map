@@ -1,13 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { Route as AuthenticatedRoute } from '../../_authenticated'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Route as DashboardRoute } from '../dashboard'
 
-export const Route = createFileRoute('/dashboard/')({
+export const Route = createFileRoute('/_authenticated/dashboard/')({
   component: DashboardPage,
 })
 
 function DashboardPage() {
-  const { user } = DashboardRoute.useRouteContext()
+  const { user } = AuthenticatedRoute.useRouteContext()
 
   return (
     <div className="space-y-6">

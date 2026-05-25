@@ -1,5 +1,7 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { useRegisterForm } from '@/features/auth/hooks/useRegisterForm'
+import { sessionService } from '@/features/auth/api'
+import { sanitizeRedirect } from '@/shared/utils/sanitize-redirect'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
@@ -13,13 +15,25 @@ import {
 import { useAuth } from '@/features/auth/hooks/useAuth'
 
 export const Route = createFileRoute('/auth/register')({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+    return typeof search.redirect === 'string'
+      ? { redirect: sanitizeRedirect(search.redirect) }
+      : {}
+  },
+  beforeLoad: async () => {
+    const session = await sessionService.getSession()
+    if (session?.user) {
+      throw redirect({ to: '/' })
+    }
+  },
   component: RegisterPage,
 })
 
 export function RegisterPage() {
   const { signUp } = useAuth()
+  const search = Route.useSearch()
   const { name, email, password, loading, handleSubmit, setName, setEmail, setPassword } =
-    useRegisterForm({ signUp })
+    useRegisterForm({ signUp, redirectTo: search.redirect })
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
