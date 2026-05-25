@@ -37,7 +37,14 @@ async function main() {
     cwd,
     stdio: 'inherit',
     shell: true,
-    env: { ...process.env, CLIENT_URL: 'http://localhost:4173' },
+    env: {
+      ...process.env,
+      CLIENT_URL: 'http://localhost:4173',
+      OO_OBJECT_STORAGE_ENDPOINT: 'http://localhost:9000',
+      OO_OBJECT_STORAGE_BUCKET: 'e2e-test',
+      OO_OBJECT_STORAGE_ACCESS_KEY: 'minioadmin',
+      OO_OBJECT_STORAGE_SECRET_KEY: 'minioadmin',
+    },
   })
   server.on('exit', code => process.exit(code ?? 0))
 }
