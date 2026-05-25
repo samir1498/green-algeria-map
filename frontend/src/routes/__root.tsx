@@ -102,10 +102,18 @@ function RootComponent() {
             <span className="sm:hidden">GAM</span>
           </a>
           <div className="hidden items-center gap-4 md:flex">
-            <a href="/" className="hover:text-foreground/80 text-sm font-medium">
+            <a
+              href="/"
+              className="hover:text-foreground/80 text-sm font-medium"
+              data-testid="nav-map"
+            >
               Map
             </a>
-            <a href="/about" className="hover:text-foreground/80 text-sm font-medium">
+            <a
+              href="/about"
+              className="hover:text-foreground/80 text-sm font-medium"
+              data-testid="nav-about"
+            >
               About
             </a>
             <AuthNav />
@@ -118,6 +126,7 @@ function RootComponent() {
               size="icon"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              data-testid={mobileMenuOpen ? 'close-menu-button' : 'open-menu-button'}
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
@@ -130,6 +139,7 @@ function RootComponent() {
                 href="/"
                 className="hover:text-foreground/80 rounded px-2 py-1.5 text-sm font-medium"
                 onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-nav-map"
               >
                 Map
               </a>
@@ -137,6 +147,7 @@ function RootComponent() {
                 href="/about"
                 className="hover:text-foreground/80 rounded px-2 py-1.5 text-sm font-medium"
                 onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-nav-about"
               >
                 About
               </a>

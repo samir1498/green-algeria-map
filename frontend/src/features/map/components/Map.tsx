@@ -62,9 +62,12 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
   )
 
   return (
-    <div className="relative">
+    <div className="relative" data-testid="map-container">
       {demoMode && (
-        <div className="absolute top-2 left-1/2 z-[1000] -translate-x-1/2 rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-800 shadow dark:bg-amber-900 dark:text-amber-200">
+        <div
+          className="absolute top-2 left-1/2 z-[1000] -translate-x-1/2 rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-800 shadow dark:bg-amber-900 dark:text-amber-200"
+          data-testid="demo-banner"
+        >
           Showing demo data — backend unavailable
         </div>
       )}
