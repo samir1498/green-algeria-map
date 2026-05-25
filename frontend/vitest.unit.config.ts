@@ -24,6 +24,7 @@ export default defineConfig({
         'src/routeTree.gen.ts',
         'src/routes/__root.tsx',
         'src/routes/auth/**',
+        'src/features/auth/api/**',
         'src/main.tsx',
         '**/node_modules/**',
         '**/dist/**',
