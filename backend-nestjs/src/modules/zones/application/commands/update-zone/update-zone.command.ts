@@ -13,6 +13,7 @@ export class UpdateZoneCommand extends Command<Zone> {
     readonly targetCount?: number,
     readonly currentCount?: number,
     readonly description?: string,
+    readonly organizerContact?: string,
   ) {
     super();
   }

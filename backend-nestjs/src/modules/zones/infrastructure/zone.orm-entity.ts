@@ -31,4 +31,7 @@ export class ZoneOrmEntity {
 
   @Column('simple-array', { nullable: true })
   photos?: string[];
+
+  @Column({ nullable: true })
+  organizerContact?: string;
 }

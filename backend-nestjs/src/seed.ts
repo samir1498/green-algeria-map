@@ -10,6 +10,7 @@ interface SeedZoneData {
   targetCount?: number;
   currentCount?: number;
   description: string;
+  organizerContact?: string;
 }
 
 const demoZones: SeedZoneData[] = [
@@ -22,6 +23,7 @@ const demoZones: SeedZoneData[] = [
     targetCount: 5000,
     currentCount: 1200,
     description: 'Reforestation of cedar forests destroyed by wildfires.',
+    organizerContact: 'Fatima Ouali — fatima.ouali@greenalgeria.dz',
   },
   {
     name: 'Tlemcen National Park',
@@ -50,6 +52,7 @@ const demoZones: SeedZoneData[] = [
     lat: 36.7509,
     lng: 5.0859,
     description: 'Beach and coastal trash collection point.',
+    organizerContact: 'Karim Bensaid — karim.bensaid@greenalgeria.dz',
   },
   {
     name: 'Oran Bay Cleanup',
@@ -104,6 +107,7 @@ const demoZones: SeedZoneData[] = [
     targetCount: 4000,
     currentCount: 1500,
     description: 'Mixed oak and pine reforestation in Kabylie region.',
+    organizerContact: 'Said Amrani — said.amrani@greenalgeria.dz',
   },
 ];
 

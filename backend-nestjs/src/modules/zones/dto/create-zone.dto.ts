@@ -29,4 +29,8 @@ export class CreateZoneDto {
 
   @IsString()
   description: string;
+
+  @IsOptional()
+  @IsString()
+  organizerContact?: string;
 }
