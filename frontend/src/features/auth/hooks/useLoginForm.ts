@@ -7,9 +7,10 @@ interface UseLoginFormOptions {
     email: string
     password: string
   }) => Promise<{ error?: { message: string } | null }>
+  redirectTo?: string
 }
 
-export function useLoginForm({ signIn }: UseLoginFormOptions) {
+export function useLoginForm({ signIn, redirectTo = '/' }: UseLoginFormOptions) {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -19,17 +20,21 @@ export function useLoginForm({ signIn }: UseLoginFormOptions) {
     e.preventDefault()
     setLoading(true)
 
-    const result = await signIn({ email, password })
+    try {
+      const result = await signIn({ email, password })
 
-    if (result.error) {
-      toast.error(result.error.message)
+      if (result.error) {
+        toast.error(result.error.message)
+        return
+      }
+
+      toast.success('Signed in successfully')
+      navigate({ to: redirectTo })
+    } catch {
+      toast.error('Sign in failed. Please try again.')
+    } finally {
       setLoading(false)
-      return
     }
-
-    toast.success('Signed in successfully')
-    setLoading(false)
-    navigate({ to: '/' })
   }
 
   return { email, password, loading, handleSubmit, setEmail, setPassword }
