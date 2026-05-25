@@ -27,6 +27,7 @@
     "test:debug": "vitest --config vitest.unit.config.ts --inspect-brk"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",
@@ -34,6 +35,7 @@
     "@nestjs/mapped-types": "^2.1.1",
     "@nestjs/platform-express": "^11.1.21",
     "@nestjs/swagger": "^11.4.3",
+    "@nestjs/terminus": "^11.1.1",
     "@nestjs/typeorm": "^11.0.1",
     "@scalar/nestjs-api-reference": "^1.1.16",
     "@thallesp/nestjs-better-auth": "^2.6.0",
