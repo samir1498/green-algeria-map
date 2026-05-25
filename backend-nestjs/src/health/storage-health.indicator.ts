@@ -30,8 +30,7 @@ export class StorageHealthIndicator extends HealthIndicator {
         });
       }
       return this.getStatus(key, false, {
-        message:
-          error instanceof Error ? error.message : 'Unknown error',
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }

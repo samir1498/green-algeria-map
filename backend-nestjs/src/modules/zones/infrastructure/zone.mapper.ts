@@ -30,6 +30,7 @@ export class ZoneMapper {
       currentCount: orm.currentCount,
       description: orm.description,
       photos: orm.photos,
+      organizerContact: orm.organizerContact,
     });
   }
 
@@ -45,6 +46,7 @@ export class ZoneMapper {
     orm.currentCount = domain.currentCount;
     orm.description = domain.description;
     orm.photos = domain.photos;
+    orm.organizerContact = domain.organizerContact;
     return orm;
   }
 }
