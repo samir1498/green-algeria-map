@@ -29,6 +29,8 @@ jobs:
           POSTGRES_USER: greenalgeria
           POSTGRES_PASSWORD: greenalgeria
           POSTGRES_DB: greenalgeria
+        ports:
+          - '5432:5432'
         options: >-
           --health-cmd "pg_isready -U greenalgeria -d greenalgeria"
           --health-interval 3s
