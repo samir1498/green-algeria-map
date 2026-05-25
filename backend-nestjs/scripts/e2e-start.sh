@@ -25,20 +25,24 @@ async function main() {
   console.log('Waiting for PostgreSQL...')
   await waitForPort(5432, 'localhost')
 
+  const safeEnv = Object.fromEntries(
+    Object.entries(process.env).filter(([k]) => !k.startsWith('npm_') && !k.startsWith('pnpm_'))
+  )
+
   console.log('Running migrations...')
-  const migration = spawn('pnpm', ['migration:run'], { cwd, stdio: 'inherit', shell: true })
+  const migration = spawn('pnpm migration:run', { cwd, stdio: 'inherit', shell: true, env: safeEnv })
   await new Promise((resolve, reject) => {
     migration.on('exit', code => code === 0 ? resolve() : reject(new Error(`Migration failed with code ${code}`)))
     migration.on('error', err => reject(err))
   })
 
   console.log('Starting backend...')
-  const server = spawn('pnpm', ['start'], {
+  const server = spawn('pnpm start', {
     cwd,
     stdio: 'inherit',
     shell: true,
     env: {
-      ...process.env,
+      ...safeEnv,
       CLIENT_URL: 'http://localhost:4173',
       OO_OBJECT_STORAGE_ENDPOINT: 'http://localhost:9000',
       OO_OBJECT_STORAGE_BUCKET: 'e2e-test',
