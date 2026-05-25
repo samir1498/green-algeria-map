@@ -20,17 +20,21 @@ export function useLoginForm({ signIn, redirectTo = '/' }: UseLoginFormOptions) 
     e.preventDefault()
     setLoading(true)
 
-    const result = await signIn({ email, password })
+    try {
+      const result = await signIn({ email, password })
 
-    if (result.error) {
-      toast.error(result.error.message)
+      if (result.error) {
+        toast.error(result.error.message)
+        return
+      }
+
+      toast.success('Signed in successfully')
+      navigate({ to: redirectTo })
+    } catch {
+      toast.error('Sign in failed. Please try again.')
+    } finally {
       setLoading(false)
-      return
     }
-
-    toast.success('Signed in successfully')
-    setLoading(false)
-    navigate({ to: redirectTo })
   }
 
   return { email, password, loading, handleSubmit, setEmail, setPassword }

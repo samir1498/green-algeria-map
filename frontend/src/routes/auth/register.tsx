@@ -53,6 +53,7 @@ export function RegisterPage() {
                 onChange={(e) => setName(e.target.value)}
                 required
                 autoComplete="name"
+                data-testid="name-input"
               />
             </div>
             <div className="space-y-2">
@@ -64,6 +65,7 @@ export function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
+                data-testid="email-input"
               />
             </div>
             <div className="space-y-2">
@@ -76,14 +78,19 @@ export function RegisterPage() {
                 required
                 autoComplete="new-password"
                 minLength={8}
+                data-testid="password-input"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full" disabled={loading} data-testid="submit-button">
               {loading ? 'Creating account...' : 'Sign Up'}
             </Button>
             <p className="text-muted-foreground text-center text-sm">
               Already have an account?{' '}
-              <Link to="/auth/login" className="text-primary hover:underline">
+              <Link
+                to="/auth/login"
+                className="text-primary hover:underline"
+                data-testid="sign-in-link"
+              >
                 Sign in
               </Link>
             </p>

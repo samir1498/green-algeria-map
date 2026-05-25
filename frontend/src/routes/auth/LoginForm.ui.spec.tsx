@@ -1,20 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { screen, waitFor, cleanup } from '@testing-library/react'
+import { renderAuthRoute } from '@/shared/test/render-with-router'
+import { sanitizeRedirect } from '@/shared/utils/sanitize-redirect'
 import { LoginPage } from './login'
-import {
-  createMemoryHistory,
-  createRootRouteWithContext,
-  createRoute,
-  createRouter,
-  RouterProvider,
-  Outlet,
-} from '@tanstack/react-router'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { render } from '@testing-library/react'
-import { createTestQueryClient } from '@/shared/test/render-with-router'
-import userEvent from '@testing-library/user-event'
 
 const mockSignIn = vi.fn().mockResolvedValue({ data: { user: {} }, error: null })
+
+const validateSearch = (search: Record<string, unknown>): Record<string, unknown> =>
+  typeof search.redirect === 'string' ? { redirect: sanitizeRedirect(search.redirect) } : {}
+
+async function renderLoginPage(options?: { initialEntries?: string[] }) {
+  return renderAuthRoute('/auth/login', <LoginPage />, {
+    validateSearch,
+    ...options,
+  })
+}
 
 vi.mock('@/features/auth/hooks/useAuth', () => ({
   useAuth: () => ({
@@ -43,40 +43,6 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
 })
-
-async function renderLoginPage() {
-  const auth = { user: null, isAuthenticated: false, isPending: false }
-  const rootRoute = createRootRouteWithContext<{ auth: typeof auth }>()({
-    component: () => <Outlet />,
-  })
-
-  const loginRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: '/auth/login',
-    component: LoginPage,
-  })
-
-  const routeTree = rootRoute.addChildren([loginRoute])
-  const history = createMemoryHistory({ initialEntries: ['/auth/login'] })
-  const router = createRouter({ routeTree, history, context: { auth }, defaultPendingMs: 0 })
-
-  await router.load()
-
-  const queryClient = createTestQueryClient()
-  const { rerender, unmount, container } = render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>,
-  )
-
-  return {
-    user: userEvent.setup(),
-    rerender,
-    unmount,
-    container,
-    router,
-  }
-}
 
 describe('LoginPage', () => {
   it('renders form with all inputs and button', async () => {
@@ -148,7 +114,7 @@ describe('LoginPage', () => {
     expect(screen.getByTestId('submit-button')).not.toBeDisabled()
   })
 
-  it('shows success toast and redirects on success', async () => {
+  it('shows success toast and redirects to home by default', async () => {
     mockSignIn.mockResolvedValueOnce({ data: { user: {} }, error: null })
 
     const { user, router } = await renderLoginPage()
@@ -162,5 +128,37 @@ describe('LoginPage', () => {
       expect(vi.mocked(toast.success)).toHaveBeenCalledWith('Signed in successfully')
     })
     expect(router.state.location.href).toBe('/')
+  })
+
+  it('redirects to redirect query target on success', async () => {
+    mockSignIn.mockResolvedValueOnce({ data: { user: {} }, error: null })
+
+    const { user, router } = await renderLoginPage({
+      initialEntries: ['/auth/login?redirect=%2Fdashboard'],
+    })
+
+    await user.type(screen.getByTestId('email-input'), 'test@example.com')
+    await user.type(screen.getByTestId('password-input'), 'password123')
+    await user.click(screen.getByTestId('submit-button'))
+
+    await waitFor(() => {
+      expect(router.state.location.href).toBe('/dashboard')
+    })
+  })
+
+  it('falls back to home for unsafe redirect targets', async () => {
+    mockSignIn.mockResolvedValueOnce({ data: { user: {} }, error: null })
+
+    const { user, router } = await renderLoginPage({
+      initialEntries: ['/auth/login?redirect=http%3A%2F%2Fevil.com'],
+    })
+
+    await user.type(screen.getByTestId('email-input'), 'test@example.com')
+    await user.type(screen.getByTestId('password-input'), 'password123')
+    await user.click(screen.getByTestId('submit-button'))
+
+    await waitFor(() => {
+      expect(router.state.location.href).toBe('/')
+    })
   })
 })
