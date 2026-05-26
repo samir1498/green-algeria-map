@@ -337,6 +337,9 @@ describe('Zone', () => {
         currentCount: 5,
         description: 'A test zone',
         photos: [],
+        organizerContact: undefined,
+        treeSpecies: undefined,
+        volunteerCount: 0,
       });
     });
   });

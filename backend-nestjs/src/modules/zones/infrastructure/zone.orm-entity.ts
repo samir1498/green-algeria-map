@@ -37,4 +37,7 @@ export class ZoneOrmEntity {
 
   @Column({ nullable: true })
   treeSpecies?: string;
+
+  @Column({ default: 0 })
+  volunteerCount: number;
 }
