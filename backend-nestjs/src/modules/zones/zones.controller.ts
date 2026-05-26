@@ -43,6 +43,7 @@ export class ZonesController {
   }
 
   @Post()
+  @Public()
   async create(@Body() dto: CreateZoneDto) {
     const zone = await this.commandBus.execute(
       new CreateZoneCommand(
