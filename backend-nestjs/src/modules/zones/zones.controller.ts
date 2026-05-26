@@ -14,6 +14,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { CreateZoneCommand } from './application/commands/create-zone/create-zone.command';
 import { UpdateZoneCommand } from './application/commands/update-zone/update-zone.command';
 import { DeleteZoneCommand } from './application/commands/delete-zone/delete-zone.command';
+import { RegisterVolunteerCommand } from './application/commands/register-volunteer/register-volunteer.command';
 import { GetAllZonesQuery } from './application/queries/get-all-zones/get-all-zones.query';
 import { GetZoneByIdQuery } from './application/queries/get-zone-by-id/get-zone-by-id.query';
 import { CreateZoneDto } from './dto/create-zone.dto';
@@ -83,6 +84,12 @@ export class ZonesController {
       ),
     );
     return ZoneResponseDto.fromDomain(zone);
+  }
+
+  @Post(':id/volunteer')
+  @Public()
+  async registerVolunteer(@Param('id', ParseUUIDPipe) id: string) {
+    await this.commandBus.execute(new RegisterVolunteerCommand(id));
   }
 
   @Delete(':id')

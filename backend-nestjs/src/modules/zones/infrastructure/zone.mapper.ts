@@ -32,6 +32,7 @@ export class ZoneMapper {
       photos: orm.photos,
       organizerContact: orm.organizerContact,
       treeSpecies: orm.treeSpecies,
+      volunteerCount: orm.volunteerCount,
     });
   }
 
@@ -49,6 +50,7 @@ export class ZoneMapper {
     orm.photos = domain.photos;
     orm.organizerContact = domain.organizerContact;
     orm.treeSpecies = domain.treeSpecies;
+    orm.volunteerCount = domain.volunteerCount;
     return orm;
   }
 }

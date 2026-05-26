@@ -10,6 +10,7 @@ import { GetAllZonesHandler } from './application/queries/get-all-zones/get-all-
 import { GetZoneByIdHandler } from './application/queries/get-zone-by-id/get-zone-by-id.handler';
 import { ZoneCreatedHandler } from './application/events/zone-created/zone-created.handler';
 import { AddPhotoToZoneHandler } from './application/commands/add-photo-to-zone/add-photo-to-zone.handler';
+import { RegisterVolunteerHandler } from './application/commands/register-volunteer/register-volunteer.handler';
 import { ZonesController } from './zones.controller';
 
 const CommandHandlers = [
@@ -17,6 +18,7 @@ const CommandHandlers = [
   UpdateZoneHandler,
   DeleteZoneHandler,
   AddPhotoToZoneHandler,
+  RegisterVolunteerHandler,
 ];
 const QueryHandlers = [GetAllZonesHandler, GetZoneByIdHandler];
 const EventHandlers = [ZoneCreatedHandler];

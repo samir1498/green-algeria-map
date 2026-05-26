@@ -18,6 +18,7 @@ export interface ZoneProps {
   photos?: string[];
   organizerContact?: string;
   treeSpecies?: string;
+  volunteerCount?: number;
 }
 
 export class Zone {
@@ -32,6 +33,7 @@ export class Zone {
   private _photos: string[];
   private _organizerContact?: string;
   private _treeSpecies?: string;
+  private _volunteerCount: number;
 
   get name(): string {
     return this._name;
@@ -69,6 +71,10 @@ export class Zone {
     return this._treeSpecies;
   }
 
+  get volunteerCount(): number {
+    return this._volunteerCount;
+  }
+
   private constructor(props: ZoneProps) {
     this.id = props.id;
     this._name = props.name;
@@ -81,6 +87,7 @@ export class Zone {
     this._photos = props.photos ? [...props.photos] : [];
     this._organizerContact = props.organizerContact;
     this._treeSpecies = props.treeSpecies;
+    this._volunteerCount = props.volunteerCount ?? 0;
   }
 
   static create(props: ZoneProps): Zone {
@@ -155,6 +162,10 @@ export class Zone {
     }
   }
 
+  registerVolunteer(): void {
+    this._volunteerCount += 1;
+  }
+
   addPhoto(photoUrl: string): void {
     if (!photoUrl || !photoUrl.trim()) return;
     if (this._photos.includes(photoUrl)) return;
@@ -184,6 +195,7 @@ export class Zone {
       photos: [...this._photos],
       organizerContact: this._organizerContact,
       treeSpecies: this._treeSpecies,
+      volunteerCount: this._volunteerCount,
     };
   }
 }
