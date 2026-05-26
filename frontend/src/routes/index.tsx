@@ -2,8 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { Badge } from '@/shared/components/ui/badge'
 import { Map } from '@/features/map/components/Map'
-import { useZones } from '@/features/zones/hooks/useZones'
-import { useDamageReports } from '@/features/damage-reports/hooks/useDamageReports'
+import { usePublicMapData } from '@/features/map/hooks/usePublicMapData'
 import { computeProjectCounts } from '@/shared/utils/projectCounts'
 
 export const Route = createFileRoute('/')({
@@ -24,8 +23,7 @@ function StatCard({ value, label }: { value: string; label: string }) {
 }
 
 function Home() {
-  const { zones, demoMode } = useZones()
-  const { damageReports } = useDamageReports()
+  const { zones, damageReports } = usePublicMapData()
 
   const projectCounts = computeProjectCounts(zones)
 
@@ -44,7 +42,7 @@ function Home() {
       </div>
 
       <div className="mx-auto max-w-7xl overflow-hidden rounded-lg border">
-        <Map zones={zones} damageReports={damageReports} demoMode={demoMode} />
+        <Map zones={zones} damageReports={damageReports} />
       </div>
 
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-3 px-4 py-4 md:grid-cols-4">

@@ -55,6 +55,7 @@ export class ZonesController {
         dto.currentCount,
         dto.description,
         dto.organizerContact,
+        dto.treeSpecies,
       ),
     );
     return ZoneResponseDto.fromDomain(zone);
@@ -77,6 +78,7 @@ export class ZonesController {
         dto.currentCount,
         dto.description,
         dto.organizerContact,
+        dto.treeSpecies,
       ),
     );
     return ZoneResponseDto.fromDomain(zone);

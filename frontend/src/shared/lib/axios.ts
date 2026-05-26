@@ -70,14 +70,6 @@ api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     const appError = normalizeApiError(error)
-
-    if (appError.category === 'auth' && appError.status === 401) {
-      const currentPath = window.location.pathname
-      if (currentPath !== '/auth/login' && currentPath !== '/auth/register') {
-        window.location.href = '/auth/login'
-      }
-    }
-
     return Promise.reject(appError)
   },
 )

@@ -11,6 +11,7 @@ interface SeedZoneData {
   currentCount?: number;
   description: string;
   organizerContact?: string;
+  treeSpecies?: string;
 }
 
 const demoZones: SeedZoneData[] = [
@@ -24,6 +25,7 @@ const demoZones: SeedZoneData[] = [
     currentCount: 1200,
     description: 'Reforestation of cedar forests destroyed by wildfires.',
     organizerContact: 'Fatima Ouali — fatima.ouali@greenalgeria.dz',
+    treeSpecies: 'Cedrus atlantica',
   },
   {
     name: 'Tlemcen National Park',
@@ -34,6 +36,7 @@ const demoZones: SeedZoneData[] = [
     targetCount: 3000,
     currentCount: 0,
     description: 'Restoring Mediterranean pine and oak ecosystems.',
+    treeSpecies: 'Pinus halepensis',
   },
   {
     name: 'El Kala National Park',
@@ -44,6 +47,7 @@ const demoZones: SeedZoneData[] = [
     targetCount: 8000,
     currentCount: 8000,
     description: 'Completed cork oak and wetland reforestation.',
+    treeSpecies: 'Quercus suber',
   },
   {
     name: 'Bejaia Coast Cleanup',
@@ -79,6 +83,7 @@ const demoZones: SeedZoneData[] = [
     targetCount: 2000,
     currentCount: 0,
     description: 'Acacia and drought-resistant tree planting in the Sahara.',
+    treeSpecies: 'Acacia tortilis',
   },
   {
     name: 'Mila Olive Grove',
@@ -89,6 +94,7 @@ const demoZones: SeedZoneData[] = [
     targetCount: 1500,
     currentCount: 600,
     description: 'Community olive tree planting project.',
+    treeSpecies: 'Olea europaea',
   },
   {
     name: 'Annaba Dunes Cleanup',
@@ -108,6 +114,7 @@ const demoZones: SeedZoneData[] = [
     currentCount: 1500,
     description: 'Mixed oak and pine reforestation in Kabylie region.',
     organizerContact: 'Said Amrani — said.amrani@greenalgeria.dz',
+    treeSpecies: 'Quercus suber',
   },
 ];
 
