@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test'
 
+const ZONE_NAME = `E2E Test Zone ${Date.now()}`
+
 test.describe('Desktop create zone form', () => {
   test.use({ viewport: { width: 1280, height: 720 } })
 
@@ -43,11 +45,14 @@ test.describe('Desktop create zone form', () => {
     await expect(page.getByText('Description is required')).toBeVisible()
   })
 
-  test('successfully submits a new zone', async ({ page }) => {
+  test('successfully submits a new zone with all fields', async ({ page }) => {
     await page.goto('/zones/new')
-    await page.getByTestId('field-name').fill('E2E Test Zone')
+    await page.getByTestId('field-name').fill(ZONE_NAME)
     await page.getByTestId('field-description').fill('Created during e2e test')
-    await page.getByTestId('map-picker').click({ position: { x: 250, y: 150 } })
+    await page.getByPlaceholder('Email or phone number').fill('test@example.com')
+    await page.getByPlaceholder('Cedrus atlantica').fill('Pinus halepensis')
+    await page.getByTestId('map-picker').click()
+    await page.waitForTimeout(500)
     await page.getByTestId('submit-zone').click()
     await expect(page.getByText('Zone created successfully')).toBeVisible({ timeout: 10000 })
     await expect(page).toHaveURL('/')
