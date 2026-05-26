@@ -10,4 +10,5 @@ export interface Zone {
   description: string
   treeSpecies?: string | null
   organizerContact?: string | null
+  volunteerCount: number
 }

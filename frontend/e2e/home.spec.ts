@@ -12,7 +12,7 @@ test.describe('Home page map interaction', () => {
     await page.goto('/')
   })
 
-  test('user clicks a zone marker and sees popup with CTA and contact', async ({ page }) => {
+  test('user clicks a zone marker and sees popup with CTA buttons', async ({ page }) => {
     await clickZoneMarker(page, 'Chrea National Park')
 
     const popup = page.locator('.leaflet-popup')
@@ -21,7 +21,8 @@ test.describe('Home page map interaction', () => {
     await expect(popup.getByTestId('cta-volunteer')).toHaveText('Volunteer')
 
     await popup.getByTestId('cta-volunteer').click()
-    await expect(popup.getByText(/Contact:/)).toBeVisible()
+    await expect(popup.getByTestId('cta-volunteer')).toHaveText('Joined')
+    await expect(popup.getByText(/volunteers?/)).toBeVisible()
   })
 
   test('zone popup contains tree species link and report damage button', async ({ page }) => {

@@ -1,4 +1,5 @@
 import js from '@eslint/js'
+import betterTailwind from 'eslint-plugin-better-tailwindcss'
 import { defineConfig } from 'eslint/config'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
@@ -8,12 +9,16 @@ export default defineConfig(
   tseslint.configs.recommended,
   {
     files: ['**/*.{ts,tsx}'],
+    plugins: {
+      'better-tailwindcss': betterTailwind,
+    },
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
       parser: tseslint.parser,
     },
     rules: {
+      'better-tailwindcss/no-deprecated-classes': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {
