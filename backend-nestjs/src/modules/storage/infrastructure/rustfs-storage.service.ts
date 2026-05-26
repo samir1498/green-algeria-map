@@ -8,35 +8,30 @@ import { signS3Put } from './s3-signing.util';
 
 @Injectable()
 export class RustFsStorageService implements StorageService {
-  private readonly rustfsEndpoint: string;
-  private readonly bucket: string;
-  private readonly accessKey: string;
-  private readonly secretKey: string;
-  private readonly region: string;
+  private readonly configService: ConfigService;
 
-  constructor(private readonly configService: ConfigService) {
-    const endpoint = this.configService.get<string>(
-      'OO_OBJECT_STORAGE_ENDPOINT',
-    );
-    const bucket = this.configService.get<string>('OO_OBJECT_STORAGE_BUCKET');
-    const accessKey = this.configService.get<string>(
-      'OO_OBJECT_STORAGE_ACCESS_KEY',
-    );
-    const secretKey = this.configService.get<string>(
-      'OO_OBJECT_STORAGE_SECRET_KEY',
-    );
+  constructor(configService: ConfigService) {
+    this.configService = configService;
+  }
 
-    if (!endpoint) throw new Error('Missing OO_OBJECT_STORAGE_ENDPOINT');
-    if (!bucket) throw new Error('Missing OO_OBJECT_STORAGE_BUCKET');
-    if (!accessKey) throw new Error('Missing OO_OBJECT_STORAGE_ACCESS_KEY');
-    if (!secretKey) throw new Error('Missing OO_OBJECT_STORAGE_SECRET_KEY');
+  private get endpoint(): string {
+    return this.configService.get<string>('OO_OBJECT_STORAGE_ENDPOINT') ?? '';
+  }
 
-    this.rustfsEndpoint = endpoint.replace(/\/+$/, '');
-    this.bucket = bucket;
-    this.accessKey = accessKey;
-    this.secretKey = secretKey;
-    this.region =
-      this.configService.get<string>('OO_OBJECT_STORAGE_REGION') ?? 'us-east-1';
+  private get bucket(): string {
+    return this.configService.get<string>('OO_OBJECT_STORAGE_BUCKET') ?? '';
+  }
+
+  private get accessKey(): string {
+    return this.configService.get<string>('OO_OBJECT_STORAGE_ACCESS_KEY') ?? '';
+  }
+
+  private get secretKey(): string {
+    return this.configService.get<string>('OO_OBJECT_STORAGE_SECRET_KEY') ?? '';
+  }
+
+  private get region(): string {
+    return this.configService.get<string>('OO_OBJECT_STORAGE_REGION') ?? 'us-east-1';
   }
 
   async uploadFile(
@@ -44,10 +39,15 @@ export class RustFsStorageService implements StorageService {
     filename: string,
     mimetype: string,
   ): Promise<{ fileId: string; url: string }> {
+    if (!this.endpoint) throw new UploadFileError('Missing OO_OBJECT_STORAGE_ENDPOINT');
+    if (!this.bucket) throw new UploadFileError('Missing OO_OBJECT_STORAGE_BUCKET');
+    if (!this.accessKey) throw new UploadFileError('Missing OO_OBJECT_STORAGE_ACCESS_KEY');
+    if (!this.secretKey) throw new UploadFileError('Missing OO_OBJECT_STORAGE_SECRET_KEY');
+
     try {
       const uniqueKey = `${randomUUID()}-${filename}`;
       const signedHeaders = signS3Put(
-        this.rustfsEndpoint,
+        this.endpoint,
         this.bucket,
         uniqueKey,
         file,
@@ -57,7 +57,7 @@ export class RustFsStorageService implements StorageService {
         this.region,
       );
 
-      const url = `${this.rustfsEndpoint}/${this.bucket}/${uniqueKey}`;
+      const url = `${this.endpoint}/${this.bucket}/${uniqueKey}`;
       const response = await axios.put(url, file, {
         headers: signedHeaders,
         maxContentLength: Infinity,
@@ -70,7 +70,7 @@ export class RustFsStorageService implements StorageService {
         );
       }
 
-      const downloadUrl = `${this.rustfsEndpoint}/${this.bucket}/${uniqueKey}`;
+      const downloadUrl = `${this.endpoint}/${this.bucket}/${uniqueKey}`;
       return { fileId: uniqueKey, url: downloadUrl };
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -81,6 +81,6 @@ export class RustFsStorageService implements StorageService {
   }
 
   getFileUrl(fileId: string): string {
-    return `${this.rustfsEndpoint}/${this.bucket}/${fileId}`;
+    return `${this.endpoint}/${this.bucket}/${fileId}`;
   }
 }
