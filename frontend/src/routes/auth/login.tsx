@@ -30,11 +30,12 @@ export const Route = createFileRoute('/auth/login')({
 })
 
 export function LoginPage() {
-  const { signIn } = useAuth()
+  const { signIn, refetchSession } = useAuth()
   const search = Route.useSearch()
   const { email, password, loading, handleSubmit, setEmail, setPassword } = useLoginForm({
     signIn,
     redirectTo: search.redirect,
+    onSuccess: refetchSession,
   })
 
   return (
