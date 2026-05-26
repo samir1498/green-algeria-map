@@ -12,6 +12,7 @@ export class ZoneResponseDto {
   description: string;
   photos?: string[];
   organizerContact?: string;
+  treeSpecies?: string;
 
   static fromDomain(zone: Zone): ZoneResponseDto {
     const dto = new ZoneResponseDto();
@@ -26,6 +27,7 @@ export class ZoneResponseDto {
     dto.description = zone.description;
     dto.photos = zone.photos;
     dto.organizerContact = zone.organizerContact;
+    dto.treeSpecies = zone.treeSpecies;
     return dto;
   }
 }

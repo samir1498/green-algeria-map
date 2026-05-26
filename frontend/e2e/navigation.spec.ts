@@ -13,7 +13,7 @@ test.describe('Desktop navigation', () => {
   test('sign in button leads to login form', async ({ page }) => {
     await page.goto('/')
     await page.getByTestId('nav-map').waitFor({ state: 'visible' })
-    await page.getByRole('button', { name: 'Sign In' }).click()
+    await page.getByTestId('nav-sign-in').click()
     await expect(page).toHaveURL('/auth/login')
     await expect(page.getByTestId('login-form')).toBeVisible()
   })

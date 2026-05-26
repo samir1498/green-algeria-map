@@ -32,6 +32,8 @@ export class UpdateZoneHandler implements ICommandHandler<
       zone.updateDescription(command.description);
     if (command.organizerContact !== undefined)
       zone.updateOrganizerContact(command.organizerContact);
+    if (command.treeSpecies !== undefined)
+      zone.updateTreeSpecies(command.treeSpecies);
 
     return this.repository.save(zone);
   }

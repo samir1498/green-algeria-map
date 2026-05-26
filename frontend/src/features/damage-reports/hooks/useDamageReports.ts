@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { getAll } from '@/features/damage-reports/api/damage-reports'
-import { demoDamageReports } from '@/shared/demo/damage-reports'
 
 export function useDamageReports() {
   const result = useQuery({
@@ -9,8 +8,7 @@ export function useDamageReports() {
   })
 
   return {
-    damageReports: result.data ?? demoDamageReports,
-    demoMode: result.isError && !result.isLoading,
+    damageReports: result.data ?? [],
     isLoading: result.isLoading,
     error: result.error,
     refetch: result.refetch,

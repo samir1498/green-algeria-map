@@ -17,9 +17,11 @@ export class AddOrganizerContactToZone1779722358103 implements MigrationInterfac
       `DROP INDEX "public"."verification_identifier_idx"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "zones" ADD "organizerContact" character varying`,
+      `ALTER TABLE "zones" ADD COLUMN IF NOT EXISTS "organizerContact" character varying`,
     );
-    await queryRunner.query(`ALTER TABLE "zones" DROP COLUMN "photos"`);
+    await queryRunner.query(
+      `ALTER TABLE "zones" DROP COLUMN IF EXISTS "photos"`,
+    );
     await queryRunner.query(`ALTER TABLE "zones" ADD "photos" text`);
     await queryRunner.query(
       `CREATE INDEX "IDX_7940b0d64329511647f379873f" ON "damage_reports" ("zoneId") `,

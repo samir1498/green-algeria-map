@@ -11,10 +11,6 @@ vi.mock('@/features/zones/api/zones', () => ({
   getAll: mockGetAll,
 }))
 
-vi.mock('@/shared/demo/zones', () => ({
-  demoZones: [],
-}))
-
 function createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -36,17 +32,15 @@ describe('useZones', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
     expect(result.current.zones).toEqual([{ id: '1', name: 'Zone A' }])
-    expect(result.current.demoMode).toBe(false)
   })
 
-  it('falls back to demo data on error', async () => {
+  it('returns empty array on error', async () => {
     mockGetAll.mockRejectedValueOnce(new Error('Network error'))
     const { result } = renderHook(() => useZones(), { wrapper: createWrapper() })
 
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
     expect(result.current.zones).toEqual([])
-    expect(result.current.demoMode).toBe(true)
     expect(result.current.error).toBeDefined()
   })
 })

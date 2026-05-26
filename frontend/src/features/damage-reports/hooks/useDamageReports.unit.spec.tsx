@@ -11,10 +11,6 @@ vi.mock('@/features/damage-reports/api/damage-reports', () => ({
   getAll: mockGetAll,
 }))
 
-vi.mock('@/shared/demo/damage-reports', () => ({
-  demoDamageReports: [],
-}))
-
 function createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -36,16 +32,14 @@ describe('useDamageReports', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
     expect(result.current.damageReports).toEqual([{ id: '1', description: 'Fire damage' }])
-    expect(result.current.demoMode).toBe(false)
   })
 
-  it('falls back to demo data on error', async () => {
+  it('returns empty array on error', async () => {
     mockGetAll.mockRejectedValueOnce(new Error('Network error'))
     const { result } = renderHook(() => useDamageReports(), { wrapper: createWrapper() })
 
     await waitFor(() => expect(result.current.isLoading).toBe(false))
 
     expect(result.current.damageReports).toEqual([])
-    expect(result.current.demoMode).toBe(true)
   })
 })

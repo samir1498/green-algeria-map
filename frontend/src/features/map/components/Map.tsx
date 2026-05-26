@@ -25,11 +25,10 @@ const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
 interface MapProps {
   zones: Zone[]
   damageReports?: DamageReport[]
-  demoMode?: boolean
   onDamageReported?: () => void
 }
 
-export function Map({ zones, damageReports = [], demoMode = false, onDamageReported }: MapProps) {
+export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
   const [reportingZone, setReportingZone] = useState<Zone | null>(null)
   const [treeInfoModal, setTreeInfoModal] = useState<{
     taxonId: number
@@ -63,14 +62,6 @@ export function Map({ zones, damageReports = [], demoMode = false, onDamageRepor
 
   return (
     <div className="relative" data-testid="map-container">
-      {demoMode && (
-        <div
-          className="absolute top-2 left-1/2 z-[1000] -translate-x-1/2 rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-medium text-amber-800 shadow dark:bg-amber-900 dark:text-amber-200"
-          data-testid="demo-banner"
-        >
-          Showing demo data — backend unavailable
-        </div>
-      )}
       <MapContainer
         center={ALGERIA_CENTER}
         zoom={5}

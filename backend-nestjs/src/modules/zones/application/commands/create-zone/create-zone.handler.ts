@@ -26,6 +26,7 @@ export class CreateZoneHandler implements ICommandHandler<
       currentCount: command.currentCount,
       description: command.description ?? '',
       organizerContact: command.organizerContact,
+      treeSpecies: command.treeSpecies,
     });
     const saved = await this.repository.save(zone);
     this.eventBus.publish(

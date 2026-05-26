@@ -11,6 +11,7 @@ import {
 import { ParseUUIDPipe } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiTags } from '@nestjs/swagger';
+import { Public } from '../auth/infrastructure/public.decorator';
 import { CreateDamageReportCommand } from './application/commands/create-damage-report/create-damage-report.command';
 import { UpdateDamageReportStatusCommand } from './application/commands/update-damage-report-status/update-damage-report-status.command';
 import { DeleteDamageReportCommand } from './application/commands/delete-damage-report/delete-damage-report.command';
@@ -34,6 +35,7 @@ export class DamageReportsController {
   ) {}
 
   @Get()
+  @Public()
   async findAll(@Query('zoneId') zoneId?: string) {
     const reports = await this.queryBus.execute(
       new GetAllDamageReportsQuery(zoneId),
@@ -42,6 +44,7 @@ export class DamageReportsController {
   }
 
   @Get(':id')
+  @Public()
   async findById(@Param('id', new ParseUUIDPipe()) id: string) {
     const report = await this.queryBus.execute(
       new GetDamageReportByIdQuery(id),
@@ -50,6 +53,7 @@ export class DamageReportsController {
   }
 
   @Post()
+  @Public()
   async create(@Body() dto: CreateDamageReportDto) {
     const report = await this.commandBus.execute(
       new CreateDamageReportCommand(

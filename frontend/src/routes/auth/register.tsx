@@ -43,7 +43,7 @@ export function RegisterPage() {
           <CardDescription>Sign up to start contributing to Green Algeria</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" data-testid="register-form">
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
               <Input
