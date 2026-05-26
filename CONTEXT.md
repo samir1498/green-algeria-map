@@ -49,6 +49,10 @@ Framework leaks are forbidden in `domain/`. Controllers are thin (route delegati
 | Database | PostgreSQL 18 via Docker | TypeORM, migration workflow |
 | Quality | tsc strict + ESLint + knip + depcruise | Catch dead code, circular deps, layer violations |
 
+## PR Rules
+
+- **No mixing frontend and backend** in the same PR. A PR touches either `frontend/` or `backend-nestjs/`, never both. The rare exception is when a backend change exists purely to support the frontend change (e.g., adding `@Public()` to an endpoint) — even then, submit as two stacked PRs: backend first, then frontend rebased on top.
+
 ## Module Boundaries (enforced by dependency-cruiser)
 
 ### Frontend
