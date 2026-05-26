@@ -113,11 +113,11 @@ export function CreateZoneForm() {
           <div className="space-y-2">
             <Label>Location</Label>
             <p className="text-muted-foreground text-xs">Click on the map to set the coordinates</p>
-            <div className="h-64 overflow-hidden rounded-lg border" data-testid="map-picker">
+            <div className="h-56 overflow-hidden rounded-lg border sm:h-64" data-testid="map-picker">
               <MapContainer
                 center={ALGERIA_CENTER}
                 zoom={5}
-                style={{ height: '100%', width: '100%' }}
+                className="h-full w-full"
                 scrollWheelZoom
               >
                 <TileLayer
