@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
-  testDir: './e2e',
+  testDir: '../e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -31,14 +31,14 @@ export default defineConfig({
       command: 'scripts/e2e-start.sh',
       url: 'http://localhost:8080/api/health/live',
       reuseExistingServer: !process.env.CI,
-      cwd: '../backend-nestjs',
+      cwd: '../../backend-nestjs',
       timeout: 120_000,
     },
     {
       command: 'pnpm preview --port 4173',
       url: 'http://localhost:4173',
       reuseExistingServer: !process.env.CI,
-      cwd: '.',
+      cwd: '..',
     },
   ],
 })
