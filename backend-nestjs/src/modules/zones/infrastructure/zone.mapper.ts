@@ -31,6 +31,7 @@ export class ZoneMapper {
       description: orm.description,
       photos: orm.photos,
       organizerContact: orm.organizerContact,
+      treeSpecies: orm.treeSpecies,
     });
   }
 
@@ -47,6 +48,7 @@ export class ZoneMapper {
     orm.description = domain.description;
     orm.photos = domain.photos;
     orm.organizerContact = domain.organizerContact;
+    orm.treeSpecies = domain.treeSpecies;
     return orm;
   }
 }

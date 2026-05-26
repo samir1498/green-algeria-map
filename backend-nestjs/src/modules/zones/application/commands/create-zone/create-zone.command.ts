@@ -13,6 +13,7 @@ export class CreateZoneCommand extends Command<Zone> {
     readonly currentCount?: number,
     readonly description?: string,
     readonly organizerContact?: string,
+    readonly treeSpecies?: string,
   ) {
     super();
   }

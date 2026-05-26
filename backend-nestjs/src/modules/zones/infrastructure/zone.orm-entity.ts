@@ -34,4 +34,7 @@ export class ZoneOrmEntity {
 
   @Column({ nullable: true })
   organizerContact?: string;
+
+  @Column({ nullable: true })
+  treeSpecies?: string;
 }

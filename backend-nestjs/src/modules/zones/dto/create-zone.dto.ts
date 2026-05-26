@@ -33,4 +33,8 @@ export class CreateZoneDto {
   @IsOptional()
   @IsString()
   organizerContact?: string;
+
+  @IsOptional()
+  @IsString()
+  treeSpecies?: string;
 }
