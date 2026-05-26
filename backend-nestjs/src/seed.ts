@@ -122,21 +122,28 @@ async function seed() {
   await AppDataSource.initialize();
   const repo = AppDataSource.getRepository(ZoneOrmEntity);
 
-  let count = 0;
+  let created = 0;
+  let updated = 0;
   for (const data of demoZones) {
-    const exists = await repo.exists({ where: { name: data.name } });
-    if (exists) {
-      console.log(`  SKIP ${data.name}`);
+    const existing = await repo.findOne({ where: { name: data.name } });
+    if (existing) {
+      if (data.treeSpecies && existing.treeSpecies !== data.treeSpecies) {
+        await repo.update(existing.id, { treeSpecies: data.treeSpecies });
+        console.log(`  UPD  ${data.name} → treeSpecies: ${data.treeSpecies}`);
+        updated++;
+      } else {
+        console.log(`  OK   ${data.name}`);
+      }
       continue;
     }
     await repo.save(repo.create(data));
-    console.log(`  OK   ${data.name}`);
-    count++;
+    console.log(`  NEW  ${data.name}`);
+    created++;
   }
 
   await AppDataSource.destroy();
   console.log(
-    `\nSeeded ${count} zones${count > 0 ? '' : ' (all already exist)'}.`,
+    `\nSeeded ${created} new zones, updated ${updated} existing zones.`,
   );
 }
 
