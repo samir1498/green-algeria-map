@@ -13,6 +13,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME ?? 'greenalgeria',
   password: process.env.DB_PASSWORD ?? 'greenalgeria',
   database: process.env.DB_NAME ?? 'greenalgeria',
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   entities: [
     ZoneOrmEntity,
     DamageReportOrmEntity,
