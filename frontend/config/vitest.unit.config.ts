@@ -1,10 +1,14 @@
+import { fileURLToPath } from 'url'
 import { defineConfig } from 'vitest/config'
 import viteReact from '@vitejs/plugin-react'
+
+const root = fileURLToPath(new URL('..', import.meta.url))
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },
   plugins: [viteReact()],
   test: {
+    root,
     include: ['src/**/*.unit.spec.{ts,tsx}'],
     environment: 'node',
     setupFiles: [],

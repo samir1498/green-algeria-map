@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "pnpx @nestjs/cli build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -18,14 +18,14 @@
     "migration:revert": "npx typeorm-ts-node-commonjs migration:revert -d src/data-source.ts",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "check": "tsc --noEmit",
-    "knip": "knip",
-    "depcruise": "depcruise src",
-    "test": "vitest run --config vitest.unit.config.ts && vitest run --config vitest.it.config.ts",
-    "test:unit": "vitest run --config vitest.unit.config.ts",
-    "test:it": "vitest run --config vitest.it.config.ts",
-    "test:watch": "vitest --config vitest.unit.config.ts",
-    "test:coverage": "vitest run --config vitest.unit.config.ts --coverage && vitest run --config vitest.it.config.ts --coverage",
-    "test:debug": "vitest --config vitest.unit.config.ts --inspect-brk"
+    "knip": "knip --config config/knip.json",
+    "depcruise": "depcruise --config config/.dependency-cruiser.cjs src",
+    "test": "vitest run --config config/vitest.unit.config.ts && vitest run --config config/vitest.it.config.ts",
+    "test:unit": "vitest run --config config/vitest.unit.config.ts",
+    "test:it": "vitest run --config config/vitest.it.config.ts",
+    "test:watch": "vitest --config config/vitest.unit.config.ts",
+    "test:coverage": "vitest run --config config/vitest.unit.config.ts --coverage && vitest run --config config/vitest.it.config.ts --coverage",
+    "test:debug": "vitest --config config/vitest.unit.config.ts --inspect-brk"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
