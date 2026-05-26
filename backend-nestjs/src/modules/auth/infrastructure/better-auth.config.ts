@@ -23,6 +23,15 @@ export const auth = betterAuth({
   trustedOrigins: process.env.CLIENT_URL
     ? process.env.CLIENT_URL.split(',').map((s) => s.trim())
     : ['http://localhost:3000'],
+  advanced: {
+    cookies: {
+      session_token: {
+        attributes: {
+          sameSite: 'none',
+        },
+      },
+    },
+  },
   user: {
     additionalFields: {
       role: {
