@@ -123,6 +123,13 @@ function RootComponent() {
             >
               About
             </a>
+            <a
+              href="/zones/new"
+              className="hover:text-foreground/80 text-sm font-medium"
+              data-testid="nav-add-zone"
+            >
+              Add Location
+            </a>
             <AuthNav />
             <ThemeToggle />
           </div>
@@ -157,6 +164,14 @@ function RootComponent() {
                 data-testid="mobile-nav-about"
               >
                 About
+              </a>
+              <a
+                href="/zones/new"
+                className="hover:text-foreground/80 rounded px-2 py-1.5 text-sm font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="mobile-nav-add-zone"
+              >
+                Add Location
               </a>
               <div className="border-t pt-2">
                 <AuthNav />
