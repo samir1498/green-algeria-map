@@ -24,3 +24,7 @@ export async function update(id: string, input: Partial<Zone>): Promise<Zone> {
 export async function remove(id: string): Promise<void> {
   await api.delete(`/zones/${id}`)
 }
+
+export async function registerVolunteer(id: string): Promise<void> {
+  await api.post(`/zones/${id}/volunteer`)
+}

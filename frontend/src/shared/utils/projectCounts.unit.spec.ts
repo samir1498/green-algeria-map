@@ -12,6 +12,7 @@ const plantingZone: Zone = {
   currentCount: 10,
   targetCount: 20,
   description: '',
+  volunteerCount: 0,
 }
 
 const trashZone: Zone = {
@@ -22,6 +23,7 @@ const trashZone: Zone = {
   lat: 36.6,
   lng: 3.1,
   description: '',
+  volunteerCount: 0,
 }
 
 const cleanupZone: Zone = {
@@ -32,6 +34,7 @@ const cleanupZone: Zone = {
   lat: 36.7,
   lng: 3.2,
   description: '',
+  volunteerCount: 0,
 }
 
 describe('computeProjectCounts', () => {

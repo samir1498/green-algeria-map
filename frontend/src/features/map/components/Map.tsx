@@ -63,7 +63,7 @@ export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
       <MapContainer
         center={ALGERIA_CENTER}
         zoom={5}
-        style={{ height: '60vh', width: '100%' }}
+        className="h-[50vh] w-full lg:h-[60vh]"
         scrollWheelZoom
       >
         <TileLayer
@@ -91,7 +91,7 @@ export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
             }}
           >
             <Popup>
-              <div className="max-h-[50vh] overflow-y-auto text-sm md:max-h-none">
+              <div className="max-h-[50vh] overflow-y-auto text-xs md:max-h-none md:text-sm">
                 <p className="font-semibold text-red-600 dark:text-red-400">Damage Report</p>
                 <p className="text-muted-foreground">{damageTypeLabels[report.type]}</p>
                 <span
