@@ -74,7 +74,11 @@ export function CreateZoneForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-6">
+    <form
+      onSubmit={handleSubmit}
+      data-testid="create-zone-form"
+      className="mx-auto max-w-2xl space-y-6"
+    >
       <Card>
         <CardHeader>
           <CardTitle>Add a New Location</CardTitle>
@@ -84,6 +88,7 @@ export function CreateZoneForm() {
             <Label htmlFor="name">Name</Label>
             <Input
               id="name"
+              data-testid="field-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Chrea National Park"
@@ -94,6 +99,7 @@ export function CreateZoneForm() {
             <Label htmlFor="type">Type</Label>
             <select
               id="type"
+              data-testid="field-type"
               value={type}
               onChange={(e) => setType(e.target.value as typeof type)}
               className="border-input bg-background ring-offset-background focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
@@ -113,6 +119,7 @@ export function CreateZoneForm() {
                 zoom={5}
                 style={{ height: '100%', width: '100%' }}
                 scrollWheelZoom
+                data-testid="map-picker"
               >
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -133,6 +140,7 @@ export function CreateZoneForm() {
             <Label htmlFor="description">Description</Label>
             <textarea
               id="description"
+              data-testid="field-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the location and what work is needed..."
@@ -167,7 +175,7 @@ export function CreateZoneForm() {
       </Card>
 
       <div className="flex gap-3">
-        <Button type="submit" disabled={createZone.isPending}>
+        <Button type="submit" data-testid="submit-zone" disabled={createZone.isPending}>
           {createZone.isPending ? 'Creating...' : 'Create Location'}
         </Button>
         <Button type="button" variant="outline" onClick={() => navigate({ to: '/' })}>
