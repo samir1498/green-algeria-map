@@ -4,7 +4,6 @@ import 'leaflet/dist/leaflet.css'
 import { toast } from 'sonner'
 import type { Zone } from '@/shared/types/zone'
 import type { DamageReport } from '@/shared/types/damage-report'
-import { statusColors, typeLabels, statusBadgeClasses } from '@/shared/constants/zones'
 import {
   damageSeverityColors,
   damageStatusBadgeClasses,
@@ -14,11 +13,10 @@ import {
 import { isValidCoordinate } from '@/shared/utils/coordinates'
 import { formatDate } from '@/shared/utils/formatDate'
 import { Legend } from './Legend'
+import { ZoneMarker } from './ZoneMarker'
 import { DamageReportForm } from '@/features/damage-reports/components/DamageReportForm'
 import { TreeInfoModal } from '@/features/tree-info/components/TreeInfoModal'
 import { useTreeLookup } from '@/features/tree-info/hooks/useTreeLookup'
-import { ZonePhotoUploader } from '@/features/zones/components/ZonePhotoUploader'
-import { ZoneCtaPanel } from '@/features/zones/components/ZoneCtaPanel'
 
 const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
 
@@ -73,52 +71,12 @@ export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {zones.map((zone) => (
-          <CircleMarker
+          <ZoneMarker
             key={zone.id}
-            center={[zone.lat, zone.lng]}
-            radius={zone.type === 'planting' ? 14 : 10}
-            pathOptions={{
-              color: statusColors[zone.status],
-              fillColor: statusColors[zone.status],
-              fillOpacity: 0.4,
-              weight: 2,
-            }}
-          >
-            <Popup>
-              <div className="max-h-[50vh] overflow-y-auto text-sm md:max-h-none">
-                <p className="font-semibold">{zone.name}</p>
-                <p className="text-muted-foreground">{typeLabels[zone.type]}</p>
-                <span
-                  className={`mt-1 inline-block rounded px-1.5 py-0.5 text-xs ${statusBadgeClasses[zone.status]}`}
-                >
-                  {zone.status}
-                </span>
-                {zone.targetCount && (
-                  <p className="mt-1 text-xs">
-                    {zone.currentCount} / {zone.targetCount} trees
-                  </p>
-                )}
-                {zone.treeSpecies && (
-                  <button
-                    onClick={() => openTreeInfo(zone.treeSpecies!)}
-                    className="mt-1 block text-left text-xs text-green-700 underline hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
-                    data-testid="tree-species-link"
-                  >
-                    {zone.treeSpecies}
-                  </button>
-                )}
-                <ZonePhotoUploader zoneId={zone.id} />
-                <ZoneCtaPanel zone={zone} />
-                <button
-                  onClick={() => openReportForm(zone)}
-                  className="mt-2 w-full rounded bg-red-600 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-red-700"
-                  data-testid="report-damage-button"
-                >
-                  Report Damage
-                </button>
-              </div>
-            </Popup>
-          </CircleMarker>
+            zone={zone}
+            onTreeInfo={openTreeInfo}
+            onReportDamage={openReportForm}
+          />
         ))}
         {damageReports.map((report) => (
           <CircleMarker
