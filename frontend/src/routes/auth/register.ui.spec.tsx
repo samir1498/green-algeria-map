@@ -63,10 +63,12 @@ describe('RegisterPage', () => {
     await user.type(screen.getByTestId('password-input'), 'password123')
     await user.click(screen.getByTestId('submit-button'))
 
-    expect(mockSignUp).toHaveBeenCalledWith({
-      name: 'Test User',
-      email: 'test@example.com',
-      password: 'password123',
+    await waitFor(() => {
+      expect(mockSignUp).toHaveBeenCalledWith({
+        name: 'Test User',
+        email: 'test@example.com',
+        password: 'password123',
+      })
     })
   })
 
