@@ -19,8 +19,8 @@ test.describe('Desktop create zone form', () => {
     await expect(page.getByTestId('field-description')).toBeVisible()
     await expect(page.getByTestId('map-picker')).toBeVisible()
     await expect(page.getByTestId('submit-zone')).toBeVisible()
-    await expect(page.getByPlaceholder('Email or phone number')).toBeVisible()
-    await expect(page.getByPlaceholder('Cedrus atlantica')).toBeVisible()
+    await expect(page.getByTestId('field-contact')).toBeVisible()
+    await expect(page.getByTestId('field-tree-species')).toBeVisible()
   })
 
   test('shows validation error when submitting without coordinates', async ({ page }) => {
@@ -33,6 +33,7 @@ test.describe('Desktop create zone form', () => {
 
   test('shows validation error when name is empty', async ({ page }) => {
     await page.goto('/zones/new')
+    await page.getByTestId('map-picker').click()
     await page.getByTestId('field-description').fill('Test description')
     await page.getByTestId('submit-zone').click()
     await expect(page.getByText('Name is required')).toBeVisible()
@@ -40,6 +41,7 @@ test.describe('Desktop create zone form', () => {
 
   test('shows validation error when description is empty', async ({ page }) => {
     await page.goto('/zones/new')
+    await page.getByTestId('map-picker').click()
     await page.getByTestId('field-name').fill('Test Zone')
     await page.getByTestId('submit-zone').click()
     await expect(page.getByText('Description is required')).toBeVisible()
@@ -49,8 +51,8 @@ test.describe('Desktop create zone form', () => {
     await page.goto('/zones/new')
     await page.getByTestId('field-name').fill(ZONE_NAME)
     await page.getByTestId('field-description').fill('Created during e2e test')
-    await page.getByPlaceholder('Email or phone number').fill('test@example.com')
-    await page.getByPlaceholder('Cedrus atlantica').fill('Pinus halepensis')
+    await page.getByTestId('field-contact').fill('test@example.com')
+    await page.getByTestId('field-tree-species').fill('Pinus halepensis')
     await page.getByTestId('map-picker').click()
     await page.waitForTimeout(500)
     await page.getByTestId('submit-zone').click()

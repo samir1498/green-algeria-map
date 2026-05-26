@@ -113,13 +113,12 @@ export function CreateZoneForm() {
           <div className="space-y-2">
             <Label>Location</Label>
             <p className="text-muted-foreground text-xs">Click on the map to set the coordinates</p>
-            <div className="h-64 overflow-hidden rounded-lg border">
+            <div className="h-64 overflow-hidden rounded-lg border" data-testid="map-picker">
               <MapContainer
                 center={ALGERIA_CENTER}
                 zoom={5}
                 style={{ height: '100%', width: '100%' }}
                 scrollWheelZoom
-                data-testid="map-picker"
               >
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -154,6 +153,7 @@ export function CreateZoneForm() {
             </Label>
             <Input
               id="organizerContact"
+              data-testid="field-contact"
               value={organizerContact}
               onChange={(e) => setOrganizerContact(e.target.value)}
               placeholder="Email or phone number"
@@ -166,6 +166,7 @@ export function CreateZoneForm() {
             </Label>
             <Input
               id="treeSpecies"
+              data-testid="field-tree-species"
               value={treeSpecies}
               onChange={(e) => setTreeSpecies(e.target.value)}
               placeholder="Cedrus atlantica"
