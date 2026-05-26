@@ -6,14 +6,10 @@ import {
   TriangleAlertIcon,
 } from 'lucide-react'
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
-import { useTheme } from '@/shared/hooks/useTheme'
 
 export function Toaster(props: ToasterProps) {
-  const { theme } = useTheme()
-
   return (
     <Sonner
-      theme={theme}
       className="toaster group"
       toastOptions={{
         classNames: {

@@ -30,10 +30,10 @@ export const Route = createFileRoute('/auth/register')({
 })
 
 export function RegisterPage() {
-  const { signUp } = useAuth()
+  const { signUp, refetchSession } = useAuth()
   const search = Route.useSearch()
   const { name, email, password, loading, handleSubmit, setName, setEmail, setPassword } =
-    useRegisterForm({ signUp, redirectTo: search.redirect })
+    useRegisterForm({ signUp, redirectTo: search.redirect, onSuccess: refetchSession })
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">
