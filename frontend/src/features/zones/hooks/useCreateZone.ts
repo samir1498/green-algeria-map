@@ -28,6 +28,7 @@ export function useCreateZone() {
         description: input.description,
         treeSpecies: input.treeSpecies ?? null,
         organizerContact: input.organizerContact ?? null,
+        volunteerCount: 0,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['zones'] })

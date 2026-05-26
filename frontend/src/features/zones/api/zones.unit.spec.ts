@@ -25,6 +25,7 @@ const mockZones: Zone[] = [
     lat: 36.5,
     lng: 3.0,
     description: '',
+    volunteerCount: 0,
   },
   {
     id: '2',
@@ -34,6 +35,7 @@ const mockZones: Zone[] = [
     lat: 36.6,
     lng: 3.1,
     description: '',
+    volunteerCount: 0,
   },
 ]
 
@@ -64,6 +66,7 @@ describe('zones API', () => {
       lat: 36,
       lng: 3,
       description: '',
+      volunteerCount: 0,
     }
     mockPost.mockResolvedValueOnce({ data: { id: '3', ...input } })
     const result = await create(input)

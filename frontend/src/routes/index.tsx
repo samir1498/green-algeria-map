@@ -45,7 +45,7 @@ function Home() {
         <Map zones={zones} damageReports={damageReports} />
       </div>
 
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-3 px-4 py-4 md:grid-cols-4">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-2 px-4 py-4 sm:gap-3 md:grid-cols-4">
         <StatCard value={String(projectCounts.total)} label="Total Projects" />
         <StatCard value={String(projectCounts.planting)} label="Planting Zones" />
         <StatCard value={String(projectCounts.trees)} label="Trees Planted" />

@@ -41,7 +41,7 @@ export function ZoneMarker({ zone, onTreeInfo, onReportDamage }: ZoneMarkerProps
       }}
     >
       <Popup>
-        <div className="max-h-[50vh] overflow-y-auto text-sm md:max-h-none">
+        <div className="max-h-[50vh] overflow-y-auto text-xs md:max-h-none md:text-sm">
           <p className="font-semibold">{zone.name}</p>
           <p className="text-muted-foreground">{typeLabels[zone.type]}</p>
           <span
