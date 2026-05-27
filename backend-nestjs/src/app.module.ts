@@ -21,7 +21,10 @@ import { PublicModule } from './modules/public/public.module';
         username: config.get('DB_USERNAME', 'greenalgeria'),
         password: config.get('DB_PASSWORD', 'greenalgeria'),
         database: config.get('DB_NAME', 'greenalgeria'),
-        ssl: config.get('NODE_ENV') === 'production' ? { rejectUnauthorized: false } : false,
+        ssl:
+          config.get('NODE_ENV') === 'production'
+            ? { rejectUnauthorized: false }
+            : false,
         autoLoadEntities: true,
         synchronize: false,
       }),

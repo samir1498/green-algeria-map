@@ -31,7 +31,9 @@ export class RustFsStorageService implements StorageService {
   }
 
   private get region(): string {
-    return this.configService.get<string>('OO_OBJECT_STORAGE_REGION') ?? 'us-east-1';
+    return (
+      this.configService.get<string>('OO_OBJECT_STORAGE_REGION') ?? 'us-east-1'
+    );
   }
 
   async uploadFile(
@@ -39,10 +41,14 @@ export class RustFsStorageService implements StorageService {
     filename: string,
     mimetype: string,
   ): Promise<{ fileId: string; url: string }> {
-    if (!this.endpoint) throw new UploadFileError('Missing OO_OBJECT_STORAGE_ENDPOINT');
-    if (!this.bucket) throw new UploadFileError('Missing OO_OBJECT_STORAGE_BUCKET');
-    if (!this.accessKey) throw new UploadFileError('Missing OO_OBJECT_STORAGE_ACCESS_KEY');
-    if (!this.secretKey) throw new UploadFileError('Missing OO_OBJECT_STORAGE_SECRET_KEY');
+    if (!this.endpoint)
+      throw new UploadFileError('Missing OO_OBJECT_STORAGE_ENDPOINT');
+    if (!this.bucket)
+      throw new UploadFileError('Missing OO_OBJECT_STORAGE_BUCKET');
+    if (!this.accessKey)
+      throw new UploadFileError('Missing OO_OBJECT_STORAGE_ACCESS_KEY');
+    if (!this.secretKey)
+      throw new UploadFileError('Missing OO_OBJECT_STORAGE_SECRET_KEY');
 
     try {
       const uniqueKey = `${randomUUID()}-${filename}`;
