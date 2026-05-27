@@ -24,6 +24,8 @@ async function main() {
   const cwd = path.resolve(__dirname, '..')
   console.log('Waiting for PostgreSQL...')
   await waitForPort(5432, 'localhost')
+  console.log('Waiting for RustFS...')
+  await waitForPort(9000, 'localhost')
 
   const safeEnv = Object.fromEntries(
     Object.entries(process.env).filter(([k]) => !k.startsWith('npm_') && !k.startsWith('pnpm_'))
