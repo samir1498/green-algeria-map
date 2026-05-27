@@ -63,6 +63,7 @@ export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
       <MapContainer
         center={ALGERIA_CENTER}
         zoom={5}
+        minZoom={4}
         className="h-[50vh] w-full lg:h-[60vh]"
         scrollWheelZoom
       >
