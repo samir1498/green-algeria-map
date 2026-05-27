@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
+import { useState, useCallback, useEffect } from 'react'
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { toast } from 'sonner'
 import type { Zone } from '@/shared/types/zone'
@@ -19,11 +19,35 @@ import { TreeInfoModal } from '@/features/tree-info/components/TreeInfoModal'
 import { useTreeLookup } from '@/features/tree-info/hooks/useTreeLookup'
 
 const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
+const ALGERIA_BOUNDS: [[number, number], [number, number]] = [
+  [19, -9],
+  [37, 12],
+]
 
 interface MapProps {
   zones: Zone[]
   damageReports?: DamageReport[]
   onDamageReported?: () => void
+}
+
+function FitBounds() {
+  const map = useMap()
+
+  useEffect(() => {
+    const responsiveMinZoom = getResponsiveMinZoom()
+    map.setMinZoom(responsiveMinZoom)
+    map.fitBounds(ALGERIA_BOUNDS, { padding: [20, 20] })
+  }, [map])
+
+  return null
+}
+
+function getResponsiveMinZoom(): number {
+  if (typeof window === 'undefined') return 4
+  const w = window.innerWidth
+  if (w >= 3840) return 6
+  if (w >= 2560) return 5
+  return 4
 }
 
 export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
@@ -67,6 +91,7 @@ export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
         className="h-[50vh] w-full lg:h-[60vh]"
         scrollWheelZoom
       >
+        <FitBounds />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
