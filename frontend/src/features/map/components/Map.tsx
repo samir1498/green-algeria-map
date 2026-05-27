@@ -20,8 +20,8 @@ import { useTreeLookup } from '@/features/tree-info/hooks/useTreeLookup'
 
 const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
 const ALGERIA_BOUNDS: [[number, number], [number, number]] = [
-  [19, -9],
-  [37, 12],
+  [22, -5],
+  [37, 9],
 ]
 
 interface MapProps {
@@ -36,7 +36,7 @@ function FitBounds() {
   useEffect(() => {
     const responsiveMinZoom = getResponsiveMinZoom()
     map.setMinZoom(responsiveMinZoom)
-    map.fitBounds(ALGERIA_BOUNDS, { padding: [20, 20] })
+    map.fitBounds(ALGERIA_BOUNDS, { padding: [40, 40] })
   }, [map])
 
   return null
