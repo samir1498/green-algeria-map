@@ -33,10 +33,10 @@ interface MapProps {
   zones: Zone[]
   damageReports?: DamageReport[]
   onDamageReported?: () => void
+  fullHeight?: boolean
 }
 
-export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
-  const { zoom, minZoom } = useResponsiveZoom()
+export function Map({ zones, damageReports = [], onDamageReported, fullHeight }: MapProps) {
   const [reportingZone, setReportingZone] = useState<Zone | null>(null)
   const [treeInfoModal, setTreeInfoModal] = useState<{
     taxonId: number
@@ -68,62 +68,73 @@ export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
     [lookupSpecies],
   )
 
-  return (
-    <div className="relative" data-testid="map-container">
-      <MapContainer
-        center={ALGERIA_CENTER}
-        zoom={zoom}
-        minZoom={minZoom}
-        className="h-[50vh] w-full lg:h-[60vh]"
-        scrollWheelZoom
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  const mapContent = (
+    <MapContainer
+      center={ALGERIA_CENTER}
+      zoom={5}
+      className={`w-full ${fullHeight ? 'absolute inset-0' : 'h-[50vh] lg:h-[60vh]'}`}
+      scrollWheelZoom
+    >
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      {zones.map((zone) => (
+        <ZoneMarker
+          key={zone.id}
+          zone={zone}
+          onTreeInfo={openTreeInfo}
+          onReportDamage={openReportForm}
         />
-        {zones.map((zone) => (
-          <ZoneMarker
-            key={zone.id}
-            zone={zone}
-            onTreeInfo={openTreeInfo}
-            onReportDamage={openReportForm}
-          />
-        ))}
-        {damageReports.map((report) => (
-          <CircleMarker
-            key={report.id}
-            center={[report.lat, report.lng]}
-            radius={12}
-            pathOptions={{
-              color: damageSeverityColors[report.severity],
-              fillColor: damageSeverityColors[report.severity],
-              fillOpacity: 0.6,
-              weight: 3,
-            }}
-          >
-            <Popup>
-              <div className="max-h-[50vh] overflow-y-auto text-xs md:max-h-none md:text-sm">
-                <p className="font-semibold text-red-600 dark:text-red-400">Damage Report</p>
-                <p className="text-muted-foreground">{damageTypeLabels[report.type]}</p>
-                <span
-                  className={`mt-1 inline-block rounded px-1.5 py-0.5 text-xs ${damageStatusBadgeClasses[report.status]}`}
-                >
-                  {report.status}
-                </span>
-                <p className="mt-1 text-xs font-medium">
-                  Severity: {severityLabels[report.severity]}
-                </p>
-                <p className="text-muted-foreground mt-1 text-xs">{report.description}</p>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  Reported: {formatDate(report.reportedAt)}
-                </p>
-              </div>
-            </Popup>
-          </CircleMarker>
-        ))}
-      </MapContainer>
-      <Legend />
+      ))}
+      {damageReports.map((report) => (
+        <CircleMarker
+          key={report.id}
+          center={[report.lat, report.lng]}
+          radius={12}
+          pathOptions={{
+            color: damageSeverityColors[report.severity],
+            fillColor: damageSeverityColors[report.severity],
+            fillOpacity: 0.6,
+            weight: 3,
+          }}
+        >
+          <Popup>
+            <div className="max-h-[50vh] overflow-y-auto text-xs md:max-h-none md:text-sm">
+              <p className="font-semibold text-red-600 dark:text-red-400">Damage Report</p>
+              <p className="text-muted-foreground">{damageTypeLabels[report.type]}</p>
+              <span
+                className={`mt-1 inline-block rounded px-1.5 py-0.5 text-xs ${damageStatusBadgeClasses[report.status]}`}
+              >
+                {report.status}
+              </span>
+              <p className="mt-1 text-xs font-medium">
+                Severity: {severityLabels[report.severity]}
+              </p>
+              <p className="text-muted-foreground mt-1 text-xs">{report.description}</p>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Reported: {formatDate(report.reportedAt)}
+              </p>
+            </div>
+          </Popup>
+        </CircleMarker>
+      ))}
+    </MapContainer>
+  )
 
+  return (
+    <>
+      {fullHeight ? (
+        <>
+          {mapContent}
+          <Legend />
+        </>
+      ) : (
+        <div className="relative" data-testid="map-container">
+          {mapContent}
+          <Legend />
+        </div>
+      )}
       {reportingZone && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="mx-4 w-full max-w-md">
@@ -145,7 +156,6 @@ export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
           </div>
         </div>
       )}
-
       {treeInfoModal && (
         <TreeInfoModal
           taxonId={treeInfoModal.taxonId}
@@ -153,6 +163,6 @@ export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
           onClose={() => setTreeInfoModal(null)}
         />
       )}
-    </div>
+    </>
   )
 }
