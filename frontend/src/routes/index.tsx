@@ -12,10 +12,10 @@ export const Route = createFileRoute('/')({
 function StatCard({ value, label }: { value: string; label: string }) {
   return (
     <Card>
-      <CardHeader className="p-3 pb-0">
-        <CardTitle className="text-primary text-xl">{value}</CardTitle>
+      <CardHeader className="p-2 pb-0">
+        <CardTitle className="text-primary text-base">{value}</CardTitle>
       </CardHeader>
-      <CardContent className="p-3 pt-0">
+      <CardContent className="p-2 pt-0">
         <p className="text-muted-foreground text-sm">{label}</p>
       </CardContent>
     </Card>
@@ -29,14 +29,14 @@ function Home() {
 
   return (
     <div>
-      <div className="mx-auto max-w-7xl px-4 py-4">
-        <div className="mb-2 flex items-center gap-3">
-          <h1 className="text-foreground text-3xl font-bold">Explore Reforestation</h1>
+      <div className="mx-auto max-w-7xl space-y-1 px-4 py-2">
+        <div className="flex items-center gap-3">
+          <h1 className="text-foreground text-xl font-bold">Explore Reforestation</h1>
           <Badge variant="outline" className="text-xs">
             Beta
           </Badge>
         </div>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Track tree planting initiatives and green coverage across Algeria.
         </p>
       </div>
@@ -45,7 +45,7 @@ function Home() {
         <Map zones={zones} damageReports={damageReports} />
       </div>
 
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-2 px-4 py-4 sm:gap-3 md:grid-cols-4">
+      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-2 px-4 py-2 md:grid-cols-4">
         <StatCard value={String(projectCounts.total)} label="Total Projects" />
         <StatCard value={String(projectCounts.planting)} label="Planting Zones" />
         <StatCard value={String(projectCounts.trees)} label="Trees Planted" />
