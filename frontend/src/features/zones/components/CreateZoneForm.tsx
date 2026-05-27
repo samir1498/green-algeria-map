@@ -7,6 +7,7 @@ import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { useCreateZone } from '@/features/zones/hooks/useCreateZone'
+import { ZonePhotoUploader } from '@/features/zones/components/ZonePhotoUploader'
 
 const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
 
@@ -30,6 +31,7 @@ export function CreateZoneForm() {
   const [lng, setLng] = useState<number | null>(null)
   const [organizerContact, setOrganizerContact] = useState('')
   const [treeSpecies, setTreeSpecies] = useState('')
+  const [createdZoneId, setCreatedZoneId] = useState<string | null>(null)
 
   const handlePick = useCallback((newLat: number, newLng: number) => {
     setLat(newLat)
@@ -62,14 +64,37 @@ export function CreateZoneForm() {
         treeSpecies: treeSpecies.trim() || undefined,
       },
       {
-        onSuccess: () => {
+        onSuccess: (zone) => {
           toast.success('Zone created successfully')
-          navigate({ to: '/' })
+          setCreatedZoneId(zone.id)
         },
         onError: () => {
           toast.error('Failed to create zone')
         },
       },
+    )
+  }
+
+  const handleDone = () => {
+    navigate({ to: '/' })
+  }
+
+  if (createdZoneId) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Add Photos</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <p className="text-muted-foreground text-sm">
+            Your zone has been created. Optionally add photos to show the current state of the location.
+          </p>
+          <ZonePhotoUploader zoneId={createdZoneId} />
+          <Button onClick={handleDone} data-testid="done-photos">
+            Done
+          </Button>
+        </CardContent>
+      </Card>
     )
   }
 
