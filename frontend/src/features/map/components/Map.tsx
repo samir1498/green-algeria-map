@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from 'react'
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet'
+import { useState, useCallback, useMemo } from 'react'
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { toast } from 'sonner'
 import type { Zone } from '@/shared/types/zone'
@@ -18,11 +18,16 @@ import { DamageReportForm } from '@/features/damage-reports/components/DamageRep
 import { TreeInfoModal } from '@/features/tree-info/components/TreeInfoModal'
 import { useTreeLookup } from '@/features/tree-info/hooks/useTreeLookup'
 
-const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
-const ALGERIA_BOUNDS: [[number, number], [number, number]] = [
-  [21, -2],
-  [37, 8],
-]
+const ALGERIA_CENTER: [number, number] = [28.5, 1.6596]
+
+function useResponsiveZoom() {
+  return useMemo(() => {
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1920
+    if (w >= 3840) return { zoom: 7, minZoom: 6 }
+    if (w >= 2560) return { zoom: 6, minZoom: 5 }
+    return { zoom: 5, minZoom: 4 }
+  }, [])
+}
 
 interface MapProps {
   zones: Zone[]
@@ -30,27 +35,8 @@ interface MapProps {
   onDamageReported?: () => void
 }
 
-function FitBounds() {
-  const map = useMap()
-
-  useEffect(() => {
-    const responsiveMinZoom = getResponsiveMinZoom()
-    map.setMinZoom(responsiveMinZoom)
-    map.fitBounds(ALGERIA_BOUNDS, { padding: [60, 60] })
-  }, [map])
-
-  return null
-}
-
-function getResponsiveMinZoom(): number {
-  if (typeof window === 'undefined') return 4
-  const w = window.innerWidth
-  if (w >= 3840) return 6
-  if (w >= 2560) return 5
-  return 4
-}
-
 export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
+  const { zoom, minZoom } = useResponsiveZoom()
   const [reportingZone, setReportingZone] = useState<Zone | null>(null)
   const [treeInfoModal, setTreeInfoModal] = useState<{
     taxonId: number
@@ -86,12 +72,11 @@ export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
     <div className="relative" data-testid="map-container">
       <MapContainer
         center={ALGERIA_CENTER}
-        zoom={5}
-        minZoom={4}
+        zoom={zoom}
+        minZoom={minZoom}
         className="h-[50vh] w-full lg:h-[60vh]"
         scrollWheelZoom
       >
-        <FitBounds />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
