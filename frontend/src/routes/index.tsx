@@ -16,7 +16,7 @@ function StatCard({ value, label }: { value: string; label: string }) {
         <CardTitle className="text-primary text-base">{value}</CardTitle>
       </CardHeader>
       <CardContent className="p-2 pt-0">
-        <p className="text-muted-foreground text-xs">{label}</p>
+        <p className="text-muted-foreground text-sm">{label}</p>
       </CardContent>
     </Card>
   )
