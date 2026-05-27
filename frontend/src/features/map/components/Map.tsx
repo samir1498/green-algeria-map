@@ -20,7 +20,7 @@ import { useTreeLookup } from '@/features/tree-info/hooks/useTreeLookup'
 
 const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
 const ALGERIA_BOUNDS: [[number, number], [number, number]] = [
-  [24, -2],
+  [20, -2],
   [37, 8],
 ]
 
