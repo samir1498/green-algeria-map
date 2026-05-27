@@ -60,12 +60,51 @@ test.describe('Desktop create zone form', () => {
     await expect(page.getByText('Selected:')).toBeVisible({ timeout: 5000 })
     await page.getByTestId('submit-zone').click()
     await expect(page.getByText('Zone created successfully')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByTestId('done-photos')).toBeVisible({ timeout: 5000 })
+    await page.getByTestId('done-photos').click()
     await expect(page).toHaveURL('/')
   })
 
   test('cancel button returns to home page', async ({ page }) => {
     await page.goto('/zones/new')
     await page.getByRole('button', { name: 'Cancel' }).click()
+    await expect(page).toHaveURL('/')
+  })
+})
+
+test.describe('Photo upload after zone creation', () => {
+  test.use({ viewport: { width: 1280, height: 720 } })
+
+  const PHOTO_ZONE_NAME = `E2E Photo Test ${Date.now()}`
+
+  test('uploads a photo after creating a zone', async ({ page }) => {
+    await page.goto('/zones/new')
+    await page.getByTestId('field-name').fill(PHOTO_ZONE_NAME)
+    await page.getByTestId('field-description').fill('Testing photo upload')
+    const mapPicker = page.getByTestId('map-picker')
+    await mapPicker.scrollIntoViewIfNeeded()
+    await mapPicker.waitFor({ state: 'visible', timeout: 15000 })
+    await mapPicker.click()
+    await expect(page.getByText('Selected:')).toBeVisible({ timeout: 5000 })
+    await page.getByTestId('submit-zone').click()
+    await expect(page.getByText('Zone created successfully')).toBeVisible({ timeout: 10000 })
+    await expect(page.getByTestId('done-photos')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByTestId('upload-dropzone')).toBeVisible()
+
+    const fileInput = page.getByTestId('file-input')
+    await fileInput.setInputFiles({
+      name: 'e2e-test.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'),
+    })
+
+    await expect(page.getByTestId('preview-image')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByTestId('uploading-spinner')).toBeVisible()
+    await expect(page.getByText('Photo successfully uploaded')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByTestId('uploading-spinner')).not.toBeVisible({ timeout: 10000 })
+    await expect(page.getByTestId('preview-image')).not.toBeVisible({ timeout: 5000 })
+
+    await page.getByTestId('done-photos').click()
     await expect(page).toHaveURL('/')
   })
 })

@@ -36,6 +36,23 @@ jobs:
           --health-interval 3s
           --health-timeout 2s
           --health-retries 15
+      rustfs:
+        image: rustfs/rustfs:latest
+        env:
+          RUSTFS_VOLUMES: /data
+          RUSTFS_ADDRESS: 0.0.0.0:9000
+          RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+          RUSTFS_CONSOLE_ENABLE: 'true'
+          RUSTFS_ACCESS_KEY: minioadmin
+          RUSTFS_SECRET_KEY: minioadmin
+        ports:
+          - '9000:9000'
+          - '9001:9001'
+        options: >-
+          --health-cmd "wget -q --spider http://127.0.0.1:9000/ || exit 0"
+          --health-interval 3s
+          --health-timeout 2s
+          --health-retries 10
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:

@@ -3,8 +3,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
-COMPOSE_FILE="$ROOT_DIR/docker-compose.dev.yml"
-TMUX_CONF="$ROOT_DIR/.tmux.conf"
+COMPOSE_FILE="$ROOT_DIR/config/docker-compose.dev.yml"
+TMUX_CONF="$ROOT_DIR/config/.tmux.conf"
 SESSION_NAME="green-algeria"
 
 GREEN='\033[0;32m'
