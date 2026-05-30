@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { toast } from 'sonner'
@@ -18,10 +18,16 @@ import { DamageReportForm } from '@/features/damage-reports/components/DamageRep
 import { TreeInfoModal } from '@/features/tree-info/components/TreeInfoModal'
 import { useTreeLookup } from '@/features/tree-info/hooks/useTreeLookup'
 
-const ALGERIA_BOUNDS: [[number, number], [number, number]] = [
-  [18.9, -8.7],
-  [37.1, 11.9],
-]
+const ALGERIA_CENTER: [number, number] = [28.5, 1.6596]
+
+function useResponsiveZoom() {
+  return useMemo(() => {
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1920
+    if (w >= 3840) return { zoom: 7, minZoom: 6 }
+    if (w >= 2560) return { zoom: 6, minZoom: 5 }
+    return { zoom: 5, minZoom: 4 }
+  }, [])
+}
 
 interface MapProps {
   zones: Zone[]
@@ -64,8 +70,8 @@ export function Map({ zones, damageReports = [], onDamageReported, fullHeight }:
 
   const mapContent = (
     <MapContainer
-      bounds={ALGERIA_BOUNDS}
-      minZoom={4}
+      center={ALGERIA_CENTER}
+      zoom={5}
       className={`w-full ${fullHeight ? 'absolute inset-0' : 'h-[50vh] lg:h-[60vh]'}`}
       scrollWheelZoom
     >
