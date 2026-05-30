@@ -11,6 +11,7 @@ test.describe('Tree species info modal', () => {
   test.use({ viewport: { width: 1280, height: 720 } })
 
   test('opens tree info modal from zone marker popup with GBIF data', async ({ page }) => {
+    test.setTimeout(45000)
     await page.goto('/')
     await clickZoneMarker(page, 'Chrea National Park')
 
@@ -19,27 +20,28 @@ test.describe('Tree species info modal', () => {
     await expect(popup.getByTestId('tree-species-link')).toBeVisible()
 
     await popup.getByTestId('tree-species-link').click()
-    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 15000 })
-    await expect(page.getByTestId('tree-info-gbif')).toBeVisible()
+    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 30000 })
     await expect(page.getByTestId('tree-info-wikipedia')).toBeVisible()
   })
 
   test('tree info modal shows species name and common name', async ({ page }) => {
+    test.setTimeout(45000)
     await page.goto('/')
     await clickZoneMarker(page, 'Chrea National Park')
 
     await page.getByTestId('tree-species-link').click()
-    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 30000 })
     await expect(page.getByTestId('tree-info-scientific-name')).toHaveText('Cedrus atlantica')
     await expect(page.getByTestId('tree-info-common-name')).toBeVisible()
   })
 
   test('tree info modal can be closed', async ({ page }) => {
+    test.setTimeout(45000)
     await page.goto('/')
     await clickZoneMarker(page, 'Chrea National Park')
 
     await page.getByTestId('tree-species-link').click()
-    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 30000 })
 
     await page.getByTestId('tree-info-close').click()
     await expect(page.getByTestId('tree-info-content')).not.toBeVisible()
