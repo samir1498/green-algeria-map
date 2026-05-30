@@ -27,6 +27,21 @@ async function main() {
   console.log('Waiting for RustFS...')
   await waitForPort(9000, 'localhost')
 
+  console.log('Creating bucket...')
+  const bucket = spawn(process.execPath, ['scripts/create-bucket.mjs'], {
+    cwd, stdio: 'inherit', shell: true,
+    env: {
+      OO_OBJECT_STORAGE_ENDPOINT: 'http://localhost:9000',
+      OO_OBJECT_STORAGE_BUCKET: 'e2e-test',
+      OO_OBJECT_STORAGE_ACCESS_KEY: 'greenalgeria-access',
+      OO_OBJECT_STORAGE_SECRET_KEY: 'greenalgeria-secret-change-me',
+    },
+  })
+  await new Promise((resolve, reject) => {
+    bucket.on('exit', code => code === 0 ? resolve() : reject(new Error(`Bucket creation failed with code ${code}`)))
+    bucket.on('error', err => reject(err))
+  })
+
   const safeEnv = Object.fromEntries(
     Object.entries(process.env).filter(([k]) => !k.startsWith('npm_') && !k.startsWith('pnpm_'))
   )
@@ -55,8 +70,8 @@ async function main() {
       CLIENT_URL: 'http://localhost:4173',
       OO_OBJECT_STORAGE_ENDPOINT: 'http://localhost:9000',
       OO_OBJECT_STORAGE_BUCKET: 'e2e-test',
-      OO_OBJECT_STORAGE_ACCESS_KEY: 'minioadmin',
-      OO_OBJECT_STORAGE_SECRET_KEY: 'minioadmin',
+      OO_OBJECT_STORAGE_ACCESS_KEY: 'greenalgeria-access',
+      OO_OBJECT_STORAGE_SECRET_KEY: 'greenalgeria-secret-change-me',
     },
   })
   server.on('exit', code => process.exit(code ?? 0))

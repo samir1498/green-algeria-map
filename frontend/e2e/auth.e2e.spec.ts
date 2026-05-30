@@ -34,6 +34,7 @@ async function uiLogin(page: any, email: string): Promise<void> {
 }
 
 test.describe('Auth flows', () => {
+  test.use({ storageState: { cookies: [], origins: [] } })
   test('register via UI and access protected dashboard', async ({ page }) => {
     const email = uniqueEmail()
     const name = 'E2E Test User'
