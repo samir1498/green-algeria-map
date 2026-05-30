@@ -8,6 +8,7 @@ import { Label } from '@/shared/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { useCreateZone } from '@/features/zones/hooks/useCreateZone'
 import { ZonePhotoUploader } from '@/features/zones/components/ZonePhotoUploader'
+import { TreeSearchInput } from '@/features/tree-info/components/TreeSearchInput'
 
 const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
 
@@ -189,11 +190,8 @@ export function CreateZoneForm() {
             <Label htmlFor="treeSpecies">
               Tree Species <span className="text-muted-foreground">(optional)</span>
             </Label>
-            <Input
-              id="treeSpecies"
-              data-testid="field-tree-species"
-              value={treeSpecies}
-              onChange={(e) => setTreeSpecies(e.target.value)}
+            <TreeSearchInput
+              onSelect={(scientificName) => setTreeSpecies(scientificName)}
               placeholder="Cedrus atlantica"
             />
           </div>
