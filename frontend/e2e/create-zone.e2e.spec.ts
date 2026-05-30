@@ -20,7 +20,7 @@ test.describe('Desktop create zone form', () => {
     await expect(page.getByTestId('map-picker')).toBeVisible()
     await expect(page.getByTestId('submit-zone')).toBeVisible()
     await expect(page.getByTestId('field-contact')).toBeVisible()
-    await expect(page.getByTestId('field-tree-species')).toBeVisible()
+    await expect(page.getByTestId('tree-search-input')).toBeVisible()
   })
 
   test('shows validation error when submitting without coordinates', async ({ page }) => {
@@ -52,7 +52,11 @@ test.describe('Desktop create zone form', () => {
     await page.getByTestId('field-name').fill(ZONE_NAME)
     await page.getByTestId('field-description').fill('Created during e2e test')
     await page.getByTestId('field-contact').fill('test@example.com')
-    await page.getByTestId('field-tree-species').fill('Pinus halepensis')
+    const treeInput = page.getByTestId('tree-search-input')
+    await treeInput.fill('Pinus halepensis')
+    const treeDropdown = page.getByTestId('tree-search-dropdown')
+    await expect(treeDropdown).toBeVisible({ timeout: 20000 })
+    await treeDropdown.locator('button').first().click()
     const mapPicker = page.getByTestId('map-picker')
     await mapPicker.scrollIntoViewIfNeeded()
     await mapPicker.waitFor({ state: 'visible', timeout: 15000 })
@@ -95,7 +99,10 @@ test.describe('Photo upload after zone creation', () => {
     await fileInput.setInputFiles({
       name: 'e2e-test.png',
       mimeType: 'image/png',
-      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'),
+      buffer: Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        'base64',
+      ),
     })
 
     await expect(page.getByTestId('preview-image')).toBeVisible({ timeout: 5000 })
