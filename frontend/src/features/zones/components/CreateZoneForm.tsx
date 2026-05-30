@@ -88,7 +88,8 @@ export function CreateZoneForm() {
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-muted-foreground text-sm">
-            Your zone has been created. Optionally add photos to show the current state of the location.
+            Your zone has been created. Optionally add photos to show the current state of the
+            location.
           </p>
           <ZonePhotoUploader zoneId={createdZoneId} />
           <Button onClick={handleDone} data-testid="done-photos">
@@ -139,7 +140,10 @@ export function CreateZoneForm() {
           <div className="space-y-2">
             <Label>Location</Label>
             <p className="text-muted-foreground text-xs">Click on the map to set the coordinates</p>
-            <div className="h-56 overflow-hidden rounded-lg border sm:h-64" data-testid="map-picker">
+            <div
+              className="h-56 overflow-hidden rounded-lg border sm:h-64"
+              data-testid="map-picker"
+            >
               <MapContainer
                 center={ALGERIA_CENTER}
                 zoom={5}

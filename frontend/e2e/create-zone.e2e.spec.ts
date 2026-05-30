@@ -99,7 +99,10 @@ test.describe('Photo upload after zone creation', () => {
     await fileInput.setInputFiles({
       name: 'e2e-test.png',
       mimeType: 'image/png',
-      buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'),
+      buffer: Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        'base64',
+      ),
     })
 
     await expect(page.getByTestId('preview-image')).toBeVisible({ timeout: 5000 })
