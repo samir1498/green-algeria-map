@@ -4,9 +4,13 @@ const AUTH_BASE = 'https://green-algeria-map.onrender.com/api/auth'
 const authFile = 'playwright/.auth/prod-user.json'
 
 const PROD_USER = {
-  email: 'e2e-prod@greenalgeria.test',
-  password: 'TestPassword123!',
-  name: 'E2E Prod Test User',
+  email: process.env.E2E_PROD_EMAIL ?? 'e2e-prod@greenalgeria.test',
+  password: process.env.E2E_PROD_PASSWORD,
+  name: process.env.E2E_PROD_NAME ?? 'E2E Prod Test User',
+}
+
+if (!PROD_USER.password) {
+  throw new Error('E2E_PROD_PASSWORD must be set to run production auth setup')
 }
 
 setup('authenticate on production', async ({ page }) => {
