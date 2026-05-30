@@ -1,5 +1,7 @@
 import { defineConfig } from '@playwright/test'
 
+const STORAGE_STATE = 'playwright/.auth/user.json'
+
 export default defineConfig({
   testDir: '../e2e',
   fullyParallel: true,
@@ -17,12 +19,24 @@ export default defineConfig({
 
   projects: [
     {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+    },
+    {
       name: 'desktop',
-      use: { viewport: { width: 1280, height: 720 } },
+      dependencies: ['setup'],
+      use: {
+        viewport: { width: 1280, height: 720 },
+        storageState: STORAGE_STATE,
+      },
     },
     {
       name: 'mobile',
-      use: { viewport: { width: 390, height: 844 } },
+      dependencies: ['setup'],
+      use: {
+        viewport: { width: 390, height: 844 },
+        storageState: STORAGE_STATE,
+      },
     },
   ],
 

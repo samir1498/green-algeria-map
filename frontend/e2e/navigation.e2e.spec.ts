@@ -9,6 +9,10 @@ test.describe('Desktop navigation', () => {
     await expect(page).toHaveURL('/about')
     await expect(page.getByText(/Green Algeria Map is a platform/)).toBeVisible()
   })
+})
+
+test.describe('Sign in navigation', () => {
+  test.use({ viewport: { width: 1280, height: 720 }, storageState: { cookies: [], origins: [] } })
 
   test('sign in button leads to login form', async ({ page }) => {
     await page.goto('/')
