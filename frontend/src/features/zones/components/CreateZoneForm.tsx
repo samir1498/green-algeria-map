@@ -8,6 +8,7 @@ import { Label } from '@/shared/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { useCreateZone } from '@/features/zones/hooks/useCreateZone'
 import { ZonePhotoUploader } from '@/features/zones/components/ZonePhotoUploader'
+import { TreeSearchInput } from '@/features/tree-info/components/TreeSearchInput'
 
 const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
 
@@ -87,7 +88,8 @@ export function CreateZoneForm() {
         </CardHeader>
         <CardContent className="space-y-6">
           <p className="text-muted-foreground text-sm">
-            Your zone has been created. Optionally add photos to show the current state of the location.
+            Your zone has been created. Optionally add photos to show the current state of the
+            location.
           </p>
           <ZonePhotoUploader zoneId={createdZoneId} />
           <Button onClick={handleDone} data-testid="done-photos">
@@ -138,7 +140,10 @@ export function CreateZoneForm() {
           <div className="space-y-2">
             <Label>Location</Label>
             <p className="text-muted-foreground text-xs">Click on the map to set the coordinates</p>
-            <div className="h-56 overflow-hidden rounded-lg border sm:h-64" data-testid="map-picker">
+            <div
+              className="h-56 overflow-hidden rounded-lg border sm:h-64"
+              data-testid="map-picker"
+            >
               <MapContainer
                 center={ALGERIA_CENTER}
                 zoom={5}
@@ -189,11 +194,8 @@ export function CreateZoneForm() {
             <Label htmlFor="treeSpecies">
               Tree Species <span className="text-muted-foreground">(optional)</span>
             </Label>
-            <Input
-              id="treeSpecies"
-              data-testid="field-tree-species"
-              value={treeSpecies}
-              onChange={(e) => setTreeSpecies(e.target.value)}
+            <TreeSearchInput
+              onSelect={(scientificName) => setTreeSpecies(scientificName)}
               placeholder="Cedrus atlantica"
             />
           </div>

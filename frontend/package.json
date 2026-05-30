@@ -15,6 +15,7 @@
     "test:ui": "vitest run --config config/vitest.ui.config.ts",
     "test:it": "vitest run --config config/vitest.it.config.ts",
     "test:e2e": "playwright test --config config/playwright.config.ts",
+    "test:e2e:prod": "playwright test --config config/playwright.prod.config.ts",
     "test:coverage": "vitest run --config config/vitest.unit.config.ts --coverage && vitest run --config config/vitest.ui.config.ts --coverage && vitest run --config config/vitest.it.config.ts --coverage",
     "test:coverage:unit": "vitest run --config config/vitest.unit.config.ts --coverage",
     "check": "tsc --noEmit",
