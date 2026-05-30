@@ -28,8 +28,8 @@ function Home() {
   const projectCounts = computeProjectCounts(zones)
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="mx-auto w-full max-w-7xl space-y-1 px-4 py-2">
+    <div>
+      <div className="mx-auto max-w-7xl space-y-1 px-4 py-2">
         <div className="flex items-center gap-3">
           <h1 className="text-foreground text-xl font-bold">Explore Reforestation</h1>
           <Badge variant="outline" className="text-xs">
@@ -41,14 +41,11 @@ function Home() {
         </p>
       </div>
 
-      <div
-        className="relative mx-auto min-h-0 w-full max-w-7xl flex-1 overflow-hidden rounded-lg border"
-        data-testid="map-container"
-      >
-        <Map zones={zones} damageReports={damageReports} fullHeight />
+      <div className="mx-auto max-w-7xl overflow-hidden rounded-lg border">
+        <Map zones={zones} damageReports={damageReports} />
       </div>
 
-      <div className="mx-auto grid w-full max-w-7xl grid-cols-4 gap-2 px-4 py-2">
+      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-2 px-4 py-2 md:grid-cols-4">
         <StatCard value={String(projectCounts.total)} label="Total Projects" />
         <StatCard value={String(projectCounts.planting)} label="Planting Zones" />
         <StatCard value={String(projectCounts.trees)} label="Trees Planted" />

@@ -125,7 +125,7 @@
   }
 
   html {
-    font-size: clamp(15px, 0.875rem + 0.25vw, 18px);
+    font-size: clamp(15px, 1vw + 2px, 56px);
     scroll-behavior: smooth;
   }
 }

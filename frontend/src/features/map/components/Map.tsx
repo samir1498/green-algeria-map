@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
-import { useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { toast } from 'sonner'
 import type { Zone } from '@/shared/types/zone'
@@ -18,29 +17,26 @@ import { ZoneMarker } from './ZoneMarker'
 import { DamageReportForm } from '@/features/damage-reports/components/DamageReportForm'
 import { TreeInfoModal } from '@/features/tree-info/components/TreeInfoModal'
 import { useTreeLookup } from '@/features/tree-info/hooks/useTreeLookup'
-import type { LatLngBoundsExpression } from 'leaflet'
 
-const ALGERIA_BOUNDS: LatLngBoundsExpression = [
-  [18.9, -8.7],
-  [37.1, 12.0],
-]
+const ALGERIA_CENTER: [number, number] = [28.5, 1.6596]
 
-function FitBoundsController() {
-  const map = useMap()
-  useEffect(() => {
-    map.fitBounds(ALGERIA_BOUNDS, { padding: [10, 10] })
-  }, [map])
-  return null
+function useResponsiveZoom() {
+  return useMemo(() => {
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1920
+    if (w >= 3840) return { zoom: 7, minZoom: 6 }
+    if (w >= 2560) return { zoom: 6, minZoom: 5 }
+    return { zoom: 5, minZoom: 4 }
+  }, [])
 }
 
 interface MapProps {
   zones: Zone[]
   damageReports?: DamageReport[]
   onDamageReported?: () => void
-  fullHeight?: boolean
 }
 
-export function Map({ zones, damageReports = [], onDamageReported, fullHeight }: MapProps) {
+export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
+  const { zoom, minZoom } = useResponsiveZoom()
   const [reportingZone, setReportingZone] = useState<Zone | null>(null)
   const [treeInfoModal, setTreeInfoModal] = useState<{
     taxonId: number
@@ -56,91 +52,78 @@ export function Map({ zones, damageReports = [], onDamageReported, fullHeight }:
     setReportingZone(zone)
   }
 
-  async function openTreeInfo(scientificName: string) {
-    try {
-      const result = await lookupSpecies(scientificName)
-      if (result) {
-        setTreeInfoModal(result)
-      } else {
-        toast.error('Species information not available')
+  const openTreeInfo = useCallback(
+    async (scientificName: string) => {
+      try {
+        const result = await lookupSpecies(scientificName)
+        if (result) {
+          setTreeInfoModal(result)
+        } else {
+          toast.error('Species information not available')
+        }
+      } catch {
+        toast.error('Failed to look up species information')
       }
-    } catch {
-      toast.error('Failed to look up species information')
-    }
-  }
-
-  const mapContent = (
-    <MapContainer
-      bounds={ALGERIA_BOUNDS}
-      maxBounds={[
-        [10, -20],
-        [45, 25],
-      ]}
-      minZoom={3}
-      className={`w-full ${fullHeight ? 'absolute inset-0' : 'h-[50vh] lg:h-[60vh]'}`}
-      scrollWheelZoom
-    >
-      <FitBoundsController />
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      {zones.map((zone) => (
-        <ZoneMarker
-          key={zone.id}
-          zone={zone}
-          onTreeInfo={openTreeInfo}
-          onReportDamage={openReportForm}
-        />
-      ))}
-      {damageReports.map((report) => (
-        <CircleMarker
-          key={report.id}
-          center={[report.lat, report.lng]}
-          radius={12}
-          pathOptions={{
-            color: damageSeverityColors[report.severity],
-            fillColor: damageSeverityColors[report.severity],
-            fillOpacity: 0.6,
-            weight: 3,
-          }}
-        >
-          <Popup>
-            <div className="max-h-[50vh] overflow-y-auto text-xs md:max-h-none md:text-sm">
-              <p className="font-semibold text-red-600 dark:text-red-400">Damage Report</p>
-              <p className="text-muted-foreground">{damageTypeLabels[report.type]}</p>
-              <span
-                className={`mt-1 inline-block rounded px-1.5 py-0.5 text-xs ${damageStatusBadgeClasses[report.status]}`}
-              >
-                {report.status}
-              </span>
-              <p className="mt-1 text-xs font-medium">
-                Severity: {severityLabels[report.severity]}
-              </p>
-              <p className="text-muted-foreground mt-1 text-xs">{report.description}</p>
-              <p className="text-muted-foreground mt-1 text-xs">
-                Reported: {formatDate(report.reportedAt)}
-              </p>
-            </div>
-          </Popup>
-        </CircleMarker>
-      ))}
-    </MapContainer>
+    },
+    [lookupSpecies],
   )
 
   return (
-    <>
-      {fullHeight ? (
-        <>
-          {mapContent}
-          <Legend />
-        </>
-      ) : (
-        <div className="relative" data-testid="map-container">
-          {mapContent}
-          <Legend />
-        </div>
-      )}
+    <div className="relative" data-testid="map-container">
+      <MapContainer
+        center={ALGERIA_CENTER}
+        zoom={zoom}
+        minZoom={minZoom}
+        className="h-[50vh] w-full lg:h-[60vh]"
+        scrollWheelZoom
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        {zones.map((zone) => (
+          <ZoneMarker
+            key={zone.id}
+            zone={zone}
+            onTreeInfo={openTreeInfo}
+            onReportDamage={openReportForm}
+          />
+        ))}
+        {damageReports.map((report) => (
+          <CircleMarker
+            key={report.id}
+            center={[report.lat, report.lng]}
+            radius={12}
+            pathOptions={{
+              color: damageSeverityColors[report.severity],
+              fillColor: damageSeverityColors[report.severity],
+              fillOpacity: 0.6,
+              weight: 3,
+            }}
+          >
+            <Popup>
+              <div className="max-h-[50vh] overflow-y-auto text-xs md:max-h-none md:text-sm">
+                <p className="font-semibold text-red-600 dark:text-red-400">Damage Report</p>
+                <p className="text-muted-foreground">{damageTypeLabels[report.type]}</p>
+                <span
+                  className={`mt-1 inline-block rounded px-1.5 py-0.5 text-xs ${damageStatusBadgeClasses[report.status]}`}
+                >
+                  {report.status}
+                </span>
+                <p className="mt-1 text-xs font-medium">
+                  Severity: {severityLabels[report.severity]}
+                </p>
+                <p className="text-muted-foreground mt-1 text-xs">{report.description}</p>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  Reported: {formatDate(report.reportedAt)}
+                </p>
+              </div>
+            </Popup>
+          </CircleMarker>
+        ))}
+      </MapContainer>
+      <Legend />
+
       {reportingZone && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="mx-4 w-full max-w-md">
@@ -162,6 +145,7 @@ export function Map({ zones, damageReports = [], onDamageReported, fullHeight }:
           </div>
         </div>
       )}
+
       {treeInfoModal && (
         <TreeInfoModal
           taxonId={treeInfoModal.taxonId}
@@ -169,6 +153,6 @@ export function Map({ zones, damageReports = [], onDamageReported, fullHeight }:
           onClose={() => setTreeInfoModal(null)}
         />
       )}
-    </>
+    </div>
   )
 }
