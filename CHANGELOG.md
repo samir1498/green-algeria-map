@@ -1,5 +1,14 @@
 # Changelog
 
+## [frontend-v0.8.0] - 2026-05-30
+
+### Added
+- Tree species autocomplete in create zone form (`TreeSearchInput` wired to iNaturalist API) (#74)
+- GitHub Actions CD workflow for auto-deploy to Cloudflare Pages on push to main
+
+### Fixed
+- wrangler.jsonc `not_found_handling` value to kebab-case (`single-page-application`) for Workers + Assets
+
 ## [frontend-v0.7.1] - 2026-05-30
 
 ### Fixed
