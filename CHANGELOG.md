@@ -21,7 +21,7 @@
 
 ### Changed
 - Config files moved into config/ directories
-- VITE_API_URL/VITE_AUTH_URL baked to production URLs
+- VITE_API_URL baked to production URLs
 
 ## [frontend-v0.6.0] - 2026-05-25
 
