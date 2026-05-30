@@ -21,7 +21,9 @@ async function createBucket(endpointUrl, bucket, accessKey, secretKey, region) {
   const canonicalUri = `/${bucket}`
   const canonicalQuerystring = ''
   const payloadHash = sha256('')
-  const hostHeader = `${url.hostname}:${url.port || (url.protocol === 'https:' ? 443 : 80)}`
+  const defaultPort = url.protocol === 'https:' ? 443 : 80
+  const port = url.port || defaultPort
+  const hostHeader = port === defaultPort ? url.hostname : `${url.hostname}:${port}`
   const canonicalHeaders = `host:${hostHeader}\nx-amz-content-sha256:${payloadHash}\nx-amz-date:${amzDate}\n`
   const signedHeaders = 'host;x-amz-content-sha256;x-amz-date'
 
@@ -52,9 +54,10 @@ async function createBucket(endpointUrl, bucket, accessKey, secretKey, region) {
     `${algorithm} Credential=${accessKey}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`
 
   return new Promise((resolve, reject) => {
+    let settled = false
     const opts = {
       hostname: url.hostname,
-      port: url.port || (url.protocol === 'https:' ? 443 : 80),
+      port,
       path: canonicalUri,
       method: 'PUT',
       headers: {
@@ -69,16 +72,26 @@ async function createBucket(endpointUrl, bucket, accessKey, secretKey, region) {
       let body = ''
       res.on('data', (chunk) => { body += chunk })
       res.on('end', () => {
-        if (res.statusCode === 200) {
-          resolve()
-        } else if (res.statusCode === 409) {
+        if (settled) return
+        settled = true
+        if (res.statusCode === 200 || res.statusCode === 409) {
           resolve()
         } else {
           reject(new Error(`Bucket creation failed: ${res.statusCode} ${body}`))
         }
       })
     })
-    req.on('error', reject)
+    req.setTimeout(10000, () => {
+      if (settled) return
+      settled = true
+      req.destroy()
+      reject(new Error('Bucket creation request timed out'))
+    })
+    req.on('error', (err) => {
+      if (settled) return
+      settled = true
+      reject(err)
+    })
     req.end()
   })
 }
