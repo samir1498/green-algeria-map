@@ -1,5 +1,16 @@
 # Changelog
 
+## [frontend-v0.7.1] - 2026-05-30
+
+### Fixed
+- Cloudflare Pages deployment: `_redirects` infinite loop on SPA fallback (exclude `/index.html` and `/assets/*` from wildcard redirect)
+- Auth env var consolidated to single `VITE_API_URL` (drop `VITE_AUTH_URL`)
+
+### Changed
+- E2E tests: routes auth via `storageState` project dependency (ObserveOne pattern)
+- CI E2E workflow: RustFS credentials match local dev (`greenalgeria-access`/`greenalgeria-secret-change-me`)
+- CI E2E workflow: bucket creation step before tests run
+
 ## [frontend-v0.7.0] - 2026-05-26
 
 ### Added
