@@ -1,5 +1,6 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
+import { useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { toast } from 'sonner'
 import type { Zone } from '@/shared/types/zone'
@@ -17,16 +18,19 @@ import { ZoneMarker } from './ZoneMarker'
 import { DamageReportForm } from '@/features/damage-reports/components/DamageReportForm'
 import { TreeInfoModal } from '@/features/tree-info/components/TreeInfoModal'
 import { useTreeLookup } from '@/features/tree-info/hooks/useTreeLookup'
+import type { LatLngBoundsExpression } from 'leaflet'
 
-const ALGERIA_CENTER: [number, number] = [28.5, 1.6596]
+const ALGERIA_BOUNDS: LatLngBoundsExpression = [
+  [18.9, -8.7],
+  [37.1, 12.0],
+]
 
-function useResponsiveZoom() {
-  return useMemo(() => {
-    const w = typeof window !== 'undefined' ? window.innerWidth : 1920
-    if (w >= 3840) return { zoom: 7, minZoom: 6 }
-    if (w >= 2560) return { zoom: 6, minZoom: 5 }
-    return { zoom: 5, minZoom: 4 }
-  }, [])
+function FitBoundsController() {
+  const map = useMap()
+  useEffect(() => {
+    map.fitBounds(ALGERIA_BOUNDS, { padding: [10, 10] })
+  }, [map])
+  return null
 }
 
 interface MapProps {
@@ -52,29 +56,31 @@ export function Map({ zones, damageReports = [], onDamageReported, fullHeight }:
     setReportingZone(zone)
   }
 
-  const openTreeInfo = useCallback(
-    async (scientificName: string) => {
-      try {
-        const result = await lookupSpecies(scientificName)
-        if (result) {
-          setTreeInfoModal(result)
-        } else {
-          toast.error('Species information not available')
-        }
-      } catch {
-        toast.error('Failed to look up species information')
+  async function openTreeInfo(scientificName: string) {
+    try {
+      const result = await lookupSpecies(scientificName)
+      if (result) {
+        setTreeInfoModal(result)
+      } else {
+        toast.error('Species information not available')
       }
-    },
-    [lookupSpecies],
-  )
+    } catch {
+      toast.error('Failed to look up species information')
+    }
+  }
 
   const mapContent = (
     <MapContainer
-      center={ALGERIA_CENTER}
-      zoom={5}
+      bounds={ALGERIA_BOUNDS}
+      maxBounds={[
+        [10, -20],
+        [45, 25],
+      ]}
+      minZoom={3}
       className={`w-full ${fullHeight ? 'absolute inset-0' : 'h-[50vh] lg:h-[60vh]'}`}
       scrollWheelZoom
     >
+      <FitBoundsController />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
