@@ -3,7 +3,7 @@
 ## [frontend-v0.7.1] - 2026-05-30
 
 ### Fixed
-- Cloudflare Pages deployment: `_redirects` infinite loop on SPA fallback (exclude `/index.html` and `/assets/*` from wildcard redirect)
+- Cloudflare Workers deployment: `_redirects` SPA fallback infinite loop — replaced with `wrangler.jsonc` `single_page_application` mode
 - Auth env var consolidated to single `VITE_API_URL` (drop `VITE_AUTH_URL`)
 
 ### Changed
