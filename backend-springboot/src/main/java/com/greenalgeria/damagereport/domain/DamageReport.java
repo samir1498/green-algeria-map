@@ -46,8 +46,14 @@ public class DamageReport {
 
     protected DamageReport() {}
 
-    public DamageReport(UUID zoneId, DamageReportType type, DamageReportSeverity severity,
-                        Double lat, Double lng, String description, String reportedBy) {
+    public DamageReport(
+            UUID zoneId,
+            DamageReportType type,
+            DamageReportSeverity severity,
+            Double lat,
+            Double lng,
+            String description,
+            String reportedBy) {
         this.zoneId = zoneId;
         this.type = type;
         this.severity = severity;
@@ -68,15 +74,47 @@ public class DamageReport {
         updatedAt = OffsetDateTime.now();
     }
 
-    public UUID getId() { return id; }
-    public UUID getZoneId() { return zoneId; }
-    public DamageReportType getType() { return type; }
-    public DamageReportSeverity getSeverity() { return severity; }
-    public DamageReportStatus getStatus() { return status; }
-    public Double getLat() { return lat; }
-    public Double getLng() { return lng; }
-    public String getDescription() { return description; }
-    public String getReportedBy() { return reportedBy; }
-    public OffsetDateTime getReportedAt() { return reportedAt; }
-    public OffsetDateTime getUpdatedAt() { return updatedAt; }
+    public UUID getId() {
+        return id;
+    }
+
+    public UUID getZoneId() {
+        return zoneId;
+    }
+
+    public DamageReportType getType() {
+        return type;
+    }
+
+    public DamageReportSeverity getSeverity() {
+        return severity;
+    }
+
+    public DamageReportStatus getStatus() {
+        return status;
+    }
+
+    public Double getLat() {
+        return lat;
+    }
+
+    public Double getLng() {
+        return lng;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getReportedBy() {
+        return reportedBy;
+    }
+
+    public OffsetDateTime getReportedAt() {
+        return reportedAt;
+    }
+
+    public OffsetDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 }

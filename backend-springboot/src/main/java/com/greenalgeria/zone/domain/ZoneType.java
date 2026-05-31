@@ -1,5 +1,7 @@
 package com.greenalgeria.zone.domain;
 
 public enum ZoneType {
-    planting, trash, cleanup
+    planting,
+    trash,
+    cleanup
 }
