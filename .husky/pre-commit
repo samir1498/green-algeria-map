@@ -1,6 +1,20 @@
-cd frontend
-pnpm check
-npx lint-staged
+STAGED=$(git diff --cached --name-only)
 
-cd ../backend-nestjs
-pnpm lint
+if echo "$STAGED" | grep -q "^frontend/"; then
+  cd frontend
+  pnpm check
+  npx lint-staged
+  cd ..
+fi
+
+if echo "$STAGED" | grep -q "^backend-nestjs/"; then
+  cd backend-nestjs
+  pnpm lint
+  cd ..
+fi
+
+if echo "$STAGED" | grep -q "^backend-springboot/"; then
+  cd backend-springboot
+  ./mvnw compile -q
+  cd ..
+fi

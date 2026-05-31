@@ -1,15 +1,24 @@
-.PHONY: build test lint format check clean dev depgraph native native-image
+.PHONY: build test test-unit test-arch test-it lint format check clean dev depgraph native native-image
 
 MAVEN = ./mvnw
 
 build:
-	$(MAVEN) clean package
+	$(MAVEN) -DskipTests clean package
 
 test:
 	$(MAVEN) test
 
+test-unit:
+	$(MAVEN) test -Ptest-unit -q
+
+test-arch:
+	$(MAVEN) test -Ptest-arch -q
+
+test-it:
+	$(MAVEN) test -Ptest-it -q
+
 lint:
-	$(MAVEN) verify -Pquality
+	$(MAVEN) spotless:check -Pquality -q
 
 format:
 	$(MAVEN) spotless:apply -Pquality
@@ -23,7 +32,9 @@ dev:
 	$(MAVEN) spring-boot:run
 
 depgraph:
-	$(MAVEN) dependency:tree
+	$(MAVEN) compile -q
+	jdeps -dotoutput target/deps target/classes
+	dot -Tpng target/deps/summary.dot -o target/deps/graph.png
 
 native:
 	$(MAVEN) -Pnative native:compile
