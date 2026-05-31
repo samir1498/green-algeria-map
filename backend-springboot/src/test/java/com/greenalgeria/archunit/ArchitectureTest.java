@@ -10,6 +10,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.jupiter.api.Tag;
 
 @Tag("arch")
+@Tag("unit")
 @AnalyzeClasses(packages = "com.greenalgeria", importOptions = ImportOption.DoNotIncludeTests.class)
 class ArchitectureTest {
 
