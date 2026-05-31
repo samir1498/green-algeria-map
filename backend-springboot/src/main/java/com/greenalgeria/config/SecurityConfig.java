@@ -1,6 +1,5 @@
 package com.greenalgeria.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greenalgeria.auth.application.UserResponse;
 import com.greenalgeria.auth.domain.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,6 +18,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import tools.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableWebSecurity
