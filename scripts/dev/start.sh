@@ -72,6 +72,9 @@ echo -e "\n${YELLOW}Installing frontend dependencies...${NC}"
 echo -e "${YELLOW}Installing backend dependencies...${NC}"
 (cd "$ROOT_DIR/backend-nestjs" && pnpm install --silent)
 
+echo -e "${YELLOW}Compiling Spring Boot backend...${NC}"
+(cd "$ROOT_DIR/backend-springboot" && ./mvnw compile -q)
+
 echo -e "${YELLOW}Running backend migrations...${NC}"
 (cd "$ROOT_DIR/backend-nestjs" && pnpm migration:run)
 
@@ -90,9 +93,13 @@ tmux send-keys -t "$SESSION_NAME:frontend" "pnpm dev" C-m
 tmux new-window -t "$SESSION_NAME" -n 'backend' -c "$ROOT_DIR/backend-nestjs"
 tmux send-keys -t "$SESSION_NAME:backend" "pnpm start:dev" C-m
 
-# Window 2: Dev shell
+# Window 2: Spring Boot backend
+tmux new-window -t "$SESSION_NAME" -n 'spring' -c "$ROOT_DIR/backend-springboot"
+tmux send-keys -t "$SESSION_NAME:spring" "make dev" C-m
+
+# Window 3: Dev shell
 tmux new-window -t "$SESSION_NAME" -n 'shell' -c "$ROOT_DIR"
-tmux send-keys -t "$SESSION_NAME:shell" "echo 'Dev shell ready.  Backend: pnpm --dir backend-nestjs start:dev  Frontend: pnpm --dir frontend dev'" C-m
+tmux send-keys -t "$SESSION_NAME:shell" "echo 'Dev shell ready.  NestJS: pnpm --dir backend-nestjs start:dev  Spring: make --dir backend-springboot dev  Frontend: pnpm --dir frontend dev'" C-m
 
 if [[ "$SHOW_LOGS" == true ]]; then
   tmux new-window -t "$SESSION_NAME" -n 'logs' -c "$ROOT_DIR"
@@ -103,18 +110,19 @@ tmux select-window -t "$SESSION_NAME:frontend"
 
 echo -e "${GREEN}✓ Session ready!${NC}"
 echo -e "\n${YELLOW}----------------------------------------------${NC}"
-echo -e "  ${BOLD}Frontend:${NC} http://localhost:3000"
-echo -e "  ${BOLD}Backend:${NC}  http://localhost:8080"
-echo -e "  ${BOLD}Postgres:${NC} localhost:5432 (greenalgeria/greenalgeria)"
-echo -e "  ${BOLD}RustFS:${NC}   http://localhost:9001 (console)"
+echo -e "  ${BOLD}Frontend:${NC}   http://localhost:3000"
+echo -e "  ${BOLD}NestJS:${NC}     http://localhost:8080"
+echo -e "  ${BOLD}Spring Boot:${NC} http://localhost:8081"
+echo -e "  ${BOLD}Postgres:${NC}   localhost:5432 (greenalgeria/greenalgeria)"
+echo -e "  ${BOLD}RustFS:${NC}     http://localhost:9001 (console)"
 echo -e ""
 echo -e "  ${BOLD}Attach:${NC}  tmux attach -t $SESSION_NAME"
 echo -e "  ${BOLD}Stop:${NC}    $0 --stop"
 echo -e ""
 if [[ "$SHOW_LOGS" == true ]]; then
-  echo -e "  Windows: frontend | backend | shell | logs"
+  echo -e "  Windows: frontend | backend | spring | shell | logs"
 else
-  echo -e "  Windows: frontend | backend | shell"
+  echo -e "  Windows: frontend | backend | spring | shell"
 fi
 echo -e "  Navigate: ${BOLD}C-a n${NC} or ${BOLD}C-a <num>${NC}"
 echo -e "  Detach:   ${BOLD}C-a d${NC}"
