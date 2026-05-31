@@ -8,7 +8,7 @@ on:
     paths: ['backend-springboot/**', '.github/workflows/ci-backend-springboot.yml']
 
 jobs:
-  build:
+  build-springboot:
     runs-on: ubuntu-latest
     defaults:
       run:
