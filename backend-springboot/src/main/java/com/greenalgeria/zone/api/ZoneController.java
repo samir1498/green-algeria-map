@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/zones")
+@RequestMapping("/api/zones")
 public class ZoneController {
 
     private final ZoneService zoneService;

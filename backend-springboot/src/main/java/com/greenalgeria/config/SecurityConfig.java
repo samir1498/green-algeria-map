@@ -2,6 +2,8 @@ package com.greenalgeria.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greenalgeria.auth.application.UserResponse;
+import com.greenalgeria.auth.domain.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -23,9 +25,11 @@ import java.util.List;
 public class SecurityConfig {
 
     private final ObjectMapper objectMapper;
+    private final UserRepository userRepository;
 
-    public SecurityConfig(ObjectMapper objectMapper) {
+    public SecurityConfig(ObjectMapper objectMapper, UserRepository userRepository) {
         this.objectMapper = objectMapper;
+        this.userRepository = userRepository;
     }
 
     @Bean
@@ -43,9 +47,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/sign-up/email").permitAll()
                 .requestMatchers("/api/auth/sign-out").permitAll()
                 .requestMatchers("/api/auth/get-session").permitAll()
-                .requestMatchers(HttpMethod.GET, "/zones/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/damage-reports/**").permitAll()
-                .requestMatchers("/public/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/zones/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/damage-reports/**").permitAll()
+                .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/healthz", "/readyz").permitAll()
                 .anyRequest().authenticated()
             )
@@ -54,19 +58,18 @@ public class SecurityConfig {
                 .usernameParameter("email")
                 .passwordParameter("password")
                 .successHandler((request, response, authentication) -> {
-                    var user = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+                    var principal = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+                    var user = userRepository.findById(principal.getUsername()).orElse(null);
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                     var body = new LinkedHashMap<String, Object>();
-                    body.put("user", new UserResponse(
-                        user.getUsername(), "", "", true, null, ""
-                    ));
+                    body.put("user", user != null ? UserResponse.from(user) : null);
                     objectMapper.writeValue(response.getOutputStream(), body);
                 })
                 .failureHandler((request, response, exception) -> {
-                    response.setStatus(401);
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                     var body = new LinkedHashMap<String, String>();
-                    body.put("error", exception.getMessage());
+                    body.put("error", "Invalid email or password");
                     objectMapper.writeValue(response.getOutputStream(), body);
                 })
             )
@@ -76,6 +79,15 @@ public class SecurityConfig {
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                     var body = new LinkedHashMap<String, Object>();
                     body.put("success", true);
+                    objectMapper.writeValue(response.getOutputStream(), body);
+                })
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    var body = new LinkedHashMap<String, String>();
+                    body.put("error", "Unauthorized");
                     objectMapper.writeValue(response.getOutputStream(), body);
                 })
             )
