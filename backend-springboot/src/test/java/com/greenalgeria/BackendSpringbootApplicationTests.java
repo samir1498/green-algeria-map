@@ -14,21 +14,19 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 class BackendSpringbootApplicationTests {
 
-	@Container
-	static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18-alpine")
-		.withDatabaseName("greenalgeria")
-		.withUsername("greenalgeria")
-		.withPassword("greenalgeria");
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:18-alpine")
+            .withDatabaseName("greenalgeria")
+            .withUsername("greenalgeria")
+            .withPassword("greenalgeria");
 
-	@DynamicPropertySource
-	static void configureProperties(DynamicPropertyRegistry registry) {
-		registry.add("spring.datasource.url", postgres::getJdbcUrl);
-		registry.add("spring.datasource.username", postgres::getUsername);
-		registry.add("spring.datasource.password", postgres::getPassword);
-	}
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+    }
 
-	@Test
-	void contextLoads() {
-	}
-
+    @Test
+    void contextLoads() {}
 }

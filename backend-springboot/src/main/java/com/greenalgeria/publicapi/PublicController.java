@@ -28,5 +28,6 @@ public class PublicController {
         return ResponseEntity.ok(new MapDataResponse(zones, damageReports));
     }
 
-    private record MapDataResponse(java.util.List<ZoneResponse> zones, java.util.List<DamageReportResponse> damageReports) {}
+    private record MapDataResponse(
+            java.util.List<ZoneResponse> zones, java.util.List<DamageReportResponse> damageReports) {}
 }

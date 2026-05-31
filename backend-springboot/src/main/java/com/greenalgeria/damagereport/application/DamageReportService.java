@@ -2,11 +2,11 @@ package com.greenalgeria.damagereport.application;
 
 import com.greenalgeria.damagereport.domain.DamageReport;
 import com.greenalgeria.damagereport.domain.DamageReportRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
@@ -20,8 +20,8 @@ public class DamageReportService {
 
     public List<DamageReportResponse> getAll(UUID zoneId) {
         List<DamageReport> reports = zoneId != null
-            ? damageReportRepository.findByZoneIdOrderByReportedAtDesc(zoneId)
-            : damageReportRepository.findAllByOrderByReportedAtDesc();
+                ? damageReportRepository.findByZoneIdOrderByReportedAtDesc(zoneId)
+                : damageReportRepository.findAllByOrderByReportedAtDesc();
         return reports.stream().map(DamageReportResponse::from).toList();
     }
 

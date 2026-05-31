@@ -61,26 +61,91 @@ public class Zone {
         this.volunteerCount = this.volunteerCount != null ? this.volunteerCount + 1 : 1;
     }
 
-    public UUID getId() { return id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public ZoneType getType() { return type; }
-    public void setType(ZoneType type) { this.type = type; }
-    public ZoneStatus getStatus() { return status; }
-    public void setStatus(ZoneStatus status) { this.status = status; }
-    public Double getLat() { return lat; }
-    public Double getLng() { return lng; }
-    public Integer getTargetCount() { return targetCount; }
-    public void setTargetCount(Integer targetCount) { this.targetCount = targetCount; }
-    public Integer getCurrentCount() { return currentCount; }
-    public void setCurrentCount(Integer currentCount) { this.currentCount = currentCount; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public String getOrganizerContact() { return organizerContact; }
-    public void setOrganizerContact(String organizerContact) { this.organizerContact = organizerContact; }
-    public String getTreeSpecies() { return treeSpecies; }
-    public void setTreeSpecies(String treeSpecies) { this.treeSpecies = treeSpecies; }
-    public Integer getVolunteerCount() { return volunteerCount; }
-    public String getPhotos() { return photos; }
-    public void setPhotos(String photos) { this.photos = photos; }
+    public UUID getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public ZoneType getType() {
+        return type;
+    }
+
+    public void setType(ZoneType type) {
+        this.type = type;
+    }
+
+    public ZoneStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ZoneStatus status) {
+        this.status = status;
+    }
+
+    public Double getLat() {
+        return lat;
+    }
+
+    public Double getLng() {
+        return lng;
+    }
+
+    public Integer getTargetCount() {
+        return targetCount;
+    }
+
+    public void setTargetCount(Integer targetCount) {
+        this.targetCount = targetCount;
+    }
+
+    public Integer getCurrentCount() {
+        return currentCount;
+    }
+
+    public void setCurrentCount(Integer currentCount) {
+        this.currentCount = currentCount;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getOrganizerContact() {
+        return organizerContact;
+    }
+
+    public void setOrganizerContact(String organizerContact) {
+        this.organizerContact = organizerContact;
+    }
+
+    public String getTreeSpecies() {
+        return treeSpecies;
+    }
+
+    public void setTreeSpecies(String treeSpecies) {
+        this.treeSpecies = treeSpecies;
+    }
+
+    public Integer getVolunteerCount() {
+        return volunteerCount;
+    }
+
+    public String getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(String photos) {
+        this.photos = photos;
+    }
 }

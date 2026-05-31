@@ -47,11 +47,31 @@ public class Account {
         updatedAt = OffsetDateTime.now();
     }
 
-    public String getId() { return id; }
-    public String getAccountId() { return accountId; }
-    public String getProviderId() { return providerId; }
-    public String getUserId() { return userId; }
-    public String getPassword() { return password; }
-    public OffsetDateTime getCreatedAt() { return createdAt; }
-    public OffsetDateTime getUpdatedAt() { return updatedAt; }
+    public String getId() {
+        return id;
+    }
+
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public OffsetDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 }

@@ -4,9 +4,9 @@ import com.greenalgeria.auth.application.AuthService;
 import com.greenalgeria.auth.application.SignUpRequest;
 import com.greenalgeria.auth.application.UserResponse;
 import jakarta.validation.Valid;
+import java.security.Principal;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -38,6 +38,8 @@ public class AuthController {
     }
 
     private record SignUpResponse(UserResponse user) {}
+
     private record SessionResponse(UserResponse user) {}
+
     private record ErrorResponse(String error) {}
 }
