@@ -19,13 +19,9 @@ public class AuthController {
     }
 
     @PostMapping("/sign-up/email")
-    public ResponseEntity<?> signUp(@Valid @RequestBody SignUpRequest request) {
-        try {
-            UserResponse user = authService.signUp(request.email(), request.password(), request.name());
-            return ResponseEntity.ok(new SignUpResponse(user));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
-        }
+    public ResponseEntity<SignUpResponse> signUp(@Valid @RequestBody SignUpRequest request) {
+        UserResponse user = authService.signUp(request.email(), request.password(), request.name());
+        return ResponseEntity.ok(new SignUpResponse(user));
     }
 
     @GetMapping("/get-session")
@@ -40,6 +36,4 @@ public class AuthController {
     private record SignUpResponse(UserResponse user) {}
 
     private record SessionResponse(UserResponse user) {}
-
-    private record ErrorResponse(String error) {}
 }
