@@ -36,6 +36,20 @@ jobs:
           cache: maven
       - run: ./mvnw spotless:check -Pquality -q
 
+  arch-springboot:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-springboot
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 25
+          distribution: graalvm
+          cache: maven
+      - run: ./mvnw test -Ptest-arch -q
+
   depgraph-springboot:
     runs-on: ubuntu-latest
     defaults:
