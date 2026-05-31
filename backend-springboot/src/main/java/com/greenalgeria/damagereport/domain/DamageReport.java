@@ -74,6 +74,10 @@ public class DamageReport {
         updatedAt = OffsetDateTime.now();
     }
 
+    public void setStatus(DamageReportStatus status) {
+        this.status = status;
+    }
+
     public UUID getId() {
         return id;
     }
