@@ -1,12 +1,11 @@
 package com.greenalgeria.zone.application;
 
-import com.greenalgeria.zone.domain.Zone;
 import com.greenalgeria.zone.domain.ZoneRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional(readOnly = true)
@@ -20,8 +19,8 @@ public class ZoneService {
 
     public List<ZoneResponse> getAll() {
         return zoneRepository.findAllByOrderByNameAsc().stream()
-            .map(ZoneResponse::from)
-            .toList();
+                .map(ZoneResponse::from)
+                .toList();
     }
 
     public Optional<ZoneResponse> getById(UUID id) {

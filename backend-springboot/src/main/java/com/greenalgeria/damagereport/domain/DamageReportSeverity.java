@@ -1,5 +1,8 @@
 package com.greenalgeria.damagereport.domain;
 
 public enum DamageReportSeverity {
-    low, medium, high, critical
+    low,
+    medium,
+    high,
+    critical
 }

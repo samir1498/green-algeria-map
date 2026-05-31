@@ -1,7 +1,9 @@
 package com.greenalgeria.zone.domain;
 
 public enum ZoneStatus {
-    planned, in_progress, completed;
+    planned,
+    in_progress,
+    completed;
 
     public ZoneStatus next() {
         return switch (this) {

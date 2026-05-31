@@ -1,0 +1,129 @@
+name: CI Backend Spring Boot
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend-springboot/**', '.github/workflows/ci-backend-springboot.yml']
+  pull_request:
+    paths: ['backend-springboot/**', '.github/workflows/ci-backend-springboot.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  check-springboot:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-springboot
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 25
+          distribution: graalvm
+          cache: maven
+      - run: ./mvnw compile -q
+
+  lint-springboot:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-springboot
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 25
+          distribution: graalvm
+          cache: maven
+      - run: ./mvnw spotless:check -Pquality -q
+
+  arch-springboot:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-springboot
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 25
+          distribution: graalvm
+          cache: maven
+      - run: ./mvnw test -Ptest-arch -q
+
+  depgraph-springboot:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-springboot
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 25
+          distribution: graalvm
+          cache: maven
+      - run: |
+          ./mvnw compile -q
+          jdeps -dotoutput target/deps target/classes
+
+  test-unit-springboot:
+    runs-on: ubuntu-latest
+    needs: [check-springboot, lint-springboot]
+    defaults:
+      run:
+        working-directory: backend-springboot
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 25
+          distribution: graalvm
+          cache: maven
+      - run: ./mvnw test -Ptest-unit -q
+
+  test-it-springboot:
+    runs-on: ubuntu-latest
+    needs: [check-springboot, lint-springboot]
+    defaults:
+      run:
+        working-directory: backend-springboot
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 25
+          distribution: graalvm
+          cache: maven
+      - run: ./mvnw test -Ptest-it -q
+
+  build-springboot:
+    runs-on: ubuntu-latest
+    needs: [test-unit-springboot, test-it-springboot]
+    defaults:
+      run:
+        working-directory: backend-springboot
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 25
+          distribution: graalvm
+          cache: maven
+      - run: ./mvnw -DskipTests clean package -q
