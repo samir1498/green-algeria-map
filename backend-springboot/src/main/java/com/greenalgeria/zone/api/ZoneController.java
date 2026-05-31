@@ -4,6 +4,7 @@ import com.greenalgeria.zone.application.CreateZoneRequest;
 import com.greenalgeria.zone.application.UpdateZoneRequest;
 import com.greenalgeria.zone.application.ZoneResponse;
 import com.greenalgeria.zone.application.ZoneService;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -34,13 +35,13 @@ public class ZoneController {
     }
 
     @PostMapping
-    public ResponseEntity<ZoneResponse> create(@RequestBody CreateZoneRequest request) {
+    public ResponseEntity<ZoneResponse> create(@Valid @RequestBody CreateZoneRequest request) {
         var created = zoneService.create(request);
         return ResponseEntity.created(URI.create("/api/zones/" + created.id())).body(created);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ZoneResponse> update(@PathVariable UUID id, @RequestBody UpdateZoneRequest request) {
+    public ResponseEntity<ZoneResponse> update(@PathVariable UUID id, @Valid @RequestBody UpdateZoneRequest request) {
         return ResponseEntity.ok(zoneService.update(id, request));
     }
 
