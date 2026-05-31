@@ -51,6 +51,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/zones/**")
                         .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/zones/**")
+                        .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/damage-reports/**")
                         .permitAll()
                         .requestMatchers("/api/public/**")
