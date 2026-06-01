@@ -61,6 +61,19 @@ public class Zone {
         this.volunteerCount = this.volunteerCount != null ? this.volunteerCount + 1 : 1;
     }
 
+    public void addPhoto(String photoUrl) {
+        if (photoUrl == null || photoUrl.isBlank()) return;
+        var existing = getPhotosList();
+        if (existing.contains(photoUrl)) return;
+        existing.add(photoUrl);
+        this.photos = String.join(",", existing);
+    }
+
+    public java.util.List<String> getPhotosList() {
+        if (this.photos == null || this.photos.isBlank()) return new java.util.ArrayList<>();
+        return java.util.Arrays.asList(this.photos.split(",", -1));
+    }
+
     public UUID getId() {
         return id;
     }
