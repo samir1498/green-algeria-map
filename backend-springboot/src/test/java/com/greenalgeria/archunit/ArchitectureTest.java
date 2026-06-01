@@ -48,4 +48,20 @@ class ArchitectureTest {
             .should()
             .dependOnClassesThat()
             .resideInAnyPackage("..api..");
+
+    @ArchTest
+    static final ArchRule application_must_not_depend_on_infrastructure = noClasses()
+            .that()
+            .resideInAnyPackage("..application..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAnyPackage("..infrastructure..");
+
+    @ArchTest
+    static final ArchRule api_must_not_depend_on_infrastructure = noClasses()
+            .that()
+            .resideInAnyPackage("..api..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAnyPackage("..infrastructure..");
 }
