@@ -1,8 +1,6 @@
 package com.greenalgeria.damagereport.api;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -10,50 +8,32 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.greenalgeria.damagereport.application.DamageReportResponse;
-import com.greenalgeria.damagereport.application.DamageReportService;
-import com.greenalgeria.damagereport.domain.DamageReportSeverity;
-import com.greenalgeria.damagereport.domain.DamageReportStatus;
-import com.greenalgeria.damagereport.domain.DamageReportType;
-import java.time.OffsetDateTime;
+import com.greenalgeria.shared.IntegrationTest;
+import com.jayway.jsonpath.JsonPath;
 import java.util.UUID;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
-@Tag("unit")
-@WebMvcTest(DamageReportController.class)
-class DamageReportControllerTest {
+@Transactional
+class DamageReportControllerTest extends IntegrationTest {
 
-    @Autowired
-    MockMvc mockMvc;
-
-    @MockitoBean
-    DamageReportService damageReportService;
+    private String createZone() throws Exception {
+        var body = mockMvc.perform(post("/api/zones")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Test Zone","type":"planting","lat":36.0,"lng":3.0,"description":"For reports"}
+                                """))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        return JsonPath.read(body, "$.id");
+    }
 
     @Test
     void create_returns201() throws Exception {
-        var id = UUID.randomUUID();
-        var zoneId = UUID.randomUUID();
-        var response = new DamageReportResponse(
-                id,
-                zoneId,
-                DamageReportType.vandalism,
-                DamageReportSeverity.high,
-                DamageReportStatus.reported,
-                36.5,
-                3.0,
-                "Broken fence",
-                "Samir",
-                OffsetDateTime.now(),
-                OffsetDateTime.now());
-        when(damageReportService.create(any())).thenReturn(response);
+        var zoneId = createZone();
 
         mockMvc.perform(post("/api/damage-reports")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -61,7 +41,7 @@ class DamageReportControllerTest {
                                 {"zoneId":"%s","type":"vandalism","severity":"high","lat":36.5,"lng":3.0,"description":"Broken fence","reportedBy":"Samir"}
                                 """.formatted(zoneId)))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "/api/damage-reports/" + id))
+                .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.type").value("vandalism"));
     }
 
@@ -77,23 +57,22 @@ class DamageReportControllerTest {
 
     @Test
     void updateStatus_returns200() throws Exception {
-        var id = UUID.randomUUID();
-        var zoneId = UUID.randomUUID();
-        var response = new DamageReportResponse(
-                id,
-                zoneId,
-                DamageReportType.fire,
-                DamageReportSeverity.critical,
-                DamageReportStatus.verified,
-                1.0,
-                2.0,
-                "Fire",
-                "Samir",
-                OffsetDateTime.now(),
-                OffsetDateTime.now());
-        when(damageReportService.updateStatus(any(), any())).thenReturn(response);
+        var zoneId = createZone();
+        var body = mockMvc.perform(post("/api/damage-reports")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"zoneId":"%s","type":"fire","severity":"critical","lat":1.0,"lng":2.0,"description":"Fire","reportedBy":"Samir"}
+                                """.formatted(zoneId)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var id = JsonPath.read(body, "$.id");
+
+        var userId = signUpAndGetUserId();
 
         mockMvc.perform(patch("/api/damage-reports/{id}/status", id)
+                        .with(user(userId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"status":"verified"}
@@ -105,10 +84,11 @@ class DamageReportControllerTest {
     @Test
     void updateStatus_returns404() throws Exception {
         var id = UUID.randomUUID();
-        when(damageReportService.updateStatus(any(), any()))
-                .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        var userId = signUpAndGetUserId();
 
         mockMvc.perform(patch("/api/damage-reports/{id}/status", id)
+                        .with(user(userId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"status":"resolved"}
@@ -118,16 +98,31 @@ class DamageReportControllerTest {
 
     @Test
     void delete_returns204() throws Exception {
-        mockMvc.perform(delete("/api/damage-reports/{id}", UUID.randomUUID())).andExpect(status().isNoContent());
+        var zoneId = createZone();
+        var body = mockMvc.perform(post("/api/damage-reports")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"zoneId":"%s","type":"disease","severity":"low","lat":36.0,"lng":3.0,"description":"Sick tree","reportedBy":"botanist@test.com"}
+                                """.formatted(zoneId)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var id = JsonPath.read(body, "$.id");
+
+        var userId = signUpAndGetUserId();
+
+        mockMvc.perform(delete("/api/damage-reports/{id}", id).with(user(userId)))
+                .andExpect(status().isNoContent());
     }
 
     @Test
     void delete_returns404() throws Exception {
         var id = UUID.randomUUID();
-        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND))
-                .when(damageReportService)
-                .delete(id);
 
-        mockMvc.perform(delete("/api/damage-reports/{id}", id)).andExpect(status().isNotFound());
+        var userId = signUpAndGetUserId();
+
+        mockMvc.perform(delete("/api/damage-reports/{id}", id).with(user(userId)))
+                .andExpect(status().isNotFound());
     }
 }
