@@ -3,12 +3,14 @@ package com.greenalgeria.damagereport.application;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.greenalgeria.damagereport.application.command.*;
 import com.greenalgeria.damagereport.domain.DamageReportSeverity;
 import com.greenalgeria.damagereport.domain.DamageReportStatus;
 import com.greenalgeria.damagereport.domain.DamageReportType;
 import com.greenalgeria.shared.IntegrationTest;
+import com.greenalgeria.shared.cqrs.CommandBus;
 import com.greenalgeria.zone.application.CreateZoneRequest;
-import com.greenalgeria.zone.application.ZoneService;
+import com.greenalgeria.zone.application.command.CreateZoneCommand;
 import com.greenalgeria.zone.domain.ZoneType;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -20,15 +22,12 @@ import org.springframework.web.server.ResponseStatusException;
 class DamageReportServiceTest extends IntegrationTest {
 
     @Autowired
-    DamageReportService damageReportService;
-
-    @Autowired
-    ZoneService zoneService;
+    CommandBus commandBus;
 
     private UUID createZone() {
-        return zoneService
-                .create(new CreateZoneRequest(
-                        "Test Zone", ZoneType.planting, null, 36.5, 3.0, null, null, null, null, null))
+        return commandBus
+                .execute(new CreateZoneCommand(new CreateZoneRequest(
+                        "Test Zone", ZoneType.planting, null, 36.5, 3.0, null, null, null, null, null)))
                 .id();
     }
 
@@ -38,7 +37,7 @@ class DamageReportServiceTest extends IntegrationTest {
         var request = new CreateDamageReportRequest(
                 zoneId, DamageReportType.vandalism, DamageReportSeverity.high, 36.5, 3.0, "Broken fence", "Samir");
 
-        var result = damageReportService.create(request);
+        var result = commandBus.execute(new CreateDamageReportCommand(request));
 
         assertThat(result.zoneId()).isEqualTo(zoneId);
         assertThat(result.type()).isEqualTo(DamageReportType.vandalism);
@@ -50,10 +49,10 @@ class DamageReportServiceTest extends IntegrationTest {
     @Test
     void updateStatus() {
         var zoneId = createZone();
-        var created = damageReportService.create(new CreateDamageReportRequest(
-                zoneId, DamageReportType.fire, DamageReportSeverity.critical, 1.0, 2.0, "Fire", "Samir"));
+        var created = commandBus.execute(new CreateDamageReportCommand(new CreateDamageReportRequest(
+                zoneId, DamageReportType.fire, DamageReportSeverity.critical, 1.0, 2.0, "Fire", "Samir")));
 
-        var result = damageReportService.updateStatus(created.id(), DamageReportStatus.verified);
+        var result = commandBus.execute(new UpdateDamageReportStatusCommand(created.id(), DamageReportStatus.verified));
 
         assertThat(result.status()).isEqualTo(DamageReportStatus.verified);
     }
@@ -62,7 +61,8 @@ class DamageReportServiceTest extends IntegrationTest {
     void updateStatus_notFound() {
         var id = UUID.randomUUID();
 
-        assertThatThrownBy(() -> damageReportService.updateStatus(id, DamageReportStatus.resolved))
+        assertThatThrownBy(
+                        () -> commandBus.execute(new UpdateDamageReportStatusCommand(id, DamageReportStatus.resolved)))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("404 NOT_FOUND");
     }
@@ -70,17 +70,17 @@ class DamageReportServiceTest extends IntegrationTest {
     @Test
     void delete() {
         var zoneId = createZone();
-        var created = damageReportService.create(new CreateDamageReportRequest(
-                zoneId, DamageReportType.fire, DamageReportSeverity.high, 1.0, 2.0, "Fire", "Samir"));
+        var created = commandBus.execute(new CreateDamageReportCommand(new CreateDamageReportRequest(
+                zoneId, DamageReportType.fire, DamageReportSeverity.high, 1.0, 2.0, "Fire", "Samir")));
 
-        damageReportService.delete(created.id());
+        commandBus.execute(new DeleteDamageReportCommand(created.id()));
     }
 
     @Test
     void delete_notFound() {
         var id = UUID.randomUUID();
 
-        assertThatThrownBy(() -> damageReportService.delete(id))
+        assertThatThrownBy(() -> commandBus.execute(new DeleteDamageReportCommand(id)))
                 .isInstanceOf(ResponseStatusException.class)
                 .hasMessageContaining("404 NOT_FOUND");
     }
