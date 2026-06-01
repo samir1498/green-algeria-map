@@ -1,9 +1,10 @@
 package com.greenalgeria.damagereport.api;
 
-import com.greenalgeria.damagereport.application.CreateDamageReportRequest;
-import com.greenalgeria.damagereport.application.DamageReportResponse;
-import com.greenalgeria.damagereport.application.DamageReportService;
-import com.greenalgeria.damagereport.application.UpdateDamageReportStatusRequest;
+import com.greenalgeria.damagereport.application.*;
+import com.greenalgeria.damagereport.application.command.*;
+import com.greenalgeria.damagereport.application.query.*;
+import com.greenalgeria.shared.cqrs.CommandBus;
+import com.greenalgeria.shared.cqrs.QueryBus;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -17,33 +18,34 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Damage Reports")
 public class DamageReportController {
 
-    private final DamageReportService damageReportService;
+    private final CommandBus commandBus;
+    private final QueryBus queryBus;
 
-    public DamageReportController(DamageReportService damageReportService) {
-        this.damageReportService = damageReportService;
+    public DamageReportController(CommandBus commandBus, QueryBus queryBus) {
+        this.commandBus = commandBus;
+        this.queryBus = queryBus;
     }
 
     @GetMapping("/damage-reports")
     public ResponseEntity<List<DamageReportResponse>> getAll(@RequestParam(required = false) UUID zoneId) {
-        return ResponseEntity.ok(damageReportService.getAll(zoneId));
+        return ResponseEntity.ok(queryBus.execute(new GetAllDamageReportsQuery(zoneId)));
     }
 
     @GetMapping("/damage-reports/{id}")
     public ResponseEntity<DamageReportResponse> getById(@PathVariable UUID id) {
-        return damageReportService
-                .getById(id)
+        return queryBus.execute(new GetDamageReportByIdQuery(id))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/zones/{zoneId}/damage-reports")
     public ResponseEntity<List<DamageReportResponse>> getByZoneId(@PathVariable UUID zoneId) {
-        return ResponseEntity.ok(damageReportService.getAll(zoneId));
+        return ResponseEntity.ok(queryBus.execute(new GetAllDamageReportsQuery(zoneId)));
     }
 
     @PostMapping("/damage-reports")
     public ResponseEntity<DamageReportResponse> create(@Valid @RequestBody CreateDamageReportRequest request) {
-        var response = damageReportService.create(request);
+        var response = commandBus.execute(new CreateDamageReportCommand(request));
         return ResponseEntity.created(URI.create("/api/damage-reports/" + response.id()))
                 .body(response);
     }
@@ -51,13 +53,13 @@ public class DamageReportController {
     @PatchMapping("/damage-reports/{id}/status")
     public ResponseEntity<DamageReportResponse> updateStatus(
             @PathVariable UUID id, @Valid @RequestBody UpdateDamageReportStatusRequest request) {
-        var response = damageReportService.updateStatus(id, request.status());
+        var response = commandBus.execute(new UpdateDamageReportStatusCommand(id, request.status()));
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/damage-reports/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        damageReportService.delete(id);
+        commandBus.execute(new DeleteDamageReportCommand(id));
         return ResponseEntity.noContent().build();
     }
 }
