@@ -1,9 +1,10 @@
 package com.greenalgeria.zone.api;
 
-import com.greenalgeria.zone.application.CreateZoneRequest;
-import com.greenalgeria.zone.application.UpdateZoneRequest;
-import com.greenalgeria.zone.application.ZoneResponse;
-import com.greenalgeria.zone.application.ZoneService;
+import com.greenalgeria.shared.cqrs.CommandBus;
+import com.greenalgeria.shared.cqrs.QueryBus;
+import com.greenalgeria.zone.application.*;
+import com.greenalgeria.zone.application.command.*;
+import com.greenalgeria.zone.application.query.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -17,45 +18,46 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Zones")
 public class ZoneController {
 
-    private final ZoneService zoneService;
+    private final CommandBus commandBus;
+    private final QueryBus queryBus;
 
-    public ZoneController(ZoneService zoneService) {
-        this.zoneService = zoneService;
+    public ZoneController(CommandBus commandBus, QueryBus queryBus) {
+        this.commandBus = commandBus;
+        this.queryBus = queryBus;
     }
 
     @GetMapping
     public ResponseEntity<List<ZoneResponse>> getAll() {
-        return ResponseEntity.ok(zoneService.getAll());
+        return ResponseEntity.ok(queryBus.execute(new GetAllZonesQuery()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ZoneResponse> getById(@PathVariable UUID id) {
-        return zoneService
-                .getById(id)
+        return queryBus.execute(new GetZoneByIdQuery(id))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public ResponseEntity<ZoneResponse> create(@Valid @RequestBody CreateZoneRequest request) {
-        var created = zoneService.create(request);
+        var created = commandBus.execute(new CreateZoneCommand(request));
         return ResponseEntity.created(URI.create("/api/zones/" + created.id())).body(created);
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ZoneResponse> update(@PathVariable UUID id, @Valid @RequestBody UpdateZoneRequest request) {
-        return ResponseEntity.ok(zoneService.update(id, request));
+        return ResponseEntity.ok(commandBus.execute(new UpdateZoneCommand(id, request)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        zoneService.delete(id);
+        commandBus.execute(new DeleteZoneCommand(id));
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/volunteer")
     public ResponseEntity<Void> registerVolunteer(@PathVariable UUID id) {
-        zoneService.registerVolunteer(id);
+        commandBus.execute(new RegisterVolunteerCommand(id));
         return ResponseEntity.noContent().build();
     }
 }
