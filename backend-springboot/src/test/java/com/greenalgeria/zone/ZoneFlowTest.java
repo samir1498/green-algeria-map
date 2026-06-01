@@ -84,11 +84,18 @@ class ZoneFlowTest extends IntegrationTest {
                         .with(user(userId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Updated","status":"completed"}
+                                {"name":"Updated","status":"in_progress"}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Updated"))
-                .andExpect(jsonPath("$.status").value("completed"));
+                .andExpect(jsonPath("$.status").value("in_progress"));
+
+        var body2 = mockMvc.perform(get("/api/zones/{id}", id))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        assertThat(JsonPath.<String>read(body2, "$.status")).isEqualTo("in_progress");
     }
 
     @Test
