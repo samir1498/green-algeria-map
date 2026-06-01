@@ -4,6 +4,7 @@ import com.greenalgeria.damagereport.application.DamageReportResponse;
 import com.greenalgeria.damagereport.application.DamageReportService;
 import com.greenalgeria.zone.application.ZoneResponse;
 import com.greenalgeria.zone.application.ZoneService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/public")
+@Tag(name = "Public")
 public class PublicController {
 
     private final ZoneService zoneService;
