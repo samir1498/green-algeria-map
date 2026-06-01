@@ -2,41 +2,26 @@ package com.greenalgeria.zone.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import com.greenalgeria.zone.domain.Zone;
-import com.greenalgeria.zone.domain.ZoneRepository;
+import com.greenalgeria.shared.IntegrationTest;
 import com.greenalgeria.zone.domain.ZoneStatus;
 import com.greenalgeria.zone.domain.ZoneType;
-import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-@Tag("unit")
-@ExtendWith(MockitoExtension.class)
-class ZoneServiceTest {
+@Transactional
+class ZoneServiceTest extends IntegrationTest {
 
-    @Mock
-    ZoneRepository zoneRepository;
-
-    @InjectMocks
+    @Autowired
     ZoneService zoneService;
 
     @Test
     void create() {
         var request =
                 new CreateZoneRequest("Test Zone", ZoneType.planting, null, 36.5, 3.0, null, null, "desc", null, null);
-        var saved = new Zone("Test Zone", ZoneType.planting, 36.5, 3.0);
-        saved.setDescription("desc");
-        when(zoneRepository.save(any())).thenReturn(saved);
 
         var result = zoneService.create(request);
 
@@ -44,19 +29,16 @@ class ZoneServiceTest {
         assertThat(result.type()).isEqualTo(ZoneType.planting);
         assertThat(result.description()).isEqualTo("desc");
         assertThat(result.status()).isEqualTo(ZoneStatus.planned);
-        verify(zoneRepository).save(any());
     }
 
     @Test
     void update() {
-        var id = UUID.randomUUID();
-        var existing = new Zone("Old", ZoneType.trash, 1.0, 2.0);
+        var created = zoneService.create(
+                new CreateZoneRequest("Old", ZoneType.trash, null, 1.0, 2.0, null, null, null, null, null));
         var request =
                 new UpdateZoneRequest("Updated", null, ZoneStatus.in_progress, null, null, 10, 5, null, null, null);
-        when(zoneRepository.findById(id)).thenReturn(Optional.of(existing));
-        when(zoneRepository.save(existing)).thenReturn(existing);
 
-        var result = zoneService.update(id, request);
+        var result = zoneService.update(created.id(), request);
 
         assertThat(result.name()).isEqualTo("Updated");
         assertThat(result.status()).isEqualTo(ZoneStatus.in_progress);
@@ -68,7 +50,6 @@ class ZoneServiceTest {
     @Test
     void update_notFound() {
         var id = UUID.randomUUID();
-        when(zoneRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> zoneService.update(
                         id, new UpdateZoneRequest(null, null, null, null, null, null, null, null, null, null)))
@@ -78,18 +59,15 @@ class ZoneServiceTest {
 
     @Test
     void delete() {
-        var id = UUID.randomUUID();
-        when(zoneRepository.existsById(id)).thenReturn(true);
+        var created = zoneService.create(
+                new CreateZoneRequest("To Delete", ZoneType.planting, null, 36.5, 3.0, null, null, "desc", null, null));
 
-        zoneService.delete(id);
-
-        verify(zoneRepository).deleteById(id);
+        zoneService.delete(created.id());
     }
 
     @Test
     void delete_notFound() {
         var id = UUID.randomUUID();
-        when(zoneRepository.existsById(id)).thenReturn(false);
 
         assertThatThrownBy(() -> zoneService.delete(id))
                 .isInstanceOf(ResponseStatusException.class)
@@ -98,20 +76,18 @@ class ZoneServiceTest {
 
     @Test
     void registerVolunteer() {
-        var id = UUID.randomUUID();
-        var zone = new Zone("Test", ZoneType.planting, 1.0, 2.0);
-        when(zoneRepository.findById(id)).thenReturn(Optional.of(zone));
+        var created = zoneService.create(new CreateZoneRequest(
+                "Volunteer Zone", ZoneType.planting, null, 1.0, 2.0, null, null, null, null, null));
 
-        zoneService.registerVolunteer(id);
+        zoneService.registerVolunteer(created.id());
 
-        assertThat(zone.getVolunteerCount()).isEqualTo(1);
-        verify(zoneRepository).save(zone);
+        var result = zoneService.getById(created.id()).orElseThrow();
+        assertThat(result.volunteerCount()).isEqualTo(1);
     }
 
     @Test
     void registerVolunteer_notFound() {
         var id = UUID.randomUUID();
-        when(zoneRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> zoneService.registerVolunteer(id))
                 .isInstanceOf(ResponseStatusException.class)
