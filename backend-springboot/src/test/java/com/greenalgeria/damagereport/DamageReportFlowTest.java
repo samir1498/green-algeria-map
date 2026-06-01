@@ -71,7 +71,8 @@ class DamageReportFlowTest extends IntegrationTest {
 
         var userId = signUpAndGetUserId();
 
-        mockMvc.perform(patch("/api/damage-reports/{id}/status", id).with(user(userId))
+        mockMvc.perform(patch("/api/damage-reports/{id}/status", id)
+                        .with(user(userId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"status":"verified"}
@@ -96,7 +97,8 @@ class DamageReportFlowTest extends IntegrationTest {
 
         var userId = signUpAndGetUserId();
 
-        mockMvc.perform(delete("/api/damage-reports/{id}", id).with(user(userId))).andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/damage-reports/{id}", id).with(user(userId)))
+                .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/damage-reports/{id}", id)).andExpect(status().isNotFound());
     }

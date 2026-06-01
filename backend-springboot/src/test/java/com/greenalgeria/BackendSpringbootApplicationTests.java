@@ -10,7 +10,5 @@ import org.springframework.boot.test.context.SpringBootTest;
 class BackendSpringbootApplicationTests extends IntegrationTest {
 
     @Test
-    void contextLoads() {
-    }
-
+    void contextLoads() {}
 }

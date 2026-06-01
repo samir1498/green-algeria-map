@@ -56,7 +56,8 @@ class ZoneControllerTest extends IntegrationTest {
 
         var userId = signUpAndGetUserId();
 
-        mockMvc.perform(patch("/api/zones/{id}", id).with(user(userId))
+        mockMvc.perform(patch("/api/zones/{id}", id)
+                        .with(user(userId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name":"Updated","status":"in_progress","targetCount":10,"currentCount":5}
@@ -71,7 +72,8 @@ class ZoneControllerTest extends IntegrationTest {
 
         var userId = signUpAndGetUserId();
 
-        mockMvc.perform(patch("/api/zones/{id}", id).with(user(userId))
+        mockMvc.perform(patch("/api/zones/{id}", id)
+                        .with(user(userId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name":"Nope"}
@@ -103,8 +105,7 @@ class ZoneControllerTest extends IntegrationTest {
 
         var userId = signUpAndGetUserId();
 
-        mockMvc.perform(delete("/api/zones/{id}", id).with(user(userId)))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(delete("/api/zones/{id}", id).with(user(userId))).andExpect(status().isNotFound());
     }
 
     @Test

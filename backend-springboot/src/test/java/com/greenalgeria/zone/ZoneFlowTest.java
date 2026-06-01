@@ -80,7 +80,8 @@ class ZoneFlowTest extends IntegrationTest {
 
         var userId = signUpAndGetUserId();
 
-        mockMvc.perform(patch("/api/zones/{id}", id).with(user(userId))
+        mockMvc.perform(patch("/api/zones/{id}", id)
+                        .with(user(userId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name":"Updated","status":"completed"}

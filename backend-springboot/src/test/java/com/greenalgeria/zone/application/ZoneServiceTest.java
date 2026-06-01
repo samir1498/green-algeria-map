@@ -20,7 +20,8 @@ class ZoneServiceTest extends IntegrationTest {
 
     @Test
     void create() {
-        var request = new CreateZoneRequest("Test Zone", ZoneType.planting, null, 36.5, 3.0, null, null, "desc", null, null);
+        var request =
+                new CreateZoneRequest("Test Zone", ZoneType.planting, null, 36.5, 3.0, null, null, "desc", null, null);
 
         var result = zoneService.create(request);
 
@@ -34,7 +35,8 @@ class ZoneServiceTest extends IntegrationTest {
     void update() {
         var created = zoneService.create(
                 new CreateZoneRequest("Old", ZoneType.trash, null, 1.0, 2.0, null, null, null, null, null));
-        var request = new UpdateZoneRequest("Updated", null, ZoneStatus.in_progress, null, null, 10, 5, null, null, null);
+        var request =
+                new UpdateZoneRequest("Updated", null, ZoneStatus.in_progress, null, null, 10, 5, null, null, null);
 
         var result = zoneService.update(created.id(), request);
 
@@ -74,8 +76,8 @@ class ZoneServiceTest extends IntegrationTest {
 
     @Test
     void registerVolunteer() {
-        var created = zoneService.create(
-                new CreateZoneRequest("Volunteer Zone", ZoneType.planting, null, 1.0, 2.0, null, null, null, null, null));
+        var created = zoneService.create(new CreateZoneRequest(
+                "Volunteer Zone", ZoneType.planting, null, 1.0, 2.0, null, null, null, null, null));
 
         zoneService.registerVolunteer(created.id());
 

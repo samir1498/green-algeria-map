@@ -27,7 +27,8 @@ class DamageReportServiceTest extends IntegrationTest {
 
     private UUID createZone() {
         return zoneService
-                .create(new CreateZoneRequest("Test Zone", ZoneType.planting, null, 36.5, 3.0, null, null, null, null, null))
+                .create(new CreateZoneRequest(
+                        "Test Zone", ZoneType.planting, null, 36.5, 3.0, null, null, null, null, null))
                 .id();
     }
 
