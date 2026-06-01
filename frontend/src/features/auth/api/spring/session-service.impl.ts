@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
-import type { SessionService } from './session-service.interface'
+import type { SessionService } from '../session-service.interface'
 import { api } from '@/shared/lib/axios'
-import { mapSession } from './mappers/map-session'
-import type { AuthSession } from './types'
+import { mapSession } from '../map-session'
+import type { AuthSession } from '../types'
 
 export const springSessionService: SessionService = {
   async getSession() {

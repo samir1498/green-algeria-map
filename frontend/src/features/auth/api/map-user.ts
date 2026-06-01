@@ -1,4 +1,4 @@
-import type { AuthUser, UserRole } from '../types'
+import type { AuthUser, UserRole } from './types'
 
 const VALID_ROLES: UserRole[] = ['volunteer', 'reporter', 'organizer', 'admin']
 
