@@ -21,6 +21,7 @@
 	</developers>
 	<properties>
 		<java.version>25</java.version>
+		<aws-sdk.version>2.29.52</aws-sdk.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -42,6 +43,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>${aws-sdk.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
