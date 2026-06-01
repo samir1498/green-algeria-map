@@ -2,91 +2,51 @@ package com.greenalgeria.auth.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import com.greenalgeria.auth.domain.AccountRepository;
-import com.greenalgeria.auth.domain.User;
-import com.greenalgeria.auth.domain.UserRepository;
-import java.util.Optional;
-import org.junit.jupiter.api.Tag;
+import com.greenalgeria.shared.IntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
-@Tag("unit")
-@ExtendWith(MockitoExtension.class)
-class AuthServiceTest {
+@Transactional
+class AuthServiceTest extends IntegrationTest {
 
-    @Mock
-    UserRepository userRepository;
-
-    @Mock
-    AccountRepository accountRepository;
-
-    @Mock
-    PasswordEncoder passwordEncoder;
-
-    @InjectMocks
+    @Autowired
     AuthService authService;
 
     @Test
     void signUp_success() {
-        var email = "test@example.com";
-        var password = "password123";
-        var name = "Test User";
+        var result = authService.signUp("test@example.com", "password123", "Test User");
 
-        when(userRepository.existsByEmail(email)).thenReturn(false);
-        when(passwordEncoder.encode(password)).thenReturn("encoded-hash");
-        when(userRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        when(accountRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
-
-        var result = authService.signUp(email, password, name);
-
-        assertThat(result.email()).isEqualTo(email);
-        assertThat(result.name()).isEqualTo(name);
+        assertThat(result.email()).isEqualTo("test@example.com");
+        assertThat(result.name()).isEqualTo("Test User");
         assertThat(result.role()).isEqualTo("volunteer");
-        verify(userRepository).save(any());
-        verify(accountRepository).save(any());
     }
 
     @Test
     void signUp_emailAlreadyExists() {
-        var email = "existing@example.com";
+        authService.signUp("existing@example.com", "password123", "Test User");
 
-        when(userRepository.existsByEmail(email)).thenReturn(true);
-
-        assertThatThrownBy(() -> authService.signUp(email, "password123", "Test User"))
+        assertThatThrownBy(() -> authService.signUp("existing@example.com", "password123", "Test User"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Email already registered");
     }
 
     @Test
     void getSession_found() {
-        var userId = "user-1";
-        var user = new User(userId, "Test User", "test@example.com");
+        var user = authService.signUp("session@example.com", "password123", "Session User");
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
-        var result = authService.getSession(userId);
+        var result = authService.getSession(user.id());
 
         assertThat(result).isNotNull();
-        assertThat(result.id()).isEqualTo(userId);
-        assertThat(result.name()).isEqualTo("Test User");
-        assertThat(result.email()).isEqualTo("test@example.com");
+        assertThat(result.id()).isEqualTo(user.id());
+        assertThat(result.name()).isEqualTo("Session User");
+        assertThat(result.email()).isEqualTo("session@example.com");
     }
 
     @Test
     void getSession_notFound() {
-        var userId = "nonexistent";
-
-        when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-        var result = authService.getSession(userId);
+        var result = authService.getSession("nonexistent");
 
         assertThat(result).isNull();
     }
