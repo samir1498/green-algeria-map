@@ -8,7 +8,6 @@ import java.util.UUID;
 public class Zone {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false)
@@ -22,11 +21,7 @@ public class Zone {
     @Column(nullable = false)
     private ZoneStatus status = ZoneStatus.planned;
 
-    @Column(nullable = false)
-    private Double lat;
-
-    @Column(nullable = false)
-    private Double lng;
+    private Coordinates coordinates;
 
     private Integer targetCount;
 
@@ -46,15 +41,47 @@ public class Zone {
 
     protected Zone() {}
 
-    public Zone(String name, ZoneType type, Double lat, Double lng) {
+    public Zone(String name, ZoneType type, Coordinates coordinates) {
+        this.id = UUID.randomUUID();
         this.name = name;
         this.type = type;
-        this.lat = lat;
-        this.lng = lng;
+        this.coordinates = coordinates;
+    }
+
+    public void rename(String name) {
+        this.name = name;
+    }
+
+    public void reposition(Coordinates coordinates) {
+        this.coordinates = coordinates;
+    }
+
+    public void markInProgress() {
+        if (this.status != ZoneStatus.planned) {
+            throw new IllegalStateException("Only planned zones can be marked in progress");
+        }
+        this.status = ZoneStatus.in_progress;
+    }
+
+    public void markComplete() {
+        if (this.status != ZoneStatus.in_progress) {
+            throw new IllegalStateException("Only in-progress zones can be completed");
+        }
+        this.status = ZoneStatus.completed;
     }
 
     public void advanceStatus() {
         this.status = this.status.next();
+    }
+
+    public void updateProgress(Integer count) {
+        if (count != null && count < 0) {
+            throw new IllegalArgumentException("Progress count cannot be negative");
+        }
+        this.currentCount = count;
+        if (this.currentCount != null && this.targetCount != null && this.currentCount >= this.targetCount) {
+            this.status = ZoneStatus.completed;
+        }
     }
 
     public void incrementVolunteers() {
@@ -63,10 +90,19 @@ public class Zone {
 
     public void addPhoto(String photoUrl) {
         if (photoUrl == null || photoUrl.isBlank()) return;
+        if (!photoUrl.startsWith("http://") && !photoUrl.startsWith("https://")) return;
         var existing = getPhotosList();
         if (existing.contains(photoUrl)) return;
         existing.add(photoUrl);
         this.photos = String.join(",", existing);
+    }
+
+    public void removePhoto(String photoUrl) {
+        if (photoUrl == null || photoUrl.isBlank()) return;
+        var existing = getPhotosList();
+        if (existing.remove(photoUrl)) {
+            this.photos = existing.isEmpty() ? null : String.join(",", existing);
+        }
     }
 
     public java.util.List<String> getPhotosList() {
@@ -82,10 +118,6 @@ public class Zone {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public ZoneType getType() {
         return type;
     }
@@ -98,24 +130,16 @@ public class Zone {
         return status;
     }
 
-    public void setStatus(ZoneStatus status) {
-        this.status = status;
+    public Coordinates getCoordinates() {
+        return coordinates;
     }
 
     public Double getLat() {
-        return lat;
-    }
-
-    public void setLat(Double lat) {
-        this.lat = lat;
+        return coordinates != null ? coordinates.getLat() : null;
     }
 
     public Double getLng() {
-        return lng;
-    }
-
-    public void setLng(Double lng) {
-        this.lng = lng;
+        return coordinates != null ? coordinates.getLng() : null;
     }
 
     public Integer getTargetCount() {
@@ -164,9 +188,5 @@ public class Zone {
 
     public String getPhotos() {
         return photos;
-    }
-
-    public void setPhotos(String photos) {
-        this.photos = photos;
     }
 }
