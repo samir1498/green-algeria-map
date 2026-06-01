@@ -1,10 +1,13 @@
 package com.greenalgeria.auth.domain;
 
 import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User, String> {
+public interface UserRepository {
+    Optional<User> findById(String id);
+
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);
+
+    User save(User user);
 }
