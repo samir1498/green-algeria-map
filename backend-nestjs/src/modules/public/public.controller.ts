@@ -2,8 +2,8 @@ import { Controller, Get } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../auth/infrastructure/public.decorator';
-import { GetAllZonesQuery } from '../zones/application/queries/get-all-zones/get-all-zones.query';
-import { GetAllDamageReportsQuery } from '../damage-reports/application/queries/get-all-damage-reports/get-all-damage-reports.query';
+import { GetAllZonesQuery } from '../zones/application/queries/get-all-zones.query';
+import { GetAllDamageReportsQuery } from '../damage-reports/application/queries/get-all-damage-reports.query';
 import { ZoneResponseDto } from '../zones/dto/zone-response.dto';
 import { DamageReportResponseDto } from '../damage-reports/dto/damage-report-response.dto';
 
