@@ -9,7 +9,6 @@ import java.util.UUID;
 public class DamageReport {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false)
@@ -54,6 +53,7 @@ public class DamageReport {
             Double lng,
             String description,
             String reportedBy) {
+        this.id = UUID.randomUUID();
         this.zoneId = zoneId;
         this.type = type;
         this.severity = severity;
@@ -76,6 +76,20 @@ public class DamageReport {
 
     public void setStatus(DamageReportStatus status) {
         this.status = status;
+    }
+
+    public void verify() {
+        if (this.status == DamageReportStatus.resolved) {
+            throw new IllegalStateException("Cannot verify a resolved damage report");
+        }
+        this.status = DamageReportStatus.verified;
+    }
+
+    public void resolve() {
+        if (this.status != DamageReportStatus.verified) {
+            throw new IllegalStateException("Only verified damage reports can be resolved");
+        }
+        this.status = DamageReportStatus.resolved;
     }
 
     public UUID getId() {

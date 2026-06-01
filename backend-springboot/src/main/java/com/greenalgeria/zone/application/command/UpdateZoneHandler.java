@@ -2,6 +2,7 @@ package com.greenalgeria.zone.application.command;
 
 import com.greenalgeria.shared.cqrs.CommandHandler;
 import com.greenalgeria.zone.application.*;
+import com.greenalgeria.zone.domain.Coordinates;
 import com.greenalgeria.zone.domain.ZoneRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -22,11 +23,18 @@ public class UpdateZoneHandler implements CommandHandler<UpdateZoneCommand, Zone
                 .findById(command.id())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Zone not found"));
         var request = command.request();
-        if (request.name() != null) zone.setName(request.name());
+        if (request.name() != null) zone.rename(request.name());
         if (request.type() != null) zone.setType(request.type());
-        if (request.status() != null) zone.setStatus(request.status());
-        if (request.lat() != null) zone.setLat(request.lat());
-        if (request.lng() != null) zone.setLng(request.lng());
+        if (request.status() != null) {
+            switch (request.status()) {
+                case in_progress -> zone.markInProgress();
+                case completed -> zone.markComplete();
+                default -> {}
+            }
+        }
+        if (request.lat() != null && request.lng() != null) {
+            zone.reposition(new Coordinates(request.lat(), request.lng()));
+        }
         if (request.targetCount() != null) zone.setTargetCount(request.targetCount());
         if (request.currentCount() != null) zone.setCurrentCount(request.currentCount());
         if (request.description() != null) zone.setDescription(request.description());
