@@ -4,6 +4,7 @@ import com.greenalgeria.damagereport.application.CreateDamageReportRequest;
 import com.greenalgeria.damagereport.application.DamageReportResponse;
 import com.greenalgeria.damagereport.application.DamageReportService;
 import com.greenalgeria.damagereport.application.UpdateDamageReportStatusRequest;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Damage Reports")
 public class DamageReportController {
 
     private final DamageReportService damageReportService;

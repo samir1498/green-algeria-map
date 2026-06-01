@@ -4,6 +4,7 @@ import com.greenalgeria.zone.application.CreateZoneRequest;
 import com.greenalgeria.zone.application.UpdateZoneRequest;
 import com.greenalgeria.zone.application.ZoneResponse;
 import com.greenalgeria.zone.application.ZoneService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/zones")
+@Tag(name = "Zones")
 public class ZoneController {
 
     private final ZoneService zoneService;
