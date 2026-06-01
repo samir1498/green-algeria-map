@@ -69,6 +69,15 @@ public class ZoneService {
     }
 
     @Transactional
+    public void addPhoto(UUID id, String photoUrl) {
+        var zone = zoneRepository
+                .findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Zone not found"));
+        zone.addPhoto(photoUrl);
+        zoneRepository.save(zone);
+    }
+
+    @Transactional
     public void registerVolunteer(UUID id) {
         var zone = zoneRepository
                 .findById(id)

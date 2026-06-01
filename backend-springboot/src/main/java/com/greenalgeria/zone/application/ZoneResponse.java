@@ -21,9 +21,7 @@ public record ZoneResponse(
         String treeSpecies,
         Integer volunteerCount) {
     public static ZoneResponse from(Zone zone) {
-        List<String> photoList = zone.getPhotos() != null && !zone.getPhotos().isBlank()
-                ? List.of(zone.getPhotos().split(","))
-                : List.of();
+        List<String> photoList = zone.getPhotosList();
         return new ZoneResponse(
                 zone.getId(),
                 zone.getName(),
