@@ -32,4 +32,20 @@ class ArchitectureTest {
     @ArchTest
     static final ArchRule no_circular_dependencies =
             slices().matching("com.greenalgeria.(*)..").should().beFreeOfCycles();
+
+    @ArchTest
+    static final ArchRule api_must_not_depend_on_domain = noClasses()
+            .that()
+            .resideInAnyPackage("..api..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAnyPackage("..domain..");
+
+    @ArchTest
+    static final ArchRule application_must_not_depend_on_api = noClasses()
+            .that()
+            .resideInAnyPackage("..application..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAnyPackage("..api..");
 }
