@@ -12,7 +12,7 @@ vi.mock('./auth-client', () => ({
 }))
 
 const mockMappedSession = vi.hoisted(() => vi.fn())
-vi.mock('./mappers/map-session', () => ({
+vi.mock('./map-session', () => ({
   mapSession: mockMappedSession,
 }))
 
