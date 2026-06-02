@@ -47,6 +47,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(body);
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalState(
+            IllegalStateException ex, HttpServletRequest request) {
+        var body = new LinkedHashMap<String, Object>();
+        body.put("statusCode", 400);
+        body.put("error", ex.getMessage());
+        body.put("timestamp", OffsetDateTime.now().toString());
+        body.put("path", request.getRequestURI());
+        return ResponseEntity.badRequest().body(body);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgument(
             IllegalArgumentException ex, HttpServletRequest request) {

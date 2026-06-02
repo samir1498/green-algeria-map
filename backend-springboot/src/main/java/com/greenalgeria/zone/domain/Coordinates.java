@@ -2,6 +2,7 @@ package com.greenalgeria.zone.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import java.util.Objects;
 
 @Embeddable
 public class Coordinates {
@@ -17,6 +18,9 @@ public class Coordinates {
     public Coordinates(Double lat, Double lng) {
         if (lat == null || lng == null) {
             throw new IllegalArgumentException("Latitude and longitude must not be null");
+        }
+        if (lat.isNaN() || lng.isNaN()) {
+            throw new IllegalArgumentException("Latitude and longitude must not be NaN");
         }
         if (lat < -90 || lat > 90) {
             throw new IllegalArgumentException("Latitude must be between -90 and 90");
@@ -34,5 +38,18 @@ public class Coordinates {
 
     public Double getLng() {
         return lng;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Coordinates that = (Coordinates) o;
+        return Double.compare(that.lat, lat) == 0 && Double.compare(that.lng, lng) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(lat, lng);
     }
 }
