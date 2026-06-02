@@ -1,7 +1,5 @@
 package com.greenalgeria.zone.api;
 
-import com.greenalgeria.shared.cqrs.CommandBus;
-import com.greenalgeria.shared.cqrs.QueryBus;
 import com.greenalgeria.zone.application.*;
 import com.greenalgeria.zone.application.command.*;
 import com.greenalgeria.zone.application.query.*;
@@ -18,46 +16,61 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Zones")
 public class ZoneController {
 
-    private final CommandBus commandBus;
-    private final QueryBus queryBus;
+    private final GetAllZonesHandler getAllZonesHandler;
+    private final GetZoneByIdHandler getZoneByIdHandler;
+    private final CreateZoneHandler createZoneHandler;
+    private final UpdateZoneHandler updateZoneHandler;
+    private final DeleteZoneHandler deleteZoneHandler;
+    private final RegisterVolunteerHandler registerVolunteerHandler;
 
-    public ZoneController(CommandBus commandBus, QueryBus queryBus) {
-        this.commandBus = commandBus;
-        this.queryBus = queryBus;
+    public ZoneController(
+            GetAllZonesHandler getAllZonesHandler,
+            GetZoneByIdHandler getZoneByIdHandler,
+            CreateZoneHandler createZoneHandler,
+            UpdateZoneHandler updateZoneHandler,
+            DeleteZoneHandler deleteZoneHandler,
+            RegisterVolunteerHandler registerVolunteerHandler) {
+        this.getAllZonesHandler = getAllZonesHandler;
+        this.getZoneByIdHandler = getZoneByIdHandler;
+        this.createZoneHandler = createZoneHandler;
+        this.updateZoneHandler = updateZoneHandler;
+        this.deleteZoneHandler = deleteZoneHandler;
+        this.registerVolunteerHandler = registerVolunteerHandler;
     }
 
     @GetMapping
     public ResponseEntity<List<ZoneResponse>> getAll() {
-        return ResponseEntity.ok(queryBus.execute(new GetAllZonesQuery()));
+        return ResponseEntity.ok(getAllZonesHandler.handle(new GetAllZonesQuery()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ZoneResponse> getById(@PathVariable UUID id) {
-        return queryBus.execute(new GetZoneByIdQuery(id))
+        return getZoneByIdHandler
+                .handle(new GetZoneByIdQuery(id))
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     public ResponseEntity<ZoneResponse> create(@Valid @RequestBody CreateZoneRequest request) {
-        var created = commandBus.execute(new CreateZoneCommand(request));
+        var created = createZoneHandler.handle(new CreateZoneCommand(request));
         return ResponseEntity.created(URI.create("/api/zones/" + created.id())).body(created);
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<ZoneResponse> update(@PathVariable UUID id, @Valid @RequestBody UpdateZoneRequest request) {
-        return ResponseEntity.ok(commandBus.execute(new UpdateZoneCommand(id, request)));
+        return ResponseEntity.ok(updateZoneHandler.handle(new UpdateZoneCommand(id, request)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        commandBus.execute(new DeleteZoneCommand(id));
+        deleteZoneHandler.handle(new DeleteZoneCommand(id));
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/volunteer")
     public ResponseEntity<Void> registerVolunteer(@PathVariable UUID id) {
-        commandBus.execute(new RegisterVolunteerCommand(id));
+        registerVolunteerHandler.handle(new RegisterVolunteerCommand(id));
         return ResponseEntity.noContent().build();
     }
 }

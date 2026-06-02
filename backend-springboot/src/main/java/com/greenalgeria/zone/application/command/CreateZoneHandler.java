@@ -1,6 +1,5 @@
 package com.greenalgeria.zone.application.command;
 
-import com.greenalgeria.shared.cqrs.CommandHandler;
 import com.greenalgeria.zone.application.*;
 import com.greenalgeria.zone.domain.Coordinates;
 import com.greenalgeria.zone.domain.Zone;
@@ -10,7 +9,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CreateZoneHandler implements CommandHandler<CreateZoneCommand, ZoneResponse> {
+public class CreateZoneHandler {
 
     private final ZoneRepository zoneRepository;
     private final ApplicationEventPublisher eventPublisher;
@@ -20,7 +19,6 @@ public class CreateZoneHandler implements CommandHandler<CreateZoneCommand, Zone
         this.eventPublisher = eventPublisher;
     }
 
-    @Override
     public ZoneResponse handle(CreateZoneCommand command) {
         var request = command.request();
         var zone = new Zone(request.name(), request.type(), new Coordinates(request.lat(), request.lng()));
@@ -32,10 +30,5 @@ public class CreateZoneHandler implements CommandHandler<CreateZoneCommand, Zone
         var saved = zoneRepository.save(zone);
         eventPublisher.publishEvent(new ZoneCreatedEvent(saved.getId(), saved.getName(), saved.getType()));
         return ZoneResponse.from(saved);
-    }
-
-    @Override
-    public Class<CreateZoneCommand> supportedCommand() {
-        return CreateZoneCommand.class;
     }
 }
