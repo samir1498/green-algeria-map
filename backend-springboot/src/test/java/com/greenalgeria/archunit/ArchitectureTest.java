@@ -37,12 +37,11 @@ class ArchitectureTest {
     static final ArchRule api_must_not_depend_on_domain = noClasses()
             .that()
             .resideInAnyPackage("..api..")
+            .and()
+            .doNotBelongToAnyOf(com.greenalgeria.storage.api.StorageController.class)
             .should()
             .dependOnClassesThat()
-            .resideInAnyPackage("..domain..")
-            .ignoreDependency(
-                    com.greenalgeria.storage.api.StorageController.class,
-                    com.greenalgeria.storage.domain.StorageService.class);
+            .resideInAnyPackage("..domain..");
 
     @ArchTest
     static final ArchRule application_must_not_depend_on_api = noClasses()
