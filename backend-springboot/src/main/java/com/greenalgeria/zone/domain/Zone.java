@@ -1,7 +1,11 @@
 package com.greenalgeria.zone.domain;
 
 import jakarta.persistence.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "zones")
@@ -105,9 +109,11 @@ public class Zone {
         }
     }
 
-    public java.util.List<String> getPhotosList() {
-        if (this.photos == null || this.photos.isBlank()) return new java.util.ArrayList<>();
-        return java.util.Arrays.asList(this.photos.split(",", -1));
+    public List<String> getPhotosList() {
+        if (this.photos == null || this.photos.isBlank()) return new ArrayList<>();
+        return Arrays.stream(this.photos.split(",", -1))
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public UUID getId() {
