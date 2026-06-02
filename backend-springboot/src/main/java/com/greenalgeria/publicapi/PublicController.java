@@ -1,9 +1,10 @@
 package com.greenalgeria.publicapi;
 
 import com.greenalgeria.damagereport.application.DamageReportResponse;
+import com.greenalgeria.damagereport.application.query.GetAllDamageReportsHandler;
 import com.greenalgeria.damagereport.application.query.GetAllDamageReportsQuery;
-import com.greenalgeria.shared.cqrs.QueryBus;
 import com.greenalgeria.zone.application.ZoneResponse;
+import com.greenalgeria.zone.application.query.GetAllZonesHandler;
 import com.greenalgeria.zone.application.query.GetAllZonesQuery;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -16,16 +17,19 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Public")
 public class PublicController {
 
-    private final QueryBus queryBus;
+    private final GetAllZonesHandler getAllZonesHandler;
+    private final GetAllDamageReportsHandler getAllDamageReportsHandler;
 
-    public PublicController(QueryBus queryBus) {
-        this.queryBus = queryBus;
+    public PublicController(
+            GetAllZonesHandler getAllZonesHandler, GetAllDamageReportsHandler getAllDamageReportsHandler) {
+        this.getAllZonesHandler = getAllZonesHandler;
+        this.getAllDamageReportsHandler = getAllDamageReportsHandler;
     }
 
     @GetMapping("/map")
     public ResponseEntity<MapDataResponse> getMapData() {
-        var zones = queryBus.execute(new GetAllZonesQuery());
-        var damageReports = queryBus.execute(new GetAllDamageReportsQuery(null));
+        var zones = getAllZonesHandler.handle(new GetAllZonesQuery());
+        var damageReports = getAllDamageReportsHandler.handle(new GetAllDamageReportsQuery(null));
         return ResponseEntity.ok(new MapDataResponse(zones, damageReports));
     }
 

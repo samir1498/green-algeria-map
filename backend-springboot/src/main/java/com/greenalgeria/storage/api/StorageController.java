@@ -1,7 +1,7 @@
 package com.greenalgeria.storage.api;
 
-import com.greenalgeria.shared.cqrs.CommandBus;
 import com.greenalgeria.storage.application.UploadZonePhotoCommand;
+import com.greenalgeria.storage.application.UploadZonePhotoHandler;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -16,16 +16,16 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/storage")
 public class StorageController {
 
-    private final CommandBus commandBus;
+    private final UploadZonePhotoHandler uploadZonePhotoHandler;
 
-    public StorageController(CommandBus commandBus) {
-        this.commandBus = commandBus;
+    public StorageController(UploadZonePhotoHandler uploadZonePhotoHandler) {
+        this.uploadZonePhotoHandler = uploadZonePhotoHandler;
     }
 
     @PostMapping("/zones/{id}/photo")
     public ResponseEntity<Map<String, String>> uploadZonePhoto(
             @PathVariable UUID id, @RequestParam("file") MultipartFile file) throws Exception {
-        var photoUrl = commandBus.execute(
+        var photoUrl = uploadZonePhotoHandler.handle(
                 new UploadZonePhotoCommand(id, file.getBytes(), file.getOriginalFilename(), file.getContentType()));
         return ResponseEntity.ok(Map.of("photoUrl", photoUrl));
     }

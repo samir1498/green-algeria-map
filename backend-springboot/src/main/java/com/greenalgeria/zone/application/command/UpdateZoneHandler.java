@@ -1,6 +1,5 @@
 package com.greenalgeria.zone.application.command;
 
-import com.greenalgeria.shared.cqrs.CommandHandler;
 import com.greenalgeria.zone.application.*;
 import com.greenalgeria.zone.domain.Coordinates;
 import com.greenalgeria.zone.domain.ZoneRepository;
@@ -9,7 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 @Component
-public class UpdateZoneHandler implements CommandHandler<UpdateZoneCommand, ZoneResponse> {
+public class UpdateZoneHandler {
 
     private final ZoneRepository zoneRepository;
 
@@ -17,7 +16,6 @@ public class UpdateZoneHandler implements CommandHandler<UpdateZoneCommand, Zone
         this.zoneRepository = zoneRepository;
     }
 
-    @Override
     public ZoneResponse handle(UpdateZoneCommand command) {
         var zone = zoneRepository
                 .findById(command.id())
@@ -41,10 +39,5 @@ public class UpdateZoneHandler implements CommandHandler<UpdateZoneCommand, Zone
         if (request.organizerContact() != null) zone.setOrganizerContact(request.organizerContact());
         if (request.treeSpecies() != null) zone.setTreeSpecies(request.treeSpecies());
         return ZoneResponse.from(zoneRepository.save(zone));
-    }
-
-    @Override
-    public Class<UpdateZoneCommand> supportedCommand() {
-        return UpdateZoneCommand.class;
     }
 }

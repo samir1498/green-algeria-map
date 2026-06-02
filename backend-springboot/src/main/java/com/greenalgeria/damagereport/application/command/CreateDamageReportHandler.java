@@ -4,12 +4,11 @@ import com.greenalgeria.damagereport.application.*;
 import com.greenalgeria.damagereport.domain.DamageReport;
 import com.greenalgeria.damagereport.domain.DamageReportRepository;
 import com.greenalgeria.damagereport.domain.event.DamageReportCreatedEvent;
-import com.greenalgeria.shared.cqrs.CommandHandler;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CreateDamageReportHandler implements CommandHandler<CreateDamageReportCommand, DamageReportResponse> {
+public class CreateDamageReportHandler {
 
     private final DamageReportRepository damageReportRepository;
     private final ApplicationEventPublisher eventPublisher;
@@ -20,7 +19,6 @@ public class CreateDamageReportHandler implements CommandHandler<CreateDamageRep
         this.eventPublisher = eventPublisher;
     }
 
-    @Override
     public DamageReportResponse handle(CreateDamageReportCommand command) {
         var request = command.request();
         var report = new DamageReport(
@@ -34,10 +32,5 @@ public class CreateDamageReportHandler implements CommandHandler<CreateDamageRep
         var saved = damageReportRepository.save(report);
         eventPublisher.publishEvent(new DamageReportCreatedEvent(saved.getId(), saved.getZoneId(), saved.getType()));
         return DamageReportResponse.from(saved);
-    }
-
-    @Override
-    public Class<CreateDamageReportCommand> supportedCommand() {
-        return CreateDamageReportCommand.class;
     }
 }

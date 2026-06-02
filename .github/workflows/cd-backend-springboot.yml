@@ -2,7 +2,7 @@ name: CD Backend Spring Boot
 
 on:
   push:
-    tags: ['v*']
+    tags: ['backend-springboot-v*']
   workflow_dispatch:
 
 permissions:
