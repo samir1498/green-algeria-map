@@ -5,11 +5,11 @@ import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.sli
 
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
+import com.tngtech.archunit.junit.ArchTag;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
-import org.junit.jupiter.api.Tag;
 
-@Tag("arch")
+@ArchTag("arch")
 @AnalyzeClasses(packages = "com.greenalgeria", importOptions = ImportOption.DoNotIncludeTests.class)
 class ArchitectureTest {
 
