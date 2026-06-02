@@ -2,6 +2,7 @@ package com.greenalgeria.storage.api;
 
 import com.greenalgeria.storage.application.UploadZonePhotoCommand;
 import com.greenalgeria.storage.application.UploadZonePhotoHandler;
+import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class StorageController {
 
     @PostMapping("/zones/{id}/photo")
     public ResponseEntity<Map<String, String>> uploadZonePhoto(
-            @PathVariable UUID id, @RequestParam("file") MultipartFile file) throws Exception {
+            @PathVariable UUID id, @RequestParam("file") MultipartFile file) throws IOException {
         var photoUrl = uploadZonePhotoHandler.handle(
                 new UploadZonePhotoCommand(id, file.getBytes(), file.getOriginalFilename(), file.getContentType()));
         return ResponseEntity.ok(Map.of("photoUrl", photoUrl));

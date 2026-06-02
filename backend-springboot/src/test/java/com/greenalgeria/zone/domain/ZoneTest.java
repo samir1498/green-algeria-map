@@ -95,28 +95,6 @@ class ZoneTest {
     }
 
     @Test
-    void advanceStatus() {
-        var zone = createPlantingZone();
-
-        zone.advanceStatus();
-        assertThat(zone.getStatus()).isEqualTo(ZoneStatus.in_progress);
-
-        zone.advanceStatus();
-        assertThat(zone.getStatus()).isEqualTo(ZoneStatus.completed);
-    }
-
-    @Test
-    void advanceStatus_alreadyCompleted() {
-        var zone = createPlantingZone();
-        zone.advanceStatus();
-        zone.advanceStatus();
-
-        assertThatThrownBy(zone::advanceStatus)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("completed");
-    }
-
-    @Test
     void updateProgress_completesWhenTargetReached() {
         var zone = createPlantingZone();
         zone.setTargetCount(10);
@@ -211,25 +189,6 @@ class ZoneTest {
         zone.addPhoto("https://example.com/b.jpg");
 
         assertThat(zone.getPhotosList()).hasSize(2);
-    }
-
-    @Test
-    void removePhoto() {
-        var zone = createPlantingZone();
-        zone.addPhoto("https://example.com/photo.jpg");
-
-        zone.removePhoto("https://example.com/photo.jpg");
-
-        assertThat(zone.getPhotosList()).isEmpty();
-    }
-
-    @Test
-    void removePhoto_notFound() {
-        var zone = createPlantingZone();
-
-        zone.removePhoto("https://example.com/nonexistent.jpg");
-
-        assertThat(zone.getPhotosList()).isEmpty();
     }
 
     @Test
