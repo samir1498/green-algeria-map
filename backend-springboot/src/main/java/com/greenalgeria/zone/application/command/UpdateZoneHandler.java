@@ -5,9 +5,11 @@ import com.greenalgeria.zone.domain.Coordinates;
 import com.greenalgeria.zone.domain.ZoneRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Component
+@Transactional
 public class UpdateZoneHandler {
 
     private final ZoneRepository zoneRepository;

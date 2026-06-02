@@ -147,4 +147,41 @@ class ZoneFlowTest extends IntegrationTest {
                                 """))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void update_requiresAuth() throws Exception {
+        var body = mockMvc.perform(post("/api/zones")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Auth Check","type":"planting","lat":36.0,"lng":3.0,"description":"Test"}
+                                """))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var id = JsonPath.read(body, "$.id");
+
+        mockMvc.perform(patch("/api/zones/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Hacked"}
+                                """))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void delete_requiresAuth() throws Exception {
+        var body = mockMvc.perform(post("/api/zones")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Delete Auth","type":"planting","lat":36.0,"lng":3.0,"description":"Test"}
+                                """))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var id = JsonPath.read(body, "$.id");
+
+        mockMvc.perform(delete("/api/zones/{id}", id)).andExpect(status().isUnauthorized());
+    }
 }
