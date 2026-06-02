@@ -4,19 +4,15 @@ import com.greenalgeria.zone.application.*;
 import com.greenalgeria.zone.domain.Coordinates;
 import com.greenalgeria.zone.domain.Zone;
 import com.greenalgeria.zone.domain.ZoneRepository;
-import com.greenalgeria.zone.domain.event.ZoneCreatedEvent;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CreateZoneHandler {
 
     private final ZoneRepository zoneRepository;
-    private final ApplicationEventPublisher eventPublisher;
 
-    public CreateZoneHandler(ZoneRepository zoneRepository, ApplicationEventPublisher eventPublisher) {
+    public CreateZoneHandler(ZoneRepository zoneRepository) {
         this.zoneRepository = zoneRepository;
-        this.eventPublisher = eventPublisher;
     }
 
     public ZoneResponse handle(CreateZoneCommand command) {
@@ -28,7 +24,6 @@ public class CreateZoneHandler {
         if (request.organizerContact() != null) zone.setOrganizerContact(request.organizerContact());
         if (request.treeSpecies() != null) zone.setTreeSpecies(request.treeSpecies());
         var saved = zoneRepository.save(zone);
-        eventPublisher.publishEvent(new ZoneCreatedEvent(saved.getId(), saved.getName(), saved.getType()));
         return ZoneResponse.from(saved);
     }
 }
