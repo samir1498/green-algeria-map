@@ -5,6 +5,7 @@ import com.greenalgeria.auth.domain.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.LinkedHashMap;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -26,10 +27,15 @@ public class SecurityConfig {
 
     private final ObjectMapper objectMapper;
     private final UserRepository userRepository;
+    private final List<String> allowedOrigins;
 
-    public SecurityConfig(ObjectMapper objectMapper, UserRepository userRepository) {
+    public SecurityConfig(
+            ObjectMapper objectMapper,
+            UserRepository userRepository,
+            @Value("${app.cors.allowed-origins}") String allowedOrigins) {
         this.objectMapper = objectMapper;
         this.userRepository = userRepository;
+        this.allowedOrigins = List.of(allowedOrigins.split(","));
     }
 
     @Bean
@@ -108,7 +114,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         var config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedOrigins(allowedOrigins);
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

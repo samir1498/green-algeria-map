@@ -74,10 +74,6 @@ public class Zone {
         this.status = ZoneStatus.completed;
     }
 
-    public void advanceStatus() {
-        this.status = this.status.next();
-    }
-
     public void updateProgress(Integer count) {
         if (count != null && count < 0) {
             throw new IllegalArgumentException("Progress count cannot be negative");
@@ -99,14 +95,6 @@ public class Zone {
         if (existing.contains(photoUrl)) return;
         existing.add(photoUrl);
         this.photos = String.join(",", existing);
-    }
-
-    public void removePhoto(String photoUrl) {
-        if (photoUrl == null || photoUrl.isBlank()) return;
-        var existing = getPhotosList();
-        if (existing.remove(photoUrl)) {
-            this.photos = existing.isEmpty() ? null : String.join(",", existing);
-        }
     }
 
     public List<String> getPhotosList() {

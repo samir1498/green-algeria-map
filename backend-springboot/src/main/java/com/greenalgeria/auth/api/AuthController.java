@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.security.Principal;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +26,7 @@ public class AuthController {
     @Operation(summary = "Sign up with email")
     public ResponseEntity<SignUpResponse> signUp(@Valid @RequestBody SignUpRequest request) {
         UserResponse user = authService.signUp(request.email(), request.password(), request.name());
-        return ResponseEntity.ok(new SignUpResponse(user));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new SignUpResponse(user));
     }
 
     @GetMapping("/get-session")
