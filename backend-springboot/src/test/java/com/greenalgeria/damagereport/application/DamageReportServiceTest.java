@@ -16,7 +16,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
+import com.greenalgeria.shared.exception.NotFoundException;
 
 @Transactional
 class DamageReportServiceTest extends IntegrationTest {
@@ -73,8 +73,8 @@ class DamageReportServiceTest extends IntegrationTest {
 
         assertThatThrownBy(() -> updateDamageReportStatusHandler.handle(
                         new UpdateDamageReportStatusCommand(id, DamageReportStatus.resolved)))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("404 NOT_FOUND");
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Damage report not found");
     }
 
     @Test
@@ -91,7 +91,7 @@ class DamageReportServiceTest extends IntegrationTest {
         var id = UUID.randomUUID();
 
         assertThatThrownBy(() -> deleteDamageReportHandler.handle(new DeleteDamageReportCommand(id)))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("404 NOT_FOUND");
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Damage report not found");
     }
 }

@@ -1,22 +1,24 @@
 package com.greenalgeria.damagereport.domain;
 
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Set;
+
 public enum DamageReportStatus {
     reported,
     verified,
     resolved;
 
+    private static final Map<DamageReportStatus, Set<DamageReportStatus>> TRANSITIONS =
+            new EnumMap<>(DamageReportStatus.class);
+
     static {
-        reported.transitions = new DamageReportStatus[] {verified};
-        verified.transitions = new DamageReportStatus[] {resolved};
-        resolved.transitions = new DamageReportStatus[] {};
+        TRANSITIONS.put(reported, Set.of(verified));
+        TRANSITIONS.put(verified, Set.of(resolved));
+        TRANSITIONS.put(resolved, Set.of());
     }
 
-    private DamageReportStatus[] transitions;
-
     public boolean canTransitionTo(DamageReportStatus target) {
-        for (var allowed : transitions) {
-            if (allowed == target) return true;
-        }
-        return false;
+        return TRANSITIONS.get(this).contains(target);
     }
 }
