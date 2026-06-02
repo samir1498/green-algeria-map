@@ -1,13 +1,12 @@
 package com.greenalgeria.zone.application.query;
 
-import com.greenalgeria.shared.cqrs.QueryHandler;
 import com.greenalgeria.zone.application.*;
 import com.greenalgeria.zone.domain.ZoneRepository;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GetAllZonesHandler implements QueryHandler<GetAllZonesQuery, List<ZoneResponse>> {
+public class GetAllZonesHandler {
 
     private final ZoneRepository zoneRepository;
 
@@ -15,15 +14,9 @@ public class GetAllZonesHandler implements QueryHandler<GetAllZonesQuery, List<Z
         this.zoneRepository = zoneRepository;
     }
 
-    @Override
     public List<ZoneResponse> handle(GetAllZonesQuery query) {
         return zoneRepository.findAllByOrderByNameAsc().stream()
                 .map(ZoneResponse::from)
                 .toList();
-    }
-
-    @Override
-    public Class<GetAllZonesQuery> supportedQuery() {
-        return GetAllZonesQuery.class;
     }
 }
