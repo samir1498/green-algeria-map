@@ -1,7 +1,7 @@
 import type { AuthService } from './auth-service.interface'
 import { authClient } from './auth-client'
 import { normalizeAuthError } from './error-handler'
-import { mapUser } from './mappers/map-user'
+import { mapUser } from './map-user'
 
 export const betterAuthService: AuthService = {
   async signIn(credentials) {

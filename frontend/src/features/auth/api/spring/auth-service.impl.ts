@@ -1,7 +1,7 @@
-import type { AuthService } from './auth-service.interface'
+import type { AuthService } from '../auth-service.interface'
 import { api } from '@/shared/lib/axios'
-import { mapUser } from './mappers/map-user'
-import type { AuthCredentials, SignUpData } from './types'
+import { mapUser } from '../map-user'
+import type { AuthCredentials, SignUpData } from '../types'
 
 export const springAuthService: AuthService = {
   async signIn(credentials: AuthCredentials) {
