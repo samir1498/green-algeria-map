@@ -7,8 +7,10 @@ Map-based platform for tracking reforestation and cleanup efforts across Algeria
 | Layer | Tech |
 |-------|------|
 | **Frontend** | React 19, TanStack Router, Tailwind CSS v4, shadcn/ui, Leaflet |
-| **Backend** | NestJS 11, CQRS (`@nestjs/cqrs`), TypeORM, PostgreSQL 18 |
-| **Auth** | BetterAuth + `@thallesp/nestjs-better-auth` |
+| **Backend (NestJS)** | NestJS 11, CQRS (`@nestjs/cqrs`), TypeORM, PostgreSQL 18 |
+| **Backend (Spring Boot)** | Spring Boot 4.0.6, Java 25, CQRS, JPA/Hibernate, Flyway, PostgreSQL 18 |
+| **Auth (NestJS)** | BetterAuth + `@thallesp/nestjs-better-auth` |
+| **Auth (Spring Boot)** | Form login, BCrypt, session-based |
 | **Quality** | TypeScript strict, ESLint, Prettier, knip, depcruise, husky |
 | **CI** | GitHub Actions — frontend + backend workflows with path filters |
 | **Runtime** | Docker (PostgreSQL), pnpm, Bun |
@@ -102,6 +104,8 @@ Run from `frontend/`:
 
 ## Backend Scripts
 
+### NestJS
+
 Run from `backend-nestjs/`:
 
 | Command | Description |
@@ -112,13 +116,32 @@ Run from `backend-nestjs/`:
 | `pnpm lint` | ESLint |
 | `pnpm knip` | Dead code detection |
 | `pnpm depcruise` | Circular dependency detection |
-| `pnpm test` | Jest tests |
+| `pnpm test` | Vitest unit tests |
+| `pnpm test:it` | Integration tests (Testcontainers + PostgreSQL) |
 | `pnpm migration:generate` | Generate migration from entity changes |
 | `pnpm migration:run` | Apply pending migrations |
 | `pnpm migration:revert` | Revert last migration |
 | `bun src/seed.ts` | Seed demo data (10 zones) |
 
 API docs at `http://localhost:8080/api/docs` (Scalar, moon theme).
+
+### Spring Boot
+
+Run from `backend-springboot/`:
+
+| Command | Description |
+|---------|-------------|
+| `./mvnw spring-boot:run` | Dev server (port 8080, H2 console) |
+| `./mvnw compile -q` | Compile |
+| `./mvnw test -Ptest-it` | Integration tests (Testcontainers + PostgreSQL) |
+| `./mvnw test -Ptest-arch` | Architecture tests (ArchUnit) |
+| `./mvnw test -Ptest-unit` | Domain unit tests |
+| `./mvnw spotless:check -Pquality` | Format check (Palantir) |
+| `./mvnw spotless:apply -Pquality` | Auto-format |
+| `./mvnw -DskipTests clean package` | Build JAR |
+| `./mvnw -Pnative spring-boot:build-image` | Build native Docker image |
+
+API docs at `http://localhost:8080/swagger-ui/index.html` (Swagger UI).
 
 ### Auth Endpoints
 
@@ -168,7 +191,7 @@ green-algeria-map/
 │   └── test/
 │       ├── it/               # Integration tests (Testcontainers + Postgres)
 │       └── setup/            # Test module helper
-├── backend-springboot/       # Spring Boot (pending)
+├── backend-springboot/       # Spring Boot CQRS API (Testcontainers, Flyway, GraalVM)
 ├── .github/workflows/        # CI (frontend + backend with path filters)
 ├── .skills/                  # Project-specific AI skills
 ├── .husky/                   # Pre-commit hooks
@@ -186,6 +209,7 @@ green-algeria-map/
 
 ## Status
 
+### NestJS
 - Interactive Leaflet map with 10 demo zones, color-coded by status
 - Dark mode, legend, zoom controls, status popups
 - NestJS 11 backend with CQRS + TypeORM + PostgreSQL
@@ -199,6 +223,17 @@ green-algeria-map/
 - Clean architecture: domain/application/infrastructure layers
 - Frontend auth integration (sign-in/up pages, protected routes)
 - Full test suite: unit, UI, integration
+
+### Spring Boot
+- Feature parity with NestJS: 19 API endpoints (zone CRUD, damage reports, auth, public map, health)
+- CQRS with CommandBus/QueryBus (SimpleCommandBus, SimpleQueryBus)
+- Photo upload: `POST /storage/zones/{id}/photo` with S3-compatible storage (MinIO/RustFS)
+- Swagger/OpenAPI at `/swagger-ui/index.html`
+- Rich domain model: Coordinates value object, status transitions, domain events
+- Repository abstraction: domain interfaces decoupled from JPA
+- Zero-mock test suite: 48 integration tests via Testcontainers + singleton PostgreSQL
+- Architecture enforcement: 7 ArchUnit rules
+- Native Docker image: GraalVM via Paketo Buildpacks, pushed to GHCR on tag
 
 ## License
 
