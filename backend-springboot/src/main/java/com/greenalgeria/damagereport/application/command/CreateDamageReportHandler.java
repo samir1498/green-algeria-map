@@ -4,8 +4,10 @@ import com.greenalgeria.damagereport.application.*;
 import com.greenalgeria.damagereport.domain.DamageReport;
 import com.greenalgeria.damagereport.domain.DamageReportRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@Transactional
 public class CreateDamageReportHandler {
 
     private final DamageReportRepository damageReportRepository;

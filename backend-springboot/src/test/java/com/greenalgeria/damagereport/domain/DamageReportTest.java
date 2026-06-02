@@ -95,11 +95,14 @@ class DamageReportTest {
     }
 
     @Test
-    void setStatus_directly() {
+    void lifecycle_fromReportedToResolved() {
         var report = createFireReport();
+        assertThat(report.getStatus()).isEqualTo(DamageReportStatus.reported);
 
-        report.setStatus(DamageReportStatus.resolved);
+        report.verify();
+        assertThat(report.getStatus()).isEqualTo(DamageReportStatus.verified);
 
+        report.resolve();
         assertThat(report.getStatus()).isEqualTo(DamageReportStatus.resolved);
     }
 

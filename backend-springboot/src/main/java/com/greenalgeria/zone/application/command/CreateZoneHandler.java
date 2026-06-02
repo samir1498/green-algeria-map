@@ -5,8 +5,10 @@ import com.greenalgeria.zone.domain.Coordinates;
 import com.greenalgeria.zone.domain.Zone;
 import com.greenalgeria.zone.domain.ZoneRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@Transactional
 public class CreateZoneHandler {
 
     private final ZoneRepository zoneRepository;
