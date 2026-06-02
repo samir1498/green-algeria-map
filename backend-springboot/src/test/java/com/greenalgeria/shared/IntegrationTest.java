@@ -47,8 +47,7 @@ public abstract class IntegrationTest {
                         .content("""
                                 {"email":"%s","password":"password123","name":"Auth User"}
                                 """.formatted(email)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.user.id").isNotEmpty())
+                .andExpect(status().isCreated())                .andExpect(jsonPath("$.user.id").isNotEmpty())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();

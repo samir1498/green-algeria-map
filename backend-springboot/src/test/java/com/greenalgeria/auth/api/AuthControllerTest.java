@@ -15,13 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 class AuthControllerTest extends IntegrationTest {
 
     @Test
-    void signUp_returns200() throws Exception {
+    void signUp_returns201() throws Exception {
         mockMvc.perform(post("/api/auth/sign-up/email")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"email":"test@example.com","password":"password123","name":"Test User"}
                                 """))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.user.id").isNotEmpty())
                 .andExpect(jsonPath("$.user.email").value("test@example.com"))
                 .andExpect(jsonPath("$.user.name").value("Test User"));
@@ -54,7 +54,7 @@ class AuthControllerTest extends IntegrationTest {
                         .content("""
                                 {"email":"existing@example.com","password":"password123","name":"First"}
                                 """))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/auth/sign-up/email")
                         .contentType(MediaType.APPLICATION_JSON)
