@@ -141,4 +141,43 @@ class DamageReportFlowTest extends IntegrationTest {
                                 """))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void updateStatus_requiresAuth() throws Exception {
+        var zoneId = createZone();
+        var body = mockMvc.perform(post("/api/damage-reports")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"zoneId":"%s","type":"fire","severity":"high","lat":36.0,"lng":3.0,"description":"Needs auth","reportedBy":"test@test.com"}
+                                """.formatted(zoneId)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var id = JsonPath.read(body, "$.id");
+
+        mockMvc.perform(patch("/api/damage-reports/{id}/status", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"status":"verified"}
+                                """))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void delete_requiresAuth() throws Exception {
+        var zoneId = createZone();
+        var body = mockMvc.perform(post("/api/damage-reports")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"zoneId":"%s","type":"vandalism","severity":"low","lat":36.0,"lng":3.0,"description":"Needs auth","reportedBy":"test@test.com"}
+                                """.formatted(zoneId)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        var id = JsonPath.read(body, "$.id");
+
+        mockMvc.perform(delete("/api/damage-reports/{id}", id)).andExpect(status().isUnauthorized());
+    }
 }
