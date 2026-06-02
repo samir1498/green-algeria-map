@@ -14,7 +14,7 @@ vi.mock('./auth-client', () => ({
 }))
 
 const mockMapUser = vi.hoisted(() => vi.fn())
-vi.mock('./mappers/map-user', () => ({
+vi.mock('./map-user', () => ({
   mapUser: mockMapUser,
 }))
 

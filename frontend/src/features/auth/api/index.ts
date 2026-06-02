@@ -1,7 +1,7 @@
 import { betterAuthService } from './auth-service.impl'
 import { betterAuthSessionService } from './session-service.impl'
-import { springAuthService } from './spring-auth.service.impl'
-import { springSessionService } from './spring-session.service.impl'
+import { springAuthService } from './spring/auth-service.impl'
+import { springSessionService } from './spring/session-service.impl'
 
 const backend = import.meta.env.VITE_API_BACKEND ?? 'nestjs'
 

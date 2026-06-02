@@ -1,7 +1,7 @@
 import type { SessionService } from './session-service.interface'
 import { authClient } from './auth-client'
 import { normalizeAuthError } from './error-handler'
-import { mapSession } from './mappers/map-session'
+import { mapSession } from './map-session'
 
 export const betterAuthSessionService: SessionService = {
   async getSession() {

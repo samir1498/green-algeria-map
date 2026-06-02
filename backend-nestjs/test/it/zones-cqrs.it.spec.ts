@@ -10,12 +10,12 @@ import {
 import { ZoneOrmEntity } from '../../src/modules/zones/infrastructure/zone.orm-entity';
 import { ZonesModule } from '../../src/modules/zones/zones.module';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { CreateZoneCommand } from '../../src/modules/zones/application/commands/create-zone/create-zone.command';
-import { UpdateZoneCommand } from '../../src/modules/zones/application/commands/update-zone/update-zone.command';
-import { DeleteZoneCommand } from '../../src/modules/zones/application/commands/delete-zone/delete-zone.command';
-import { GetAllZonesQuery } from '../../src/modules/zones/application/queries/get-all-zones/get-all-zones.query';
-import { GetZoneByIdQuery } from '../../src/modules/zones/application/queries/get-zone-by-id/get-zone-by-id.query';
-import { ZoneCreatedEvent } from '../../src/modules/zones/application/events/zone-created/zone-created.event';
+import { CreateZoneCommand } from '../../src/modules/zones/application/commands/create-zone.command';
+import { UpdateZoneCommand } from '../../src/modules/zones/application/commands/update-zone.command';
+import { DeleteZoneCommand } from '../../src/modules/zones/application/commands/delete-zone.command';
+import { GetAllZonesQuery } from '../../src/modules/zones/application/queries/get-all-zones.query';
+import { GetZoneByIdQuery } from '../../src/modules/zones/application/queries/get-zone-by-id.query';
+import { ZoneCreatedEvent } from '../../src/modules/zones/application/events/zone-created.event';
 import { NotFoundException } from '@nestjs/common';
 
 describe('Zones CQRS (integration)', () => {
