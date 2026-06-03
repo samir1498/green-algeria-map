@@ -14,7 +14,7 @@ public class GetAllDamageReportsHandler {
         this.damageReportRepository = damageReportRepository;
     }
 
-    public List<DamageReportResponse> handle(GetAllDamageReportsQuery query) {
+    public List<DamageReportResponse> handle(GetDamageReportsQuery query) {
         var reports = query.zoneId() != null
                 ? damageReportRepository.findByZoneIdOrderByReportedAtDesc(query.zoneId())
                 : damageReportRepository.findAllByOrderByReportedAtDesc();

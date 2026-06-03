@@ -2,7 +2,7 @@ package com.greenalgeria.publicapi;
 
 import com.greenalgeria.damagereport.application.DamageReportResponse;
 import com.greenalgeria.damagereport.application.query.GetAllDamageReportsHandler;
-import com.greenalgeria.damagereport.application.query.GetAllDamageReportsQuery;
+import com.greenalgeria.damagereport.application.query.GetDamageReportsQuery;
 import com.greenalgeria.zone.application.ZoneResponse;
 import com.greenalgeria.zone.application.query.GetAllZonesHandler;
 import com.greenalgeria.zone.application.query.GetAllZonesQuery;
@@ -29,7 +29,7 @@ public class PublicController {
     @GetMapping("/map")
     public ResponseEntity<MapDataResponse> getMapData() {
         var zones = getAllZonesHandler.handle(new GetAllZonesQuery());
-        var damageReports = getAllDamageReportsHandler.handle(new GetAllDamageReportsQuery(null));
+        var damageReports = getAllDamageReportsHandler.handle(new GetDamageReportsQuery(null));
         return ResponseEntity.ok(new MapDataResponse(zones, damageReports));
     }
 

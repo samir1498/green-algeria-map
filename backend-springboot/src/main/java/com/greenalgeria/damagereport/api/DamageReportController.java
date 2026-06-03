@@ -37,7 +37,7 @@ public class DamageReportController {
 
     @GetMapping("/damage-reports")
     public ResponseEntity<List<DamageReportResponse>> getAll(@RequestParam(required = false) UUID zoneId) {
-        return ResponseEntity.ok(getAllDamageReportsHandler.handle(new GetAllDamageReportsQuery(zoneId)));
+        return ResponseEntity.ok(getAllDamageReportsHandler.handle(new GetDamageReportsQuery(zoneId)));
     }
 
     @GetMapping("/damage-reports/{id}")
@@ -50,7 +50,7 @@ public class DamageReportController {
 
     @GetMapping("/zones/{zoneId}/damage-reports")
     public ResponseEntity<List<DamageReportResponse>> getByZoneId(@PathVariable UUID zoneId) {
-        return ResponseEntity.ok(getAllDamageReportsHandler.handle(new GetAllDamageReportsQuery(zoneId)));
+        return ResponseEntity.ok(getAllDamageReportsHandler.handle(new GetDamageReportsQuery(zoneId)));
     }
 
     @PostMapping("/damage-reports")
