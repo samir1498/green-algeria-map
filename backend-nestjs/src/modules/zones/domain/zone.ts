@@ -180,22 +180,4 @@ export class Zone {
   removePhoto(photoUrl: string): void {
     this._photos = this._photos.filter((url) => url !== photoUrl);
   }
-
-  toJSON() {
-    return {
-      id: this.id,
-      name: this._name,
-      type: this._type,
-      status: this._status,
-      lat: this.coordinates.lat,
-      lng: this.coordinates.lng,
-      targetCount: this._targetCount,
-      currentCount: this._currentCount,
-      description: this._description,
-      photos: [...this._photos],
-      organizerContact: this._organizerContact,
-      treeSpecies: this._treeSpecies,
-      volunteerCount: this._volunteerCount,
-    };
-  }
 }

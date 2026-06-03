@@ -32,9 +32,4 @@ export class ZoneRepository {
   async remove(id: string): Promise<void> {
     await this.repo.delete(id);
   }
-
-  async existsByName(name: string): Promise<boolean> {
-    const count = await this.repo.count({ where: { name } });
-    return count > 0;
-  }
 }
