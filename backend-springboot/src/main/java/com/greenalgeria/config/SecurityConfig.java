@@ -1,7 +1,6 @@
 package com.greenalgeria.config;
 
-import com.greenalgeria.auth.application.UserResponse;
-import com.greenalgeria.auth.domain.UserRepository;
+import com.greenalgeria.auth.infrastructure.LoginSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,15 +25,15 @@ import tools.jackson.databind.ObjectMapper;
 public class SecurityConfig {
 
     private final ObjectMapper objectMapper;
-    private final UserRepository userRepository;
+    private final LoginSuccessHandler loginSuccessHandler;
     private final List<String> allowedOrigins;
 
     public SecurityConfig(
             ObjectMapper objectMapper,
-            UserRepository userRepository,
+            LoginSuccessHandler loginSuccessHandler,
             @Value("${app.cors.allowed-origins}") String allowedOrigins) {
         this.objectMapper = objectMapper;
-        this.userRepository = userRepository;
+        this.loginSuccessHandler = loginSuccessHandler;
         this.allowedOrigins = List.of(allowedOrigins.split(","));
     }
 
@@ -72,17 +71,7 @@ public class SecurityConfig {
                 .formLogin(form -> form.loginProcessingUrl("/api/auth/sign-in/email")
                         .usernameParameter("email")
                         .passwordParameter("password")
-                        .successHandler((request, response, authentication) -> {
-                            var principal =
-                                    (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
-                            var user = userRepository
-                                    .findById(principal.getUsername())
-                                    .orElse(null);
-                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            var body = new LinkedHashMap<String, Object>();
-                            body.put("user", user != null ? UserResponse.from(user) : null);
-                            objectMapper.writeValue(response.getOutputStream(), body);
-                        })
+                        .successHandler(loginSuccessHandler)
                         .failureHandler((request, response, exception) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);

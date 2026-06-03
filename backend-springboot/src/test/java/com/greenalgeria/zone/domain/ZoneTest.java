@@ -141,7 +141,7 @@ class ZoneTest {
 
         zone.addPhoto("https://example.com/photo.jpg");
 
-        assertThat(zone.getPhotosList()).containsExactly("https://example.com/photo.jpg");
+        assertThat(zone.getPhotos()).containsExactly("https://example.com/photo.jpg");
     }
 
     @Test
@@ -151,7 +151,7 @@ class ZoneTest {
 
         zone.addPhoto("https://example.com/photo.jpg");
 
-        assertThat(zone.getPhotosList()).hasSize(1);
+        assertThat(zone.getPhotos()).hasSize(1);
     }
 
     @Test
@@ -160,7 +160,7 @@ class ZoneTest {
 
         zone.addPhoto("ftp://bad.com/photo.jpg");
 
-        assertThat(zone.getPhotosList()).isEmpty();
+        assertThat(zone.getPhotos()).isEmpty();
     }
 
     @Test
@@ -169,7 +169,7 @@ class ZoneTest {
 
         zone.addPhoto("");
 
-        assertThat(zone.getPhotosList()).isEmpty();
+        assertThat(zone.getPhotos()).isEmpty();
     }
 
     @Test
@@ -178,7 +178,7 @@ class ZoneTest {
 
         zone.addPhoto(null);
 
-        assertThat(zone.getPhotosList()).isEmpty();
+        assertThat(zone.getPhotos()).isEmpty();
     }
 
     @Test
@@ -188,22 +188,13 @@ class ZoneTest {
         zone.addPhoto("https://example.com/a.jpg");
         zone.addPhoto("https://example.com/b.jpg");
 
-        assertThat(zone.getPhotosList()).hasSize(2);
+        assertThat(zone.getPhotos()).hasSize(2);
     }
 
     @Test
     void getPhotosList_emptyByDefault() {
         var zone = createPlantingZone();
 
-        assertThat(zone.getPhotosList()).isEmpty();
-    }
-
-    @Test
-    void photosViaCommaSeparated() {
-        var zone = createPlantingZone();
-        zone.addPhoto("https://example.com/a.jpg");
-        zone.addPhoto("https://example.com/b.jpg");
-
-        assertThat(zone.getPhotos()).isEqualTo("https://example.com/a.jpg,https://example.com/b.jpg");
+        assertThat(zone.getPhotos()).isEmpty();
     }
 }
