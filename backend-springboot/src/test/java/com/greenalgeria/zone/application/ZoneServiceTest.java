@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.greenalgeria.shared.IntegrationTest;
+import com.greenalgeria.shared.exception.NotFoundException;
 import com.greenalgeria.zone.application.command.*;
 import com.greenalgeria.zone.application.query.*;
 import com.greenalgeria.zone.domain.ZoneStatus;
@@ -12,7 +13,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import com.greenalgeria.shared.exception.NotFoundException;
 
 @Transactional
 class ZoneServiceTest extends IntegrationTest {

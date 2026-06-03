@@ -8,6 +8,7 @@ import com.greenalgeria.damagereport.domain.DamageReportSeverity;
 import com.greenalgeria.damagereport.domain.DamageReportStatus;
 import com.greenalgeria.damagereport.domain.DamageReportType;
 import com.greenalgeria.shared.IntegrationTest;
+import com.greenalgeria.shared.exception.NotFoundException;
 import com.greenalgeria.zone.application.CreateZoneRequest;
 import com.greenalgeria.zone.application.command.CreateZoneCommand;
 import com.greenalgeria.zone.application.command.CreateZoneHandler;
@@ -16,7 +17,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import com.greenalgeria.shared.exception.NotFoundException;
 
 @Transactional
 class DamageReportServiceTest extends IntegrationTest {
