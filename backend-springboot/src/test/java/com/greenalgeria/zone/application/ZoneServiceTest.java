@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.greenalgeria.shared.IntegrationTest;
+import com.greenalgeria.shared.exception.NotFoundException;
 import com.greenalgeria.zone.application.command.*;
 import com.greenalgeria.zone.application.query.*;
 import com.greenalgeria.zone.domain.ZoneStatus;
@@ -12,7 +13,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Transactional
 class ZoneServiceTest extends IntegrationTest {
@@ -67,8 +67,8 @@ class ZoneServiceTest extends IntegrationTest {
 
         assertThatThrownBy(() -> updateZoneHandler.handle(new UpdateZoneCommand(
                         id, new UpdateZoneRequest(null, null, null, null, null, null, null, null, null, null))))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("404 NOT_FOUND");
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Zone not found");
     }
 
     @Test
@@ -84,8 +84,8 @@ class ZoneServiceTest extends IntegrationTest {
         var id = UUID.randomUUID();
 
         assertThatThrownBy(() -> deleteZoneHandler.handle(new DeleteZoneCommand(id)))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("404 NOT_FOUND");
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Zone not found");
     }
 
     @Test
@@ -105,7 +105,7 @@ class ZoneServiceTest extends IntegrationTest {
         var id = UUID.randomUUID();
 
         assertThatThrownBy(() -> registerVolunteerHandler.handle(new RegisterVolunteerCommand(id)))
-                .isInstanceOf(ResponseStatusException.class)
-                .hasMessageContaining("404 NOT_FOUND");
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Zone not found");
     }
 }
