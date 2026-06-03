@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { MapContainer, TileLayer, useMapEvents, Marker } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker } from 'react-leaflet'
 import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { Button } from '@/shared/components/ui/button'
@@ -7,19 +7,11 @@ import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
 import { useCreateZone } from '@/features/zones/hooks/useCreateZone'
-import { ZonePhotoUploader } from '@/features/zones/components/ZonePhotoUploader'
 import { TreeSearchInput } from '@/features/tree-info/components/TreeSearchInput'
+import { LocationPicker } from '@/features/zones/components/LocationPicker'
+import { CreateZoneSuccess } from '@/features/zones/components/CreateZoneSuccess'
 
 const ALGERIA_CENTER: [number, number] = [28.0339, 1.6596]
-
-function LocationPicker({ onPick }: { onPick: (lat: number, lng: number) => void }) {
-  useMapEvents({
-    click(e) {
-      onPick(e.latlng.lat, e.latlng.lng)
-    },
-  })
-  return null
-}
 
 export function CreateZoneForm() {
   const navigate = useNavigate()
@@ -81,23 +73,7 @@ export function CreateZoneForm() {
   }
 
   if (createdZoneId) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Add Photos</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <p className="text-muted-foreground text-sm">
-            Your zone has been created. Optionally add photos to show the current state of the
-            location.
-          </p>
-          <ZonePhotoUploader zoneId={createdZoneId} />
-          <Button onClick={handleDone} data-testid="done-photos">
-            Done
-          </Button>
-        </CardContent>
-      </Card>
-    )
+    return <CreateZoneSuccess zoneId={createdZoneId} onDone={handleDone} />
   }
 
   return (
