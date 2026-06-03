@@ -20,6 +20,10 @@ export default mergeConfig(
         },
         exclude: [
           'src/shared/components/ui/**',
+          'src/shared/lib/**',
+          'src/shared/utils/**',
+          'src/shared/constants/**',
+          'src/shared/types/**',
           'src/routeTree.gen.ts',
           'src/routes/__root.tsx',
           'src/routes/auth/**',
