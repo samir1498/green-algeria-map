@@ -1,3 +1,3 @@
-export function formatDate(date: string | Date): string {
-  return new Date(date).toLocaleDateString()
+export function formatDate(date: string | Date, locale?: string): string {
+  return new Date(date).toLocaleDateString(locale ?? 'en-US')
 }
