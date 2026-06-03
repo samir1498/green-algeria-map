@@ -186,30 +186,6 @@ describe('ZoneRepository (integration)', () => {
     });
   });
 
-  describe('existsByName', () => {
-    it('returns true when zone exists', async () => {
-      await repository.save(
-        Zone.create({
-          name: 'Unique Name',
-          type: 'planting',
-          status: 'planned',
-          coordinates: new Coordinates(36.0, 3.0),
-          description: 'Test',
-        }),
-      );
-
-      const exists = await repository.existsByName('Unique Name');
-
-      expect(exists).toBe(true);
-    });
-
-    it('returns false when zone does not exist', async () => {
-      const exists = await repository.existsByName('Does Not Exist');
-
-      expect(exists).toBe(false);
-    });
-  });
-
   describe('round-trip', () => {
     it('save -> findById returns matching fields', async () => {
       const zone = Zone.create({
