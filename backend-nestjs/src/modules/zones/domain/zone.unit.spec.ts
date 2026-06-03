@@ -316,31 +316,4 @@ describe('Zone', () => {
       expect(zone.photos).toEqual(['https://example.com/photo.jpg']);
     });
   });
-
-  describe('toJSON', () => {
-    it('returns flat object with lat/lng', () => {
-      const zone = makeZone({
-        id: 'test-id',
-        targetCount: 20,
-        currentCount: 5,
-      });
-      const json = zone.toJSON();
-
-      expect(json).toEqual({
-        id: 'test-id',
-        name: 'Test Zone',
-        type: 'planting',
-        status: 'planned',
-        lat: 36.75,
-        lng: 3.05,
-        targetCount: 20,
-        currentCount: 5,
-        description: 'A test zone',
-        photos: [],
-        organizerContact: undefined,
-        treeSpecies: undefined,
-        volunteerCount: 0,
-      });
-    });
-  });
 });

@@ -12,7 +12,6 @@ describe('GetZoneByIdHandler', () => {
       findAll: vi.fn(),
       findById: vi.fn(),
       remove: vi.fn(),
-      existsByName: vi.fn(),
     };
   }
 

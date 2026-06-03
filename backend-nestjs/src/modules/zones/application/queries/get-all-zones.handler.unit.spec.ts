@@ -24,7 +24,6 @@ describe('GetAllZonesHandler', () => {
       findAll: mockFindAll,
       findById: vi.fn(),
       remove: vi.fn(),
-      existsByName: vi.fn(),
     };
     const handler: any = new GetAllZonesHandler(mockRepository);
     const query = new GetAllZonesQuery();
@@ -45,7 +44,6 @@ describe('GetAllZonesHandler', () => {
       findAll: mockFindAll,
       findById: vi.fn(),
       remove: vi.fn(),
-      existsByName: vi.fn(),
     };
     const handler: any = new GetAllZonesHandler(mockRepository);
     const query = new GetAllZonesQuery();
