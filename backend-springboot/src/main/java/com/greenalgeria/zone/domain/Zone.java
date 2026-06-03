@@ -2,10 +2,8 @@ package com.greenalgeria.zone.domain;
 
 import jakarta.persistence.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "zones")
@@ -40,8 +38,10 @@ public class Zone {
 
     private Integer volunteerCount = 0;
 
-    @Column(columnDefinition = "TEXT")
-    private String photos;
+    @ElementCollection
+    @CollectionTable(name = "zone_photos", joinColumns = @JoinColumn(name = "zone_id"))
+    @Column(name = "photos", columnDefinition = "TEXT")
+    private List<String> photos = new ArrayList<>();
 
     protected Zone() {}
 
@@ -91,17 +91,8 @@ public class Zone {
     public void addPhoto(String photoUrl) {
         if (photoUrl == null || photoUrl.isBlank()) return;
         if (!photoUrl.startsWith("http://") && !photoUrl.startsWith("https://")) return;
-        var existing = getPhotosList();
-        if (existing.contains(photoUrl)) return;
-        existing.add(photoUrl);
-        this.photos = String.join(",", existing);
-    }
-
-    public List<String> getPhotosList() {
-        if (this.photos == null || this.photos.isBlank()) return new ArrayList<>();
-        return Arrays.stream(this.photos.split(",", -1))
-                .filter(s -> !s.isBlank())
-                .collect(Collectors.toCollection(ArrayList::new));
+        if (this.photos.contains(photoUrl)) return;
+        this.photos.add(photoUrl);
     }
 
     public UUID getId() {
@@ -180,7 +171,7 @@ public class Zone {
         return volunteerCount;
     }
 
-    public String getPhotos() {
+    public List<String> getPhotos() {
         return photos;
     }
 }

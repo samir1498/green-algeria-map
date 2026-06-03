@@ -21,7 +21,6 @@ public record ZoneResponse(
         String treeSpecies,
         Integer volunteerCount) {
     public static ZoneResponse from(Zone zone) {
-        List<String> photoList = zone.getPhotosList();
         return new ZoneResponse(
                 zone.getId(),
                 zone.getName(),
@@ -32,7 +31,7 @@ public record ZoneResponse(
                 zone.getTargetCount(),
                 zone.getCurrentCount(),
                 zone.getDescription(),
-                photoList,
+                zone.getPhotos(),
                 zone.getOrganizerContact(),
                 zone.getTreeSpecies(),
                 zone.getVolunteerCount());
