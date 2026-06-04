@@ -3,7 +3,9 @@ package com.greenalgeria.damagereport.application.command;
 import com.greenalgeria.damagereport.application.*;
 import com.greenalgeria.damagereport.domain.DamageReport;
 import com.greenalgeria.damagereport.domain.DamageReportRepository;
+import com.greenalgeria.damagereport.domain.event.DamageReportCreatedEvent;
 import com.greenalgeria.shared.cqrs.CommandHandler;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,9 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateDamageReportHandler implements CommandHandler<CreateDamageReportCommand, DamageReportResponse> {
 
     private final DamageReportRepository damageReportRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public CreateDamageReportHandler(DamageReportRepository damageReportRepository) {
+    public CreateDamageReportHandler(
+            DamageReportRepository damageReportRepository, ApplicationEventPublisher eventPublisher) {
         this.damageReportRepository = damageReportRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     public DamageReportResponse handle(CreateDamageReportCommand command) {
@@ -28,6 +33,7 @@ public class CreateDamageReportHandler implements CommandHandler<CreateDamageRep
                 request.description(),
                 request.reportedBy());
         var saved = damageReportRepository.save(report);
+        eventPublisher.publishEvent(new DamageReportCreatedEvent(saved.getId()));
         return DamageReportResponse.from(saved);
     }
 

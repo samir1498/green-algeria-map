@@ -66,6 +66,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/healthz", "/readyz")
                         .permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                        .permitAll()
                         .anyRequest()
                         .authenticated())
                 .formLogin(form -> form.loginProcessingUrl("/api/auth/sign-in/email")
