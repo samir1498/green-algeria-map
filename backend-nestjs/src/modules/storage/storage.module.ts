@@ -4,6 +4,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { RustFsStorageService } from './infrastructure/rustfs-storage.service';
 import { StorageController } from './storage.controller';
 import { STORAGE_SERVICE } from './tokens';
+import { UploadZonePhotoUseCase } from './application/upload-zone-photo.usecase';
 
 @Module({
   imports: [ConfigModule, CqrsModule],
@@ -13,6 +14,7 @@ import { STORAGE_SERVICE } from './tokens';
       provide: STORAGE_SERVICE,
       useClass: RustFsStorageService,
     },
+    UploadZonePhotoUseCase,
   ],
   exports: [STORAGE_SERVICE],
 })
