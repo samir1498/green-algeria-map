@@ -109,6 +109,25 @@ class ZoneControllerTest extends IntegrationTest {
     }
 
     @Test
+    void update_returns401_whenUnauthenticated() throws Exception {
+        var id = UUID.randomUUID();
+
+        mockMvc.perform(patch("/api/zones/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Hacker"}
+                                """))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void delete_returns401_whenUnauthenticated() throws Exception {
+        var id = UUID.randomUUID();
+
+        mockMvc.perform(delete("/api/zones/{id}", id)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void registerVolunteer_returns204() throws Exception {
         var body = mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
