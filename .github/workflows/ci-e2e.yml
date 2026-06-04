@@ -144,7 +144,7 @@ jobs:
           node-version: 24
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
-      - uses: actions/setup-java@9044482b3f4f3f4862d0cd1e1c89880bda960937
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 24
