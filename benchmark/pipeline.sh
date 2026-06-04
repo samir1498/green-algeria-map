@@ -73,6 +73,10 @@ bench_nestjs() {
   # Prep: bucket + migrations + seed (run locally before starting the app container)
   cd "$ROOT/backend-nestjs"
   echo "Creating S3 bucket..."
+  OO_OBJECT_STORAGE_ENDPOINT='http://localhost:9000' \
+  OO_OBJECT_STORAGE_BUCKET='green-algeria' \
+  OO_OBJECT_STORAGE_ACCESS_KEY='greenalgeria-access' \
+  OO_OBJECT_STORAGE_SECRET_KEY='greenalgeria-secret-change-me' \
   node scripts/create-bucket.mjs
   echo "Running migrations..."
   pnpm migration:run
@@ -99,9 +103,17 @@ bench_springboot() {
   echo ""
 
   # Spring Boot uses Flyway — tables auto-created on startup
-  # No manual migration, no seed
-  docker compose --profile springboot up -d
-  wait_http "http://localhost:8081/readyz" "Spring Boot (readiness)" 120
+  # No manual migration, no seed, but need S3 bucket for storage health indicator
+  cd "$ROOT/backend-nestjs"
+  OO_OBJECT_STORAGE_ENDPOINT='http://localhost:9000' \
+  OO_OBJECT_STORAGE_BUCKET='green-algeria' \
+  OO_OBJECT_STORAGE_ACCESS_KEY='greenalgeria-access' \
+  OO_OBJECT_STORAGE_SECRET_KEY='greenalgeria-secret-change-me' \
+  node scripts/create-bucket.mjs
+  cd "$ROOT"
+
+  docker compose --profile springboot up -d --wait
+  wait_http "http://localhost:8081/readyz" "Spring Boot (readiness)" 60
 
   BASE_URL="http://localhost:8081"
   API_PREFIX="/api"

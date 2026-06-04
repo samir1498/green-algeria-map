@@ -59,11 +59,11 @@ for scenario in auth zones mix; do
   if command -v python3 &>/dev/null; then
     nest_avg=$(python3 -c "import json; d=json.load(open('$njson')); print(d['metrics']['http_req_duration']['avg'])")
     nest_p95=$(python3 -c "import json; d=json.load(open('$njson')); print(d['metrics']['http_req_duration']['p(95)'])")
-    nest_fail=$(python3 -c "import json; d=json.load(open('$njson')); print(d['metrics']['http_req_failed']['rate'])")
+    nest_fail=$(python3 -c "import json; d=json.load(open('$njson')); print(d['metrics']['http_req_failed']['value'])")
     nest_iter=$(python3 -c "import json; d=json.load(open('$njson')); print(d['metrics']['iterations']['count'])")
     spring_avg=$(python3 -c "import json; d=json.load(open('$sjson')); print(d['metrics']['http_req_duration']['avg'])")
     spring_p95=$(python3 -c "import json; d=json.load(open('$sjson')); print(d['metrics']['http_req_duration']['p(95)'])")
-    spring_fail=$(python3 -c "import json; d=json.load(open('$sjson')); print(d['metrics']['http_req_failed']['rate'])")
+    spring_fail=$(python3 -c "import json; d=json.load(open('$sjson')); print(d['metrics']['http_req_failed']['value'])")
     spring_iter=$(python3 -c "import json; d=json.load(open('$sjson')); print(d['metrics']['iterations']['count'])")
   else
     echo "  ERROR: python3 required for parsing"
