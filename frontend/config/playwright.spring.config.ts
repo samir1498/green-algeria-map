@@ -43,10 +43,11 @@ export default defineConfig({
 
   webServer: [
     {
-      command: '../../backend-springboot/scripts/e2e-start.sh',
-      url: 'http://localhost:8081/readyz',
+      command: 'scripts/e2e-start.sh',
+      url: 'http://localhost:8081/actuator/health/liveness',
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
+      cwd: '../../backend-springboot',
     },
     {
       command: 'pnpm preview --port 4173',

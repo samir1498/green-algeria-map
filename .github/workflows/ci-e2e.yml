@@ -1,19 +1,7 @@
 name: CI E2E
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'frontend/**'
-      - 'backend-nestjs/**'
-      - 'backend-springboot/**'
-      - '.github/workflows/ci-e2e.yml'
-  pull_request:
-    paths:
-      - 'frontend/**'
-      - 'backend-nestjs/**'
-      - 'backend-springboot/**'
-      - '.github/workflows/ci-e2e.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -153,6 +141,14 @@ jobs:
       - name: Build backend (Spring Boot)
         run: ./mvnw -DskipTests clean package -q
         working-directory: backend-springboot
+      - name: Create RustFS bucket
+        run: node scripts/create-bucket.mjs
+        working-directory: backend-nestjs
+        env:
+          OO_OBJECT_STORAGE_ENDPOINT: 'http://localhost:9000'
+          OO_OBJECT_STORAGE_BUCKET: 'e2e-test'
+          OO_OBJECT_STORAGE_ACCESS_KEY: 'greenalgeria-access'
+          OO_OBJECT_STORAGE_SECRET_KEY: 'greenalgeria-secret-change-me'
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
       - name: Build frontend (Spring Boot backend)
@@ -166,6 +162,7 @@ jobs:
         run: pnpm test:e2e:spring
         env:
           CI: 'true'
+          E2E_AUTH_BASE: 'http://localhost:8081/api/auth'
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

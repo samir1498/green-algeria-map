@@ -27,21 +27,18 @@ async function main() {
 
   console.log('Starting Spring Boot backend...')
   const fs = require('fs')
-  const jars = fs.readdirSync(cwd).filter(f => f.endsWith('.jar')).map(f => path.join(cwd, f))
   const jarDir = path.join(cwd, 'target')
-  const jarFiles = fs.existsSync(jarDir) ? fs.readdirSync(jarDir).filter(f => f.endsWith('.jar') && !f.endsWith('-sources.jar')) : []
-  const jarPath = jarFiles.length > 0 ? path.join(jarDir, jarFiles[0]) : null
-  if (!jarPath || !fs.existsSync(jarPath)) {
-    console.error('No JAR found. Build the project first with: make build')
+  const jarFiles = fs.readdirSync(jarDir).filter(f => f.endsWith('.jar') && !f.includes('sources') && !f.includes('javadoc'))
+  if (jarFiles.length === 0) {
+    console.error('No JAR found in target/. Build the project first with: make build')
     process.exit(1)
   }
+  const jarPath = path.join(jarDir, jarFiles[0])
   const server = spawn('java', ['-jar', jarPath, '--server.port=8081', '--app.cors.allowed-origins=http://localhost:3000,http://localhost:4173'], {
     cwd,
     stdio: 'inherit',
     shell: true,
-    env: {
-      ...process.env,
-    },
+    env: { ...process.env },
   })
   server.on('exit', code => process.exit(code ?? 0))
 }

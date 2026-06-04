@@ -61,8 +61,7 @@ public class AuthController {
 
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        var principal = (org.springframework.security.core.userdetails.User) auth.getPrincipal();
-        UserResponse user = authService.getSession(principal.getUsername());
+        UserResponse user = authService.getSession(auth.getName());
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "User not found"));
         }
