@@ -198,6 +198,8 @@
 						<groupId>org.graalvm.buildtools</groupId>
 						<artifactId>native-maven-plugin</artifactId>
 						<configuration>
+							<imageName>backend-springboot-native</imageName>
+							<mainClass>com.greenalgeria.BackendSpringbootApplication</mainClass>
 							<buildArgs>
 								<buildArg>-J-Xmx8g</buildArg>
 							</buildArgs>
