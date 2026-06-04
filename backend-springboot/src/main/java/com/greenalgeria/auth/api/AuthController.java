@@ -50,7 +50,9 @@ public class AuthController {
 
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(
-                user.id(), null, List.of(new SimpleGrantedAuthority("ROLE_" + user.role().toUpperCase()))));
+                user.id(),
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.role().toUpperCase()))));
         SecurityContextHolder.setContext(context);
         securityContextRepository.saveContext(context, httpRequest, httpResponse);
 
