@@ -1,5 +1,6 @@
 package com.greenalgeria.storage.application;
 
+import com.greenalgeria.shared.cqrs.CommandHandler;
 import com.greenalgeria.storage.domain.StorageService;
 import com.greenalgeria.zone.application.command.AddPhotoToZoneCommand;
 import com.greenalgeria.zone.application.command.AddPhotoToZoneHandler;
@@ -8,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Transactional
-public class UploadZonePhotoHandler {
+public class UploadZonePhotoHandler implements CommandHandler<UploadZonePhotoCommand, String> {
 
     private final StorageService storageService;
     private final AddPhotoToZoneHandler addPhotoToZoneHandler;
@@ -22,5 +23,10 @@ public class UploadZonePhotoHandler {
         var result = storageService.uploadFile(command.file(), command.filename(), command.mimetype());
         addPhotoToZoneHandler.handle(new AddPhotoToZoneCommand(command.zoneId(), result.url()));
         return result.url();
+    }
+
+    @Override
+    public Class<UploadZonePhotoCommand> supportedCommand() {
+        return UploadZonePhotoCommand.class;
     }
 }
