@@ -3,12 +3,13 @@ package com.greenalgeria.damagereport.application.command;
 import com.greenalgeria.damagereport.application.*;
 import com.greenalgeria.damagereport.domain.DamageReport;
 import com.greenalgeria.damagereport.domain.DamageReportRepository;
+import com.greenalgeria.shared.cqrs.CommandHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Transactional
-public class CreateDamageReportHandler {
+public class CreateDamageReportHandler implements CommandHandler<CreateDamageReportCommand, DamageReportResponse> {
 
     private final DamageReportRepository damageReportRepository;
 
@@ -28,5 +29,10 @@ public class CreateDamageReportHandler {
                 request.reportedBy());
         var saved = damageReportRepository.save(report);
         return DamageReportResponse.from(saved);
+    }
+
+    @Override
+    public Class<CreateDamageReportCommand> supportedCommand() {
+        return CreateDamageReportCommand.class;
     }
 }

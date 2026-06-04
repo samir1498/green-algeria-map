@@ -1,5 +1,6 @@
 package com.greenalgeria.zone.application.command;
 
+import com.greenalgeria.shared.cqrs.CommandHandler;
 import com.greenalgeria.zone.application.*;
 import com.greenalgeria.zone.domain.Coordinates;
 import com.greenalgeria.zone.domain.Zone;
@@ -9,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Transactional
-public class CreateZoneHandler {
+public class CreateZoneHandler implements CommandHandler<CreateZoneCommand, ZoneResponse> {
 
     private final ZoneRepository zoneRepository;
 
@@ -27,5 +28,10 @@ public class CreateZoneHandler {
         if (request.treeSpecies() != null) zone.setTreeSpecies(request.treeSpecies());
         var saved = zoneRepository.save(zone);
         return ZoneResponse.from(saved);
+    }
+
+    @Override
+    public Class<CreateZoneCommand> supportedCommand() {
+        return CreateZoneCommand.class;
     }
 }
