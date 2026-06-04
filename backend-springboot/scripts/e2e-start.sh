@@ -26,15 +26,21 @@ async function main() {
   await waitForPort(5432, 'localhost')
 
   console.log('Starting Spring Boot backend...')
-  const server = spawn('make', ['dev', '-s'], {
+  const fs = require('fs')
+  const jars = fs.readdirSync(cwd).filter(f => f.endsWith('.jar')).map(f => path.join(cwd, f))
+  const jarDir = path.join(cwd, 'target')
+  const jarFiles = fs.existsSync(jarDir) ? fs.readdirSync(jarDir).filter(f => f.endsWith('.jar') && !f.endsWith('-sources.jar')) : []
+  const jarPath = jarFiles.length > 0 ? path.join(jarDir, jarFiles[0]) : null
+  if (!jarPath || !fs.existsSync(jarPath)) {
+    console.error('No JAR found. Build the project first with: make build')
+    process.exit(1)
+  }
+  const server = spawn('java', ['-jar', jarPath, '--server.port=8081', '--app.cors.allowed-origins=http://localhost:3000,http://localhost:4173'], {
     cwd,
     stdio: 'inherit',
     shell: true,
     env: {
       ...process.env,
-      SERVER_PORT: '8081',
-      APP_CORS_ALLOWED_ORIGINS: process.env.APP_CORS_ALLOWED_ORIGINS ?? 'http://localhost:3000,http://localhost:4173',
-      SPRING_PROFILES_ACTIVE: process.env.SPRING_PROFILES_ACTIVE ?? 'e2e',
     },
   })
   server.on('exit', code => process.exit(code ?? 0))

@@ -150,6 +150,9 @@ jobs:
           java-version: 24
           cache: maven
           cache-dependency-path: backend-springboot/pom.xml
+      - name: Build backend (Spring Boot)
+        run: ./mvnw -DskipTests clean package -q
+        working-directory: backend-springboot
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
       - name: Build frontend (Spring Boot backend)
