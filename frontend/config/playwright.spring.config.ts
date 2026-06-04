@@ -45,7 +45,7 @@ export default defineConfig({
   webServer: [
     {
       command: 'scripts/e2e-start.sh',
-      url: 'http://localhost:8081/actuator/health/liveness',
+      url: 'http://localhost:8081/healthz',
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
       cwd: '../../backend-springboot',
