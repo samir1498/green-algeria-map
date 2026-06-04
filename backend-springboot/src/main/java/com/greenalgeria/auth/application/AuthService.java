@@ -4,7 +4,11 @@ import com.greenalgeria.auth.domain.Account;
 import com.greenalgeria.auth.domain.AccountRepository;
 import com.greenalgeria.auth.domain.User;
 import com.greenalgeria.auth.domain.UserRepository;
+import java.util.List;
 import java.util.UUID;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +39,12 @@ public class AuthService {
 
         Account account = new Account(UUID.randomUUID().toString(), userId, email, passwordEncoder.encode(password));
         accountRepository.save(account);
+
+        var authentication = UsernamePasswordAuthenticationToken.authenticated(
+                user.getId(),
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().toUpperCase())));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         return UserResponse.from(user);
     }

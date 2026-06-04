@@ -1,7 +1,7 @@
 import crypto from 'node:crypto'
 import { test as setup, expect } from '@playwright/test'
 
-const AUTH_BASE = 'http://localhost:8080/api/auth'
+const AUTH_BASE = process.env.E2E_AUTH_BASE ?? 'http://localhost:8080/api/auth'
 const authFile = 'playwright/.auth/user.json'
 
 setup('authenticate', async ({ page }) => {
@@ -10,7 +10,7 @@ setup('authenticate', async ({ page }) => {
   const res = await page.request.post(`${AUTH_BASE}/sign-up/email`, {
     data: { name: 'E2E Setup User', email, password: 'TestPassword123!' },
   })
-  expect(res.status()).toBe(200)
+  expect(res.ok()).toBe(true)
 
   await page.goto('/')
   await expect(page.getByTestId('map-container')).toBeVisible({ timeout: 30000 })
