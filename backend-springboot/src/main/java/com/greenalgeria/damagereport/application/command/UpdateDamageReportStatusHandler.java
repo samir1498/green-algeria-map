@@ -2,13 +2,15 @@ package com.greenalgeria.damagereport.application.command;
 
 import com.greenalgeria.damagereport.application.*;
 import com.greenalgeria.damagereport.domain.DamageReportRepository;
+import com.greenalgeria.shared.cqrs.CommandHandler;
 import com.greenalgeria.shared.exception.NotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Transactional
-public class UpdateDamageReportStatusHandler {
+public class UpdateDamageReportStatusHandler
+        implements CommandHandler<UpdateDamageReportStatusCommand, DamageReportResponse> {
 
     private final DamageReportRepository damageReportRepository;
 
@@ -26,5 +28,10 @@ public class UpdateDamageReportStatusHandler {
             default -> {}
         }
         return DamageReportResponse.from(damageReportRepository.save(report));
+    }
+
+    @Override
+    public Class<UpdateDamageReportStatusCommand> supportedCommand() {
+        return UpdateDamageReportStatusCommand.class;
     }
 }

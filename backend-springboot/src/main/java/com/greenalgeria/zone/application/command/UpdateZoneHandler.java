@@ -1,5 +1,6 @@
 package com.greenalgeria.zone.application.command;
 
+import com.greenalgeria.shared.cqrs.CommandHandler;
 import com.greenalgeria.shared.exception.NotFoundException;
 import com.greenalgeria.zone.application.*;
 import com.greenalgeria.zone.domain.Coordinates;
@@ -9,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @Transactional
-public class UpdateZoneHandler {
+public class UpdateZoneHandler implements CommandHandler<UpdateZoneCommand, ZoneResponse> {
 
     private final ZoneRepository zoneRepository;
 
@@ -38,5 +39,10 @@ public class UpdateZoneHandler {
         if (request.organizerContact() != null) zone.setOrganizerContact(request.organizerContact());
         if (request.treeSpecies() != null) zone.setTreeSpecies(request.treeSpecies());
         return ZoneResponse.from(zoneRepository.save(zone));
+    }
+
+    @Override
+    public Class<UpdateZoneCommand> supportedCommand() {
+        return UpdateZoneCommand.class;
     }
 }
