@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.gitignore
+*.md
+e2e
+config/playwright.*
+playwright-report
+test-results
