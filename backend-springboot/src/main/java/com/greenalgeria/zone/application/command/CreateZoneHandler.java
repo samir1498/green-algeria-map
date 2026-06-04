@@ -5,6 +5,8 @@ import com.greenalgeria.zone.application.*;
 import com.greenalgeria.zone.domain.Coordinates;
 import com.greenalgeria.zone.domain.Zone;
 import com.greenalgeria.zone.domain.ZoneRepository;
+import com.greenalgeria.zone.domain.event.ZoneCreatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,9 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class CreateZoneHandler implements CommandHandler<CreateZoneCommand, ZoneResponse> {
 
     private final ZoneRepository zoneRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public CreateZoneHandler(ZoneRepository zoneRepository) {
+    public CreateZoneHandler(ZoneRepository zoneRepository, ApplicationEventPublisher eventPublisher) {
         this.zoneRepository = zoneRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     public ZoneResponse handle(CreateZoneCommand command) {
@@ -27,6 +31,7 @@ public class CreateZoneHandler implements CommandHandler<CreateZoneCommand, Zone
         if (request.organizerContact() != null) zone.setOrganizerContact(request.organizerContact());
         if (request.treeSpecies() != null) zone.setTreeSpecies(request.treeSpecies());
         var saved = zoneRepository.save(zone);
+        eventPublisher.publishEvent(new ZoneCreatedEvent(saved.getId()));
         return ZoneResponse.from(saved);
     }
 
