@@ -125,4 +125,23 @@ class DamageReportControllerTest extends IntegrationTest {
         mockMvc.perform(delete("/api/damage-reports/{id}", id).with(user(userId)))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void updateStatus_returns401_whenUnauthenticated() throws Exception {
+        var id = UUID.randomUUID();
+
+        mockMvc.perform(patch("/api/damage-reports/{id}/status", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"status":"verified"}
+                                """))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void delete_returns401_whenUnauthenticated() throws Exception {
+        var id = UUID.randomUUID();
+
+        mockMvc.perform(delete("/api/damage-reports/{id}", id)).andExpect(status().isUnauthorized());
+    }
 }
