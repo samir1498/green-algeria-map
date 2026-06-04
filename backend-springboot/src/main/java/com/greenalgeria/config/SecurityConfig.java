@@ -1,6 +1,5 @@
 package com.greenalgeria.config;
 
-import com.greenalgeria.auth.infrastructure.LoginSuccessHandler;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -9,6 +8,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -25,21 +26,21 @@ import tools.jackson.databind.ObjectMapper;
 public class SecurityConfig {
 
     private final ObjectMapper objectMapper;
-    private final LoginSuccessHandler loginSuccessHandler;
     private final List<String> allowedOrigins;
 
-    public SecurityConfig(
-            ObjectMapper objectMapper,
-            LoginSuccessHandler loginSuccessHandler,
-            @Value("${app.cors.allowed-origins}") String allowedOrigins) {
+    public SecurityConfig(ObjectMapper objectMapper, @Value("${app.cors.allowed-origins}") String allowedOrigins) {
         this.objectMapper = objectMapper;
-        this.loginSuccessHandler = loginSuccessHandler;
         this.allowedOrigins = List.of(allowedOrigins.split(","));
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 
     @Bean
@@ -70,17 +71,6 @@ public class SecurityConfig {
                         .permitAll()
                         .anyRequest()
                         .authenticated())
-                .formLogin(form -> form.loginProcessingUrl("/api/auth/sign-in/email")
-                        .usernameParameter("email")
-                        .passwordParameter("password")
-                        .successHandler(loginSuccessHandler)
-                        .failureHandler((request, response, exception) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            var body = new LinkedHashMap<String, String>();
-                            body.put("error", "Invalid email or password");
-                            objectMapper.writeValue(response.getOutputStream(), body);
-                        }))
                 .logout(logout -> logout.logoutUrl("/api/auth/sign-out")
                         .logoutSuccessHandler((request, response, authentication) -> {
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
