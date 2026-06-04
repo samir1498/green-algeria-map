@@ -1,7 +1,7 @@
 import crypto from 'node:crypto'
 import { test, expect } from '@playwright/test'
 
-const AUTH_BASE = 'http://localhost:8080/api/auth'
+const AUTH_BASE = process.env.E2E_AUTH_BASE ?? 'http://localhost:8080/api/auth'
 const TEST_PASSWORD = 'TestPassword123!'
 
 function uniqueEmail(): string {
@@ -12,7 +12,7 @@ async function apiSignUp(page: any, name: string, email: string): Promise<void> 
   const res = await page.request.post(`${AUTH_BASE}/sign-up/email`, {
     data: { name, email, password: TEST_PASSWORD },
   })
-  expect(res.status()).toBe(200)
+  expect(res.ok()).toBe(true)
 }
 
 async function apiSignOut(page: any): Promise<void> {

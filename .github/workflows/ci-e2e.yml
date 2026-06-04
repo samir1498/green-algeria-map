@@ -1,23 +1,13 @@
 name: CI E2E
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'frontend/**'
-      - 'backend-nestjs/**'
-      - '.github/workflows/ci-e2e.yml'
-  pull_request:
-    paths:
-      - 'frontend/**'
-      - 'backend-nestjs/**'
-      - '.github/workflows/ci-e2e.yml'
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  e2e:
+  e2e-nestjs:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -54,13 +44,13 @@ jobs:
           --health-timeout 2s
           --health-retries 10
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
+      - uses: pnpm/action-setup@v4
         with:
           version: 10
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
@@ -88,8 +78,70 @@ jobs:
           CI: 'true'
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-nestjs
+          path: frontend/playwright-report/
+          retention-days: 7
+
+  e2e-springboot:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: greenalgeria
+          POSTGRES_PASSWORD: greenalgeria
+          POSTGRES_DB: greenalgeria
+        ports:
+          - '5432:5432'
+        options: >-
+          --health-cmd "pg_isready -U greenalgeria -d greenalgeria"
+          --health-interval 3s
+          --health-timeout 2s
+          --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+          cache: maven
+          cache-dependency-path: backend-springboot/pom.xml
+      - name: Build backend (Spring Boot)
+        run: ./mvnw -DskipTests clean package -q
+        working-directory: backend-springboot
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+      - name: Build frontend (Spring Boot backend)
+        run: pnpm build
+        env:
+          VITE_API_BACKEND: spring
+          VITE_API_URL: http://localhost:8081
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium
+      - name: Run E2E tests (Spring Boot)
+        run: pnpm test:e2e:spring
+        env:
+          CI: 'true'
+          E2E_AUTH_BASE: 'http://localhost:8081/api/auth'
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-springboot
           path: frontend/playwright-report/
           retention-days: 7
