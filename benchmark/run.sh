@@ -9,8 +9,10 @@ fi
 
 if [ "$BACKEND" = "nestjs" ]; then
   BASE_URL="http://localhost:8080"
+  API_PREFIX=""
 else
   BASE_URL="http://localhost:8081"
+  API_PREFIX="/api"
 fi
 
 OUTDIR="results/$(date +%Y%m%d-%H%M)-$BACKEND"
@@ -25,6 +27,7 @@ for SCENARIO in auth zones mix; do
     --out json="$OUTDIR/$SCENARIO.json" \
     --summary-export="$OUTDIR/$SCENARIO-summary.json" \
     -e BASE_URL="$BASE_URL" \
+    -e API_PREFIX="$API_PREFIX" \
     "benchmark/$SCENARIO.js"
   echo ""
 done
