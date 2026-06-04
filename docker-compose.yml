@@ -57,10 +57,11 @@ services:
       rustfs:
         condition: service_healthy
     environment:
-      NODE_ENV: production
+      NODE_ENV: docker
       PORT: 8080
       CLIENT_URL: http://localhost:4173
       BETTER_AUTH_URL: http://localhost:8080
+      BETTER_AUTH_SECRET: benchmark-better-auth-secret-for-testing-only
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USERNAME: greenalgeria
