@@ -3,6 +3,7 @@ package com.greenalgeria.shared.cqrs;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class SimpleQueryBus implements QueryBus {
@@ -17,6 +18,7 @@ public class SimpleQueryBus implements QueryBus {
 
     @Override
     @SuppressWarnings("unchecked")
+    @Transactional(readOnly = true)
     public <R> R execute(Query<R> query) {
         var handler = (QueryHandler<Query<R>, R>) registry.get(query.getClass());
         if (handler == null) {

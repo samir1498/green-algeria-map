@@ -31,7 +31,7 @@ public record ZoneResponse(
                 zone.getTargetCount(),
                 zone.getCurrentCount(),
                 zone.getDescription(),
-                zone.getPhotos(),
+                zone.getPhotos() == null ? null : List.copyOf(zone.getPhotos()),
                 zone.getOrganizerContact(),
                 zone.getTreeSpecies(),
                 zone.getVolunteerCount());
