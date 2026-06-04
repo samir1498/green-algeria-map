@@ -5,6 +5,7 @@ import com.greenalgeria.zone.application.*;
 import com.greenalgeria.zone.domain.ZoneRepository;
 import java.util.List;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class GetAllZonesHandler implements QueryHandler<GetAllZonesQuery, List<ZoneResponse>> {
@@ -15,6 +16,7 @@ public class GetAllZonesHandler implements QueryHandler<GetAllZonesQuery, List<Z
         this.zoneRepository = zoneRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<ZoneResponse> handle(GetAllZonesQuery query) {
         return zoneRepository.findAllByOrderByNameAsc().stream()
                 .map(ZoneResponse::from)

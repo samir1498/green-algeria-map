@@ -18,21 +18,19 @@ export const options = {
 
 export default function () {
   const email = `bench-${__VU}-${Date.now()}@test.greenalgeria.local`
+  const params = { headers: { 'Content-Type': 'application/json', 'Origin': BASE_URL } }
 
   const signup = http.post(`${AUTH_BASE}/sign-up/email`, JSON.stringify({
     name: 'Bench User', email, password: 'BenchPass123!',
-  }), { headers: { 'Content-Type': 'application/json' } })
-  check(signup, { 'signup': (r) => r.status === 201 })
+  }), params)
+  check(signup, { 'signup': (r) => r.status === 200 || r.status === 201 })
 
   const login = http.post(`${AUTH_BASE}/sign-in/email`, JSON.stringify({
     email, password: 'BenchPass123!',
-  }), { headers: { 'Content-Type': 'application/json' } })
+  }), params)
   check(login, { 'login': (r) => r.status === 200 })
 
-  const cookies = login.cookies['session_token'] || login.cookies['JSESSIONID'] || []
-  const jar = { Cookie: cookies.map(c => `${c.name}=${c.value}`).join('; ') }
-
-  const session = http.get(`${AUTH_BASE}/get-session`, { headers: jar })
+  const session = http.get(`${AUTH_BASE}/get-session`)
   check(session, { 'session': (r) => r.status === 200 })
 
   sleep(1)

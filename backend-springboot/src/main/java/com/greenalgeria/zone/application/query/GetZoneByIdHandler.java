@@ -5,6 +5,7 @@ import com.greenalgeria.zone.application.*;
 import com.greenalgeria.zone.domain.ZoneRepository;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class GetZoneByIdHandler implements QueryHandler<GetZoneByIdQuery, Optional<ZoneResponse>> {
@@ -15,6 +16,7 @@ public class GetZoneByIdHandler implements QueryHandler<GetZoneByIdQuery, Option
         this.zoneRepository = zoneRepository;
     }
 
+    @Transactional(readOnly = true)
     public Optional<ZoneResponse> handle(GetZoneByIdQuery query) {
         return zoneRepository.findById(query.id()).map(ZoneResponse::from);
     }
