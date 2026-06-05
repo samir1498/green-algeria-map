@@ -2,6 +2,7 @@ package com.greenalgeria.config;
 
 import com.greenalgeria.auth.infrastructure.CurrentUserArgumentResolver;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -14,7 +15,8 @@ public class WebConfigurer implements WebMvcConfigurer {
     private final RateLimitInterceptor rateLimitInterceptor;
 
     public WebConfigurer(
-            CurrentUserArgumentResolver currentUserArgumentResolver, RateLimitInterceptor rateLimitInterceptor) {
+            CurrentUserArgumentResolver currentUserArgumentResolver,
+            @Autowired(required = false) RateLimitInterceptor rateLimitInterceptor) {
         this.currentUserArgumentResolver = currentUserArgumentResolver;
         this.rateLimitInterceptor = rateLimitInterceptor;
     }
@@ -26,6 +28,8 @@ public class WebConfigurer implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(rateLimitInterceptor).addPathPatterns("/api/**");
+        if (rateLimitInterceptor != null) {
+            registry.addInterceptor(rateLimitInterceptor).addPathPatterns("/api/**");
+        }
     }
 }
