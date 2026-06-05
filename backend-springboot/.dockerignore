@@ -1,4 +1,5 @@
 target
+!target/backend-springboot-native
 .env
 .git
 .gitignore

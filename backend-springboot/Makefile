@@ -37,7 +37,7 @@ depgraph:
 	dot -Tpng target/deps/summary.dot -o target/deps/graph.png
 
 native:
-	$(MAVEN) -Pnative native:compile
+	$(MAVEN) -Pnative,native-local -DskipTests native:compile
 
 native-image:
 	$(MAVEN) -Pnative spring-boot:build-image

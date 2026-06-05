@@ -1,0 +1,17 @@
+[
+  {
+    "name": "java.util.UUID",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "java.util.UUID[]",
+    "allDeclaredConstructors": true,
+    "allDeclaredMethods": true
+  },
+  {
+    "name": "org.hibernate.type.descriptor.java.UUIDJavaType",
+    "allDeclaredConstructors": true
+  }
+]

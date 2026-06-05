@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -61,12 +62,15 @@ public class AuthController {
 
     @GetMapping("/get-session")
     @Operation(summary = "Get current user session")
-    public ResponseEntity<?> getSession(Principal principal) {
+    public ResponseEntity<Map<String, Object>> getSession(Principal principal) {
+        var result = new HashMap<String, Object>();
         if (principal == null) {
-            return ResponseEntity.ok(new SessionResponse(null));
+            result.put("user", null);
+            return ResponseEntity.ok(result);
         }
         UserResponse user = authService.getSession(principal.getName());
-        return ResponseEntity.ok(new SessionResponse(user));
+        result.put("user", user);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/sign-in/email")
@@ -97,6 +101,4 @@ public class AuthController {
     }
 
     private record SignUpResponse(UserResponse user) {}
-
-    private record SessionResponse(UserResponse user) {}
 }
