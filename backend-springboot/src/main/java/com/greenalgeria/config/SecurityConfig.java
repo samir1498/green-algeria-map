@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -84,12 +86,23 @@ public class SecurityConfig {
                     var body = new LinkedHashMap<String, String>();
                     body.put("error", "Unauthorized");
                     objectMapper.writeValue(response.getOutputStream(), body);
-                }))
+                }).accessDeniedHandler(accessDeniedHandler()))
                 .securityContext(
                         security -> security.securityContextRepository(new HttpSessionSecurityContextRepository()))
                 .httpBasic(httpBasic -> httpBasic.disable());
 
         return http.build();
+    }
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return (request, response, accessDeniedException) -> {
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            var body = new LinkedHashMap<String, String>();
+            body.put("error", "Forbidden");
+            objectMapper.writeValue(response.getOutputStream(), body);
+        };
     }
 
     @Bean
