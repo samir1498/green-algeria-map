@@ -31,7 +31,7 @@ public class CreateDamageReportHandler implements CommandHandler<CreateDamageRep
                 request.lat(),
                 request.lng(),
                 request.description(),
-                request.reportedBy());
+                command.reportedBy());
         var saved = damageReportRepository.save(report);
         eventPublisher.publishEvent(new DamageReportCreatedEvent(saved.getId()));
         return DamageReportResponse.from(saved);

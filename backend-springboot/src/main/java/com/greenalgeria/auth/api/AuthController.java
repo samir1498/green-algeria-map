@@ -4,12 +4,12 @@ import com.greenalgeria.auth.application.AuthService;
 import com.greenalgeria.auth.application.LoginRequest;
 import com.greenalgeria.auth.application.SignUpRequest;
 import com.greenalgeria.auth.application.UserResponse;
+import com.greenalgeria.auth.domain.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -61,12 +61,8 @@ public class AuthController {
 
     @GetMapping("/get-session")
     @Operation(summary = "Get current user session")
-    public ResponseEntity<?> getSession(Principal principal) {
-        if (principal == null) {
-            return ResponseEntity.ok(new SessionResponse(null));
-        }
-        UserResponse user = authService.getSession(principal.getName());
-        return ResponseEntity.ok(new SessionResponse(user));
+    public ResponseEntity<?> getSession(@CurrentUser User user) {
+        return ResponseEntity.ok(new SessionResponse(user != null ? UserResponse.from(user) : null));
     }
 
     @PostMapping("/sign-in/email")

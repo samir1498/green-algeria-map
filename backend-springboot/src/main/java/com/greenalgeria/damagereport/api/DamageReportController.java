@@ -1,5 +1,7 @@
 package com.greenalgeria.damagereport.api;
 
+import com.greenalgeria.auth.api.CurrentUser;
+import com.greenalgeria.auth.domain.User;
 import com.greenalgeria.damagereport.application.*;
 import com.greenalgeria.damagereport.application.command.*;
 import com.greenalgeria.damagereport.application.query.*;
@@ -44,8 +46,10 @@ public class DamageReportController {
     }
 
     @PostMapping("/damage-reports")
-    public ResponseEntity<DamageReportResponse> create(@Valid @RequestBody CreateDamageReportRequest request) {
-        var response = commandBus.execute(new CreateDamageReportCommand(request));
+    public ResponseEntity<DamageReportResponse> create(
+            @Valid @RequestBody CreateDamageReportRequest request, @CurrentUser User user) {
+        var reportedBy = user != null ? user.getName() : request.reportedBy();
+        var response = commandBus.execute(new CreateDamageReportCommand(request, reportedBy));
         return ResponseEntity.created(URI.create("/api/damage-reports/" + response.id()))
                 .body(response);
     }
