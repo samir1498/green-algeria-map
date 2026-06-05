@@ -13,7 +13,8 @@ public class WebConfigurer implements WebMvcConfigurer {
     private final CurrentUserArgumentResolver currentUserArgumentResolver;
     private final RateLimitInterceptor rateLimitInterceptor;
 
-    public WebConfigurer(CurrentUserArgumentResolver currentUserArgumentResolver, RateLimitInterceptor rateLimitInterceptor) {
+    public WebConfigurer(
+            CurrentUserArgumentResolver currentUserArgumentResolver, RateLimitInterceptor rateLimitInterceptor) {
         this.currentUserArgumentResolver = currentUserArgumentResolver;
         this.rateLimitInterceptor = rateLimitInterceptor;
     }

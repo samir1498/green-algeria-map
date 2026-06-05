@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -81,12 +80,13 @@ public class SecurityConfig {
                             objectMapper.writeValue(response.getOutputStream(), body);
                         }))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
-                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    var body = new LinkedHashMap<String, String>();
-                    body.put("error", "Unauthorized");
-                    objectMapper.writeValue(response.getOutputStream(), body);
-                }).accessDeniedHandler(accessDeniedHandler()))
+                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            var body = new LinkedHashMap<String, String>();
+                            body.put("error", "Unauthorized");
+                            objectMapper.writeValue(response.getOutputStream(), body);
+                        })
+                        .accessDeniedHandler(accessDeniedHandler()))
                 .securityContext(
                         security -> security.securityContextRepository(new HttpSessionSecurityContextRepository()))
                 .httpBasic(httpBasic -> httpBasic.disable());

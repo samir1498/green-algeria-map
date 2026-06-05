@@ -3,13 +3,11 @@ package com.greenalgeria.config;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
-import io.github.bucket4j.Refill;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -37,25 +35,38 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         if (annotation != null) {
             limit = Bandwidth.builder()
                     .capacity(annotation.capacity())
-                    .refillGreedy(annotation.refill(), Duration.ofNanos(annotation.unit().toNanos(annotation.period())))
+                    .refillGreedy(
+                            annotation.refill(),
+                            Duration.ofNanos(annotation.unit().toNanos(annotation.period())))
                     .build();
             key = request.getRemoteAddr();
         } else {
             var path = request.getRequestURI();
             var method = request.getMethod();
             if (path.contains("/api/auth/sign-in") || path.contains("/api/auth/sign-up")) {
-                limit = Bandwidth.builder().capacity(5).refillGreedy(5, Duration.ofMinutes(1)).build();
+                limit = Bandwidth.builder()
+                        .capacity(5)
+                        .refillGreedy(5, Duration.ofMinutes(1))
+                        .build();
             } else if (method.equals("POST") || method.equals("PATCH") || method.equals("DELETE")) {
-                limit = Bandwidth.builder().capacity(30).refillGreedy(30, Duration.ofMinutes(1)).build();
+                limit = Bandwidth.builder()
+                        .capacity(30)
+                        .refillGreedy(30, Duration.ofMinutes(1))
+                        .build();
             } else if (method.equals("GET")) {
-                limit = Bandwidth.builder().capacity(100).refillGreedy(100, Duration.ofMinutes(1)).build();
+                limit = Bandwidth.builder()
+                        .capacity(100)
+                        .refillGreedy(100, Duration.ofMinutes(1))
+                        .build();
             } else {
                 return true;
             }
             key = request.getRemoteAddr();
         }
 
-        var bucket = buckets.computeIfAbsent(key + ":" + request.getRequestURI(), k -> Bucket.builder().addLimit(limit).build());
+        var bucket = buckets.computeIfAbsent(
+                key + ":" + request.getRequestURI(),
+                k -> Bucket.builder().addLimit(limit).build());
         ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
 
         if (probe.isConsumed()) {
