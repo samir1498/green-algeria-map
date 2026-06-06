@@ -12,7 +12,9 @@ Map-based platform for tracking reforestation and cleanup efforts across Algeria
 | **Auth (NestJS)** | BetterAuth + `@thallesp/nestjs-better-auth` |
 | **Auth (Spring Boot)** | Form login, BCrypt, session-based |
 | **Quality** | TypeScript strict, ESLint, Prettier, knip, depcruise, husky |
-| **CI** | GitHub Actions — frontend + backend workflows with path filters |
+| **CI** | GitHub Actions — frontend + backend (NestJS + Spring Boot) with path filters |
+| **CD** | Cloudflare Pages (frontend on `main` push) + GHCR (Spring Boot native Docker image on annotated tag `backend-springboot-v*`) |
+| **E2E** | Playwright tests against NestJS & Spring Boot backends (manual trigger) |
 | **Runtime** | Docker (PostgreSQL), pnpm, Bun |
 
 ## Quick Start
@@ -131,15 +133,17 @@ Run from `backend-springboot/`:
 
 | Command | Description |
 |---------|-------------|
-| `./mvnw spring-boot:run` | Dev server (port 8080, H2 console) |
-| `./mvnw compile -q` | Compile |
-| `./mvnw test -Ptest-it` | Integration tests (Testcontainers + PostgreSQL) |
-| `./mvnw test -Ptest-arch` | Architecture tests (ArchUnit) |
-| `./mvnw test -Ptest-unit` | Domain unit tests |
-| `./mvnw spotless:check -Pquality` | Format check (Palantir) |
-| `./mvnw spotless:apply -Pquality` | Auto-format |
-| `./mvnw -DskipTests clean package` | Build JAR |
-| `./mvnw -Pnative spring-boot:build-image` | Build native Docker image |
+| `make dev` | Dev server (port 8080) |
+| `make build` | Build JAR (skip tests) |
+| `make check` | Test + lint |
+| `make lint` | Format check (Palantir) |
+| `make format` | Auto-format |
+| `make test-unit` | Domain unit tests |
+| `make test-arch` | Architecture tests (ArchUnit) |
+| `make test-it` | Integration tests (Testcontainers + PostgreSQL) |
+| `make native` | Native compile (GraalVM binary) |
+| `make native-image` | Build native Docker image |
+| `make depgraph` | Generate module dependency graph |
 
 API docs at `http://localhost:8080/swagger-ui/index.html` (Swagger UI).
 
@@ -192,7 +196,9 @@ green-algeria-map/
 │       ├── it/               # Integration tests (Testcontainers + Postgres)
 │       └── setup/            # Test module helper
 ├── backend-springboot/       # Spring Boot CQRS API (Testcontainers, Flyway, GraalVM)
-├── .github/workflows/        # CI (frontend + backend with path filters)
+│   └── src/main/java/...     # domain/ + application/ + infrastructure/ + controller/
+├── benchmark/                # k6 scripts + results for performance benchmarks
+├── .github/workflows/        # CI/CD (frontend, NestJS, Spring Boot) + E2E
 ├── .skills/                  # Project-specific AI skills
 ├── .husky/                   # Pre-commit hooks
 ├── CONTEXT.md                # Domain architecture documentation
@@ -200,12 +206,16 @@ green-algeria-map/
 └── .tmux.conf                # Tmux config
 ```
 
-## CI
+## CI / CD
 
 | Workflow | Triggers | Jobs |
 |----------|----------|------|
-| CI (frontend) | Changes in `frontend/` or `ci.yml` | check → lint → knip → depcruise → test → build |
-| CI Backend | Changes in `backend-nestjs/` or `ci-backend.yml` | check → lint → knip → depcruise → test → build |
+| CI Frontend | Changes in `frontend/` or `ci.yml` | check → lint → knip → depcruise → test-unit → test-ui → test-it → coverage → build |
+| CI Backend NestJS | Changes in `backend-nestjs/` or `ci-backend.yml` | check → lint → knip → depcruise → test-unit → test-it → build |
+| CI Backend Spring Boot | Changes in `backend-springboot/` or `ci-backend-springboot.yml` | check → lint → arch → depgraph → test-unit → test-it → build |
+| CD Frontend | Push to `main` (frontend/ or cd.yml) + manual | Build → Deploy to Cloudflare Pages |
+| CD Backend Spring Boot | Annotated tag `backend-springboot-v*` + manual | Test → Build native Docker image → Push to GHCR |
+| E2E | manual (workflow_dispatch) | Playwright tests against NestJS & Spring Boot |
 
 ## Status
 
@@ -233,7 +243,9 @@ green-algeria-map/
 - Repository abstraction: domain interfaces decoupled from JPA
 - Zero-mock test suite: 48 integration tests via Testcontainers + singleton PostgreSQL
 - Architecture enforcement: 7 ArchUnit rules
-- Native Docker image: GraalVM via Paketo Buildpacks, pushed to GHCR on tag
+- Native Docker image: GraalVM via Paketo Buildpacks, pushed to GHCR on tag (`backend-springboot-v*`)
+- Makefile for all dev/build/test commands (no direct `mvnw` usage)
+- GitHub Actions CI: compile, lint, arch tests, depgraph, unit tests, integration tests, build
 
 ## License
 
