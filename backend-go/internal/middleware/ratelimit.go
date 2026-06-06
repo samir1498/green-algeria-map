@@ -3,6 +3,7 @@ package middleware
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -62,6 +63,10 @@ func cleanupVisitors() {
 }
 
 func RateLimit(next http.Handler) http.Handler {
+	if os.Getenv("DISABLE_RATE_LIMIT") == "true" {
+		return next
+	}
+
 	cleanup.Do(func() {
 		go cleanupVisitors()
 	})

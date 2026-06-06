@@ -49,6 +49,10 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
       cwd: '../../backend-go',
+      env: {
+        ...process.env,
+        DISABLE_RATE_LIMIT: 'true',
+      },
     },
     {
       command: 'pnpm preview --port 4173',
