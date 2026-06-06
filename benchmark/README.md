@@ -1,4 +1,4 @@
-# Benchmark: NestJS vs Spring Boot
+# Benchmark: NestJS vs Spring Boot vs Go
 
 ## Prerequisites
 
@@ -6,35 +6,42 @@
 - [k6](https://k6.io/) (`brew install k6` or download from [k6.io](https://k6.io/))
 - Node.js 24+ (for NestJS migration/seed)
 - Java 25+ with `./mvnw` (for Spring Boot)
+- Go 1.25+ (for Go backend - runs in Docker)
 
-## Quick Start (full pipeline)
+## Quick Start (full pipeline - 3 backends)
 
 ```bash
 ./benchmark/pipeline.sh
 ```
 
-This runs both backends sequentially:
-1. Clean DB → `docker compose --profile nestjs up` → k6 (auth, zones, mix) → down
-2. Clean DB → `docker compose --profile springboot up` → k6 (auth, zones, mix) → down
-3. Results saved to `results/YYYYMMDD-HHmm-pipeline/`
+Runs **sequentially** (one backend at a time for fair isolation):
+1. Start shared infra (Postgres + RustFS) → NestJS native → k6 (auth, zones, mix) → stop NestJS
+2. Spring Boot (Docker) → k6 → stop Spring Boot
+3. Go (Docker) → k6 → stop Go
+
+Results saved to `results/YYYYMMDD-HHmm-pipeline-{CPUS}cpu/`
 
 ## Compare results
 
 ```bash
-./benchmark/compare.sh results/YYYYMMDD-HHmm-pipeline
+./benchmark/compare.sh results/YYYYMMDD-HHmm-pipeline-1cpu
 ```
 
 ## Run a single backend
 
 ```bash
-# NestJS
-docker compose --profile nestjs up -d
+# NestJS (native, not Docker)
+docker compose up -d postgres rustfs
 cd backend-nestjs && node scripts/create-bucket.mjs && pnpm migration:run && pnpm seed
 BASE_URL=http://localhost:8080 API_PREFIX="" k6 run benchmark/all.js
 
 # Spring Boot
 docker compose --profile springboot up -d --wait
 BASE_URL=http://localhost:8081 API_PREFIX="/api" k6 run benchmark/all.js
+
+# Go
+docker compose --profile go up -d --wait
+BASE_URL=http://localhost:8082 API_PREFIX="" k6 run benchmark/all.js
 ```
 
 ## Run individual scenarios
@@ -47,31 +54,51 @@ k6 run \
   benchmark/auth.js
 ```
 
-## Results (2026-06-04)
+## Configuration
 
-### Auth (20 concurrent, 2 min ramp)
+```bash
+CPUS=2 MEM=512m ./benchmark/pipeline.sh   # 2 CPU limit
+```
 
-| Backend | avg | p95 | fail | iterations |
-|---|---|---|---|---|
-| NestJS | 221ms | 583ms | 0% | 1,099 |
-| **Spring Boot (JVM)** | **86ms** | **152ms** | **0%** | **1,450** |
+## Pipeline Architecture
 
-### Zones (50 concurrent, 2 min ramp)
+- **Shared infrastructure**: 1x Postgres (port 5432), 1x RustFS (port 9000)
+- **Per-backend databases**: `greenalgeria_nestjs`, `greenalgeria_springboot`, `greenalgeria_go`
+- **NestJS**: Runs natively via `systemd-run` (CPUQuota/MemoryMax)
+- **Spring Boot + Go**: Run in Docker with `--cpus` / `--memory` limits
+- **Rate limiting**: Disabled on all backends (`DISABLE_RATE_LIMIT=true`, `APP_RATE_LIMIT_ENABLED=false`)
 
-| Backend | avg | p95 | fail | iterations |
-|---|---|---|---|---|
-| NestJS | 606ms | 1,687ms | 0% | 1,336 |
-| **Spring Boot (JVM)** | **229ms** | **800ms** | 25%* | **2,375** |
+## Results (2026-06-06, 1 CPU)
 
-### Mixed 80/20 (30 concurrent, 3.5 min)
+### Auth (20 VUs, 2 min)
 
-| Backend | avg | p95 | fail | iterations |
-|---|---|---|---|---|
-| NestJS | 383ms | 1,074ms | 0% | 1,714 |
-| **Spring Boot (JVM)** | **100ms** | **286ms** | 20%* | **3,318** |
+| Backend | avg | p95 | fail | iter | req/s |
+|---|---|---|---|---|---|
+| **Go** | 274ms | 680ms | 0% | 2,215 | 55 |
+| NestJS | 743ms | 1,708ms | 0% | 824 | 19 |
+| Spring Boot | 318ms | 1,005ms | 0% | 1,907 | 48 |
 
-> \* Spring Boot zones/mix failures were due to a Hibernate lazy init bug (`@ElementCollection` + `open-in-view=false`) fixed after the run — re-run expected to show 0%.
+### Zones (50 VUs, 2 min)
 
-## Verdict
+| Backend | avg | p95 | fail | iter | req/s |
+|---|---|---|---|---|---|
+| **Go** | 480ms | 1,502ms | 50% | 2,368 | 73 |
+| NestJS | 1,657ms | 3,572ms | 0% | 701 | 23 |
+| Spring Boot | 748ms | 2,080ms | 0% | 1,543 | 51 |
 
-Spring Boot JVM is **2-3x faster** on auth and **~3x faster** on read-heavy workloads. For mixed 80/20 read-write, it handles **1.5-2x more throughput** with lower latency. Spring Boot is the clear choice for production.
+### Mixed (30 VUs, 3.5 min)
+
+| Backend | avg | p95 | fail | iter | req/s |
+|---|---|---|---|---|---|
+| **Go** | 109ms | 441ms | 59.7% | 522 | 80 |
+| NestJS | 268ms | 844ms | 0% | 205 | 32 |
+| Spring Boot | 174ms | 557ms | 0% | 290 | 46 |
+
+> ⚠️ Go failures in zones/mix under load: investigation ongoing (likely connection pool contention with shared Postgres). Standalone Go tests pass 0% failures.
+
+## Verdict (1 CPU)
+
+- **Auth**: Go wins (2-3x NestJS, ~1.5x Spring Boot)
+- **Zones**: Spring Boot wins (stable, Go has 50% failures under load)
+- **Mixed**: Spring Boot wins (balanced latency + 0% failures)
+- **Resource usage**: Go 14MiB / 385% CPU, NestJS 435MiB / 208% CPU, Spring Boot 476MiB / 359% CPU
