@@ -34,6 +34,29 @@ func NewAuthService(repo AuthRepository) *AuthService {
 	return &AuthService{repo: repo}
 }
 
+func (s *AuthService) SignUpWithSession(ctx context.Context, req model.SignUpRequest) (*model.AuthResponse, *repository.Session, error) {
+	exists, err := s.repo.UserExistsByEmail(ctx, req.Email)
+	if err != nil {
+		return nil, nil, err
+	}
+	if exists {
+		return nil, nil, ErrEmailTaken
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), 10)
+	if err != nil {
+		return nil, nil, err
+	}
+	user, err := s.repo.CreateUser(ctx, req.Name, req.Email, string(hash))
+	if err != nil {
+		return nil, nil, err
+	}
+	sess, err := s.repo.CreateSession(ctx, user.ID)
+	if err != nil {
+		return nil, nil, err
+	}
+	return &model.AuthResponse{User: toUserResponse(user)}, sess, nil
+}
+
 func (s *AuthService) SignUp(ctx context.Context, req model.SignUpRequest) (*model.AuthResponse, error) {
 	exists, err := s.repo.UserExistsByEmail(ctx, req.Email)
 	if err != nil {
