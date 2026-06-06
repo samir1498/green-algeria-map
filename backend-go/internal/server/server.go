@@ -27,6 +27,7 @@ func New(cfg Config) *Server {
 	r.Use(chimw.RealIP)
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.NoCache)
+	r.Use(middleware.RateLimit)
 
 	store := repository.NewInMemoryStore()
 
