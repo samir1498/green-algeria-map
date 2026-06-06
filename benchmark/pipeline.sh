@@ -24,15 +24,25 @@ OUTDIR="results/${TIMESTAMP}-pipeline-${CPUS}cpu"
 # ── Helpers ────────────────────────────────────────────────
 cleanup() {
   echo "=== Cleanup ==="
-  # Stop any running backend containers
-  for profile in nestjs springboot go; do
-    docker compose --profile "$profile" down -v 2>/dev/null || true
-  done
   # Kill stats collection
   STATS_PID="${STATS_PID:-}"
   if [ -n "$STATS_PID" ]; then
     kill "$STATS_PID" 2>/dev/null || true
+    STATS_PID=""
   fi
+  # Stop all compose profiles (backends + shared infra)
+  docker compose down --remove-orphans -v 2>/dev/null || true
+  for profile in nestjs springboot go; do
+    docker compose --profile "$profile" down --remove-orphans -v 2>/dev/null || true
+  done
+  # Force-remove any leftover green-algeria containers by name
+  for container in green-algeria-db green-algeria-rustfs green-algeria-nestjs green-algeria-springboot green-algeria-go; do
+    docker rm -f "$container" 2>/dev/null || true
+  done
+  # Remove orphan DB containers from old compose layouts (3 separate PG containers)
+  for container in green-algeria-db-nestjs green-algeria-db-springboot green-algeria-db-go; do
+    docker rm -f "$container" 2>/dev/null || true
+  done
   echo "=== Cleanup complete ==="
 }
 trap cleanup EXIT
@@ -98,6 +108,18 @@ run_k6() {
   done
 }
 
+ensure_nestjs_built() {
+  if [ ! -f "$ROOT/backend-nestjs/dist/main.js" ]; then
+    echo "  -> [NestJS] dist/ not found, building..."
+    cd "$ROOT/backend-nestjs"
+    pnpm build 2>&1 || {
+      echo "ERROR: NestJS build failed. Run 'cd backend-nestjs && pnpm build' manually"
+      return 1
+    }
+    cd "$ROOT"
+  fi
+}
+
 run_backend() {
   local name="$1" port="$2" prefix="$3" health="$4" profile="$5" db_name="$6"
 
@@ -106,8 +128,9 @@ run_backend() {
   echo "  Benchmarking: $name (profile: $profile, DB: $db_name)"
   echo "══════════════════════════════════════════════════════════"
 
-  # Run pre-start migrations for NestJS (native setup needed)
+  # Pre-start tasks
   if [ "$name" = "nestjs" ]; then
+    ensure_nestjs_built
     echo "  -> [NestJS] Running migrations + seed..."
     cd "$ROOT/backend-nestjs"
     local db_env="DB_HOST=localhost DB_PORT=5432 DB_USERNAME=greenalgeria DB_PASSWORD=greenalgeria DB_NAME=greenalgeria_nestjs DATABASE_URL=postgresql://greenalgeria:greenalgeria@localhost:5432/greenalgeria_nestjs"
@@ -135,11 +158,21 @@ run_backend() {
 }
 
 stop_backend() {
-  local name="$1" profile="$2"
-  echo "  Stopping $name..."
+  local name="$1" profile="$2" port="$3"
+  echo "  Stopping $name (port $port)..."
   docker compose --profile "$profile" down -v 2>/dev/null || true
-  # Wait for port to be free
-  sleep 2
+  docker rm -f "green-algeria-$name" 2>/dev/null || true
+  # Verify port is free before next backend starts
+  if command -v ss &>/dev/null; then
+    for i in $(seq 1 10); do
+      if ! ss -tln "sport = :$port" 2>/dev/null | grep -q .; then
+        break
+      fi
+      sleep 1
+    done
+  else
+    sleep 3
+  fi
 }
 
 # ── Main ───────────────────────────────────────────────────
@@ -162,6 +195,23 @@ for container in green-algeria-db green-algeria-rustfs; do
   docker update --cpus "$CPUS" --memory "$MEM" "$container" 2>/dev/null || true
 done
 
+# Verify shared infra is healthy
+echo "  Verifying Postgres..."
+for i in {1..30}; do
+  if docker exec green-algeria-db pg_isready -U greenalgeria >/dev/null 2>&1; then
+    break
+  fi
+  sleep 2
+done
+
+echo "  Verifying RustFS..."
+for i in {1..30}; do
+  if curl -sf http://localhost:9000/ >/dev/null 2>&1; then
+    break
+  fi
+  sleep 2
+done
+
 # 2. Run migrations for Spring Boot and Go
 echo "Running migrations..."
 
@@ -170,14 +220,12 @@ echo "  -> [Spring Boot] Migrations run on startup"
 
 # Go: run migrations against go database
 echo "  -> [Go] Running migrations..."
-for i in {1..30}; do
-  if docker exec green-algeria-db pg_isready -U greenalgeria >/dev/null 2>&1; then
-    break
-  fi
-  sleep 2
-done
 docker exec -i green-algeria-db psql -U greenalgeria -d greenalgeria_go -c "$(cat "$ROOT/backend-go/migrations/001_init.sql" | sed -n '/goose Up/,/goose Down/p' | sed '1d;$d')" 2>&1 | grep -E "(CREATE TABLE|already exists|ERROR)" || true
 echo "  -> [Go] Migrations complete"
+
+# Create the NestJS database (TypeORM creates tables, but DB must exist)
+echo "  -> [NestJS] Ensuring database exists..."
+docker exec -i green-algeria-db psql -U greenalgeria -c "CREATE DATABASE greenalgeria_nestjs" 2>/dev/null || true
 
 echo ""
 echo "── Running benchmarks sequentially (one backend at a time) ──"
@@ -255,7 +303,7 @@ for scenario in scenarios:
   cd "$ROOT"
 
   # Stop this backend
-  stop_backend "$name" "$profile"
+  stop_backend "$name" "$profile" "$port"
 done
 
 cleanup
