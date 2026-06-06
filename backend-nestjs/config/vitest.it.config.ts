@@ -4,6 +4,9 @@ import baseConfig, { COVERAGE_EXCLUDES } from './vitest.base';
 export default mergeConfig(baseConfig, {
   test: {
     include: ['test/**/*.it.spec.ts'],
+    env: {
+      DISABLE_RATE_LIMIT: 'true',
+    },
     environment: 'node',
     testTimeout: 120_000,
     hookTimeout: 120_000,

@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ZonesModule } from './modules/zones/zones.module';
 import { DamageReportsModule } from './modules/damage-reports/damage-reports.module';
@@ -11,6 +13,40 @@ import { PublicModule } from './modules/public/public.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ...(process.env.DISABLE_RATE_LIMIT === 'true'
+      ? []
+      : [
+          ThrottlerModule.forRoot([
+            {
+              name: 'read',
+              ttl: 60000,
+              limit: 100,
+              skipIf: (context) => {
+                const req = context
+                  .switchToHttp()
+                  .getRequest<{ url?: string; method: string }>();
+                return (
+                  req.method !== 'GET' ||
+                  (req.url?.startsWith('/api/auth') ?? false)
+                );
+              },
+            },
+            {
+              name: 'write',
+              ttl: 60000,
+              limit: 30,
+              skipIf: (context) => {
+                const req = context
+                  .switchToHttp()
+                  .getRequest<{ url?: string; method: string }>();
+                return (
+                  req.method === 'GET' ||
+                  (req.url?.startsWith('/api/auth') ?? false)
+                );
+              },
+            },
+          ]),
+        ]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -35,6 +71,16 @@ import { PublicModule } from './modules/public/public.module';
     StorageModule,
     HealthModule,
     PublicModule,
+  ],
+  providers: [
+    ...(process.env.DISABLE_RATE_LIMIT === 'true'
+      ? []
+      : [
+          {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
+          },
+        ]),
   ],
 })
 export class AppModule {}
