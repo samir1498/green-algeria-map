@@ -133,6 +133,17 @@ func (s *InMemoryStore) DeleteSession(_ context.Context, sessionID string) error
 	return nil
 }
 
+func (s *InMemoryStore) DeleteUser(_ context.Context, id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	u, ok := s.users[id]
+	if ok {
+		delete(s.emails, u.Email)
+		delete(s.users, id)
+	}
+	return nil
+}
+
 func (s *InMemoryStore) CreateItem(_ context.Context, name, description string) (*ItemEntity, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

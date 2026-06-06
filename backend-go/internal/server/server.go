@@ -24,6 +24,7 @@ type Config struct {
 func New(cfg Config) *Server {
 	r := chi.NewRouter()
 
+	r.Use(middleware.CORS)
 	r.Use(chimw.RealIP)
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.NoCache)

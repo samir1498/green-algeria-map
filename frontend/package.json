@@ -16,6 +16,7 @@
     "test:it": "vitest run --config config/vitest.it.config.ts",
     "test:e2e": "playwright test --config config/playwright.config.ts",
     "test:e2e:spring": "playwright test --config config/playwright.spring.config.ts",
+    "test:e2e:go": "DISABLE_RATE_LIMIT=true E2E_AUTH_BASE=http://localhost:8082/api/auth playwright test --config config/playwright.go.config.ts",
     "test:e2e:prod": "playwright test --config config/playwright.prod.config.ts",
     "test:coverage": "vitest run --config config/vitest.unit.config.ts --coverage && vitest run --config config/vitest.ui.config.ts --coverage && vitest run --config config/vitest.it.config.ts --coverage",
     "test:coverage:unit": "vitest run --config config/vitest.unit.config.ts --coverage",
