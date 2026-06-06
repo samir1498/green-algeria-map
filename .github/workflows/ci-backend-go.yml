@@ -1,0 +1,67 @@
+name: CI Backend Go
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend-go/**', '.github/workflows/ci-backend-go.yml']
+  pull_request:
+    paths: ['backend-go/**', '.github/workflows/ci-backend-go.yml']
+
+jobs:
+  check:
+    runs-on: ubuntu-slim
+    defaults:
+      run:
+        working-directory: backend-go
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache-dependency-path: backend-go/go.sum
+      - run: go mod tidy
+      - run: go vet ./...
+
+  test-unit:
+    runs-on: ubuntu-slim
+    defaults:
+      run:
+        working-directory: backend-go
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache-dependency-path: backend-go/go.sum
+      - run: go test -short -count=1 ./internal/...
+
+  test-it:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-go
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache-dependency-path: backend-go/go.sum
+      - run: go test -v -count=1 -timeout 180s -run Integration ./internal/repository/...
+
+  build:
+    runs-on: ubuntu-slim
+    needs: [check, test-unit, test-it]
+    defaults:
+      run:
+        working-directory: backend-go
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache-dependency-path: backend-go/go.sum
+      - run: go build -ldflags="-s -w" -o backend-go ./cmd/api
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backend-go
+          path: backend-go/backend-go
