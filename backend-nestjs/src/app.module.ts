@@ -21,17 +21,29 @@ import { PublicModule } from './modules/public/public.module';
               name: 'read',
               ttl: 60000,
               limit: 100,
-              skipIf: (context) =>
-                context.switchToHttp().getRequest<{ url?: string }>().url
-                  ?.startsWith('/api/auth') ?? false,
+              skipIf: (context) => {
+                const req = context
+                  .switchToHttp()
+                  .getRequest<{ url?: string; method: string }>();
+                return (
+                  req.method !== 'GET' ||
+                  (req.url?.startsWith('/api/auth') ?? false)
+                );
+              },
             },
             {
               name: 'write',
               ttl: 60000,
               limit: 30,
-              skipIf: (context) =>
-                context.switchToHttp().getRequest<{ url?: string }>().url
-                  ?.startsWith('/api/auth') ?? false,
+              skipIf: (context) => {
+                const req = context
+                  .switchToHttp()
+                  .getRequest<{ url?: string; method: string }>();
+                return (
+                  req.method === 'GET' ||
+                  (req.url?.startsWith('/api/auth') ?? false)
+                );
+              },
             },
           ]),
         ]),

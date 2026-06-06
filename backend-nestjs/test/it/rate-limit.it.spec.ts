@@ -1,10 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, Controller, Get, UseGuards } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import {
-  ThrottlerModule,
-  ThrottlerGuard,
-} from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import supertest from 'supertest';
 
 @Controller('test')
@@ -35,8 +32,10 @@ describe('Rate Limiting', () => {
             ttl: 60_000,
             limit: 5,
             skipIf: (context) =>
-              context.switchToHttp().getRequest<{ url?: string }>().url
-                ?.startsWith('/test/auth-test') ?? false,
+              context
+                .switchToHttp()
+                .getRequest<{ url?: string }>()
+                .url?.startsWith('/test/auth-test') ?? false,
           },
         ]),
       ],
@@ -57,25 +56,16 @@ describe('Rate Limiting', () => {
     await app.close();
   });
 
-  it('should allow requests within limit', async () => {
+  it('should block requests beyond the limit (5 req/min)', async () => {
     for (let i = 0; i < 5; i++) {
-      await supertest(app.getHttpServer())
-        .get('/test/ping')
-        .expect(200);
+      await supertest(app.getHttpServer()).get('/test/ping').expect(200);
     }
-  });
-
-  it('should return 429 when limit exceeded', async () => {
-    await supertest(app.getHttpServer())
-      .get('/test/ping')
-      .expect(429);
+    await supertest(app.getHttpServer()).get('/test/ping').expect(429);
   });
 
   it('should skip throttling for skipped paths', async () => {
     for (let i = 0; i < 20; i++) {
-      await supertest(app.getHttpServer())
-        .get('/test/auth-test')
-        .expect(200);
+      await supertest(app.getHttpServer()).get('/test/auth-test').expect(200);
     }
   });
 });
