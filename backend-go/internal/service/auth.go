@@ -17,6 +17,7 @@ type AuthRepository interface {
 	CreateSession(ctx context.Context, userID string) (*repository.Session, error)
 	GetSession(ctx context.Context, sessionID string) (*repository.Session, error)
 	DeleteSession(ctx context.Context, sessionID string) error
+	DeleteUser(ctx context.Context, userID string) error
 }
 
 var (
@@ -52,6 +53,7 @@ func (s *AuthService) SignUpWithSession(ctx context.Context, req model.SignUpReq
 	}
 	sess, err := s.repo.CreateSession(ctx, user.ID)
 	if err != nil {
+		_ = s.repo.DeleteUser(ctx, user.ID)
 		return nil, nil, err
 	}
 	return &model.AuthResponse{User: toUserResponse(user)}, sess, nil

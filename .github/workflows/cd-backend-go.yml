@@ -18,10 +18,18 @@ jobs:
     runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@v5
         with:
           go-version: '1.26'
           cache-dependency-path: backend-go/go.sum
+      - name: Validate tag
+        run: |
+          if ! echo "${{ github.ref_name }}" | grep -qE '^backend-go-v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Invalid tag: ${{ github.ref_name }} (must match backend-go-vX.Y.Z)"
+            exit 1
+          fi
       - name: Run tests
         run: go test -short -count=1 ./internal/...
       - name: Build Docker image

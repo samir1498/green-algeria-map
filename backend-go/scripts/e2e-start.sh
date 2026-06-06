@@ -25,10 +25,8 @@ async function main() {
   const cwd = path.resolve(__dirname, '..')
   const binaryPath = path.join(cwd, 'backend-go')
 
-  if (!fs.existsSync(binaryPath)) {
-    console.log('Building Go backend...')
-    execSync('go build -ldflags="-s -w" -o backend-go ./cmd/api', { cwd, stdio: 'inherit' })
-  }
+  console.log('Building Go backend...')
+  execSync('go build -ldflags="-s -w" -o backend-go ./cmd/api', { cwd, stdio: 'inherit' })
 
   console.log('Starting Go backend on :8082...')
   const server = spawn(binaryPath, [], {
