@@ -26,7 +26,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
-	resp, err := h.svc.SignUp(r.Context(), req)
+	resp, sess, err := h.svc.SignUpWithSession(r.Context(), req)
 	if err != nil {
 		if err == service.ErrEmailTaken {
 			writeError(w, http.StatusConflict, "email already registered")
@@ -35,6 +35,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "internal error")
 		return
 	}
+	middleware.SetSessionCookie(w, sess.ID)
 	writeJSON(w, http.StatusCreated, resp)
 }
 

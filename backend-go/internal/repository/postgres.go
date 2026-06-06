@@ -104,6 +104,11 @@ func (s *PostgresStore) DeleteSession(ctx context.Context, sessionID string) err
 	return err
 }
 
+func (s *PostgresStore) DeleteUser(ctx context.Context, id string) error {
+	_, err := s.pool.Exec(ctx, `DELETE FROM users WHERE id = $1`, id)
+	return err
+}
+
 func (s *PostgresStore) CreateItem(ctx context.Context, name, description string) (*ItemEntity, error) {
 	itemID := uuid.New().String()
 	now := time.Now().UTC()
