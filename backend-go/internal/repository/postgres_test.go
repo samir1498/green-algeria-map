@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"testing"
@@ -21,6 +22,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	flag.Parse()
 	if testing.Short() {
 		os.Exit(m.Run())
 	}

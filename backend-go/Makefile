@@ -28,6 +28,9 @@ docker-build:
 fmt:
 	go fmt ./...
 
+check: fmt vet
+	@echo "check passed"
+
 vet:
 	go vet ./...
 
