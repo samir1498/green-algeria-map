@@ -33,6 +33,16 @@ export const auth = betterAuth({
       },
     },
   },
+  rateLimit: {
+    enabled: process.env.DISABLE_RATE_LIMIT !== 'true',
+    window: 60,
+    max: 100,
+    customRules: {
+      '/sign-in/email': { window: 60, max: 5 },
+      '/sign-up/email': { window: 60, max: 5 },
+    },
+    storage: 'memory',
+  },
   user: {
     additionalFields: {
       role: {
