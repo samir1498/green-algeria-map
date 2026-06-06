@@ -21,6 +21,10 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	if testing.Short() {
+		os.Exit(m.Run())
+	}
+
 	ctx := context.Background()
 
 	pgContainer, err := postgres.Run(ctx,
