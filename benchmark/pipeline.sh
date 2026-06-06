@@ -11,11 +11,11 @@ SCENARIOS="${SCENARIOS:-auth zones mix}"
 REPEATS="${REPEATS:-3}"
 WARMUP_ITERATIONS="${WARMUP_ITERATIONS:-50}"
 
-# Backend definitions: name:port:api_prefix:health_url:profile:db_name
+# Backend definitions: name|port|api_prefix|health_url|profile|db_name
 BACKENDS=(
-  "nestjs:8080::http://localhost:8080/api/health/live:nestjs:greenalgeria_nestjs"
-  "springboot:8081:/api:http://localhost:8081/readyz:springboot:greenalgeria_springboot"
-  "go:8082::http://localhost:8082/readyz:go:greenalgeria_go"
+  "nestjs|8080||http://localhost:8080/api/health/live|nestjs|greenalgeria_nestjs"
+  "springboot|8081|/api|http://localhost:8081/readyz|springboot|greenalgeria_springboot"
+  "go|8082||http://localhost:8082/readyz|go|greenalgeria_go"
 )
 
 TIMESTAMP="$(date +%Y%m%d-%H%M)"
@@ -231,7 +231,7 @@ echo ""
 echo "── Running benchmarks sequentially (one backend at a time) ──"
 
 for entry in "${BACKENDS[@]}"; do
-  IFS=: read -r name port prefix health profile db_name <<< "$entry"
+  IFS='|' read -r name port prefix health profile db_name <<< "$entry"
 
   # Run backend
   run_backend "$name" "$port" "$prefix" "$health" "$profile" "$db_name"
