@@ -1,4 +1,4 @@
-import { check, sleep } from 'k6'
+import { check } from 'k6'
 import http from 'k6/http'
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080'
@@ -33,5 +33,5 @@ export default function () {
   const session = http.get(`${AUTH_BASE}/get-session`)
   check(session, { 'session': (r) => r.status === 200 })
 
-  sleep(1)
 }
+

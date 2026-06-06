@@ -177,3 +177,145 @@ func (s *PostgresStore) DeleteItem(ctx context.Context, id string) error {
 	_, err := s.pool.Exec(ctx, `DELETE FROM items WHERE id = $1`, id)
 	return err
 }
+
+// --- Zones ---
+func (s *PostgresStore) CreateZone(ctx context.Context, name, zoneType, status string, lat, lng float64, description string) (*ZoneEntity, error) {
+	id := uuid.New().String()
+	now := time.Now().UTC()
+	z := &ZoneEntity{}
+	err := s.pool.QueryRow(ctx,
+		`INSERT INTO zones (id, name, type, status, lat, lng, description, created_at, updated_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		 RETURNING id, name, type, status, lat, lng, description, created_at, updated_at`,
+		id, name, zoneType, status, lat, lng, description, now, now,
+	).Scan(&z.ID, &z.Name, &z.Type, &z.Status, &z.Lat, &z.Lng, &z.Description, &z.CreatedAt, &z.UpdatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("create zone: %w", err)
+	}
+	return z, nil
+}
+
+func (s *PostgresStore) GetZone(ctx context.Context, id string) (*ZoneEntity, error) {
+	z := &ZoneEntity{}
+	err := s.pool.QueryRow(ctx,
+		`SELECT id, name, type, status, lat, lng, description, created_at, updated_at FROM zones WHERE id = $1`, id,
+	).Scan(&z.ID, &z.Name, &z.Type, &z.Status, &z.Lat, &z.Lng, &z.Description, &z.CreatedAt, &z.UpdatedAt)
+	if err != nil {
+		if err.Error() == "no rows in result set" {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get zone: %w", err)
+	}
+	return z, nil
+}
+
+func (s *PostgresStore) ListZones(ctx context.Context) ([]*ZoneEntity, error) {
+	rows, err := s.pool.Query(ctx, `SELECT id, name, type, status, lat, lng, description, created_at, updated_at FROM zones ORDER BY created_at`)
+	if err != nil {
+		return nil, fmt.Errorf("list zones: %w", err)
+	}
+	defer rows.Close()
+	var zones []*ZoneEntity
+	for rows.Next() {
+		z := &ZoneEntity{}
+		if err := rows.Scan(&z.ID, &z.Name, &z.Type, &z.Status, &z.Lat, &z.Lng, &z.Description, &z.CreatedAt, &z.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("scan zone: %w", err)
+		}
+		zones = append(zones, z)
+	}
+	return zones, rows.Err()
+}
+
+func (s *PostgresStore) UpdateZone(ctx context.Context, id, name, zoneType, status string, lat, lng float64, description string) (*ZoneEntity, error) {
+	now := time.Now().UTC()
+	z := &ZoneEntity{}
+	err := s.pool.QueryRow(ctx,
+		`UPDATE zones SET name = $2, type = $3, status = $4, lat = $5, lng = $6, description = $7, updated_at = $8 WHERE id = $1
+		 RETURNING id, name, type, status, lat, lng, description, created_at, updated_at`,
+		id, name, zoneType, status, lat, lng, description, now,
+	).Scan(&z.ID, &z.Name, &z.Type, &z.Status, &z.Lat, &z.Lng, &z.Description, &z.CreatedAt, &z.UpdatedAt)
+	if err != nil {
+		if err.Error() == "no rows in result set" {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("update zone: %w", err)
+	}
+	return z, nil
+}
+
+func (s *PostgresStore) DeleteZone(ctx context.Context, id string) error {
+	_, err := s.pool.Exec(ctx, `DELETE FROM zones WHERE id = $1`, id)
+	return err
+}
+
+// --- Damage Reports ---
+func (s *PostgresStore) CreateDamageReport(ctx context.Context, zoneID *string, title, description, severity string, lat, lng float64) (*DamageReportEntity, error) {
+	id := uuid.New().String()
+	now := time.Now().UTC()
+	dr := &DamageReportEntity{}
+	err := s.pool.QueryRow(ctx,
+		`INSERT INTO damage_reports (id, zone_id, title, description, severity, lat, lng, created_at, updated_at)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		 RETURNING id, zone_id, title, description, severity, lat, lng, created_at, updated_at`,
+		id, zoneID, title, description, severity, lat, lng, now, now,
+	).Scan(&dr.ID, &dr.ZoneID, &dr.Title, &dr.Description, &dr.Severity, &dr.Lat, &dr.Lng, &dr.CreatedAt, &dr.UpdatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("create damage report: %w", err)
+	}
+	return dr, nil
+}
+
+func (s *PostgresStore) GetDamageReport(ctx context.Context, id string) (*DamageReportEntity, error) {
+	dr := &DamageReportEntity{}
+	err := s.pool.QueryRow(ctx,
+		`SELECT id, zone_id, title, description, severity, lat, lng, created_at, updated_at FROM damage_reports WHERE id = $1`, id,
+	).Scan(&dr.ID, &dr.ZoneID, &dr.Title, &dr.Description, &dr.Severity, &dr.Lat, &dr.Lng, &dr.CreatedAt, &dr.UpdatedAt)
+	if err != nil {
+		if err.Error() == "no rows in result set" {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get damage report: %w", err)
+	}
+	return dr, nil
+}
+
+func (s *PostgresStore) ListDamageReports(ctx context.Context) ([]*DamageReportEntity, error) {
+	rows, err := s.pool.Query(ctx, `SELECT id, zone_id, title, description, severity, lat, lng, created_at, updated_at FROM damage_reports ORDER BY created_at`)
+	if err != nil {
+		return nil, fmt.Errorf("list damage reports: %w", err)
+	}
+	defer rows.Close()
+	var reports []*DamageReportEntity
+	for rows.Next() {
+		dr := &DamageReportEntity{}
+		if err := rows.Scan(&dr.ID, &dr.ZoneID, &dr.Title, &dr.Description, &dr.Severity, &dr.Lat, &dr.Lng, &dr.CreatedAt, &dr.UpdatedAt); err != nil {
+			return nil, fmt.Errorf("scan damage report: %w", err)
+		}
+		reports = append(reports, dr)
+	}
+	return reports, rows.Err()
+}
+
+type ZoneEntity struct {
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Type        string    `json:"type"`
+	Status      string    `json:"status"`
+	Lat         float64   `json:"lat"`
+	Lng         float64   `json:"lng"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
+type DamageReportEntity struct {
+	ID          string     `json:"id"`
+	ZoneID      *string    `json:"zone_id"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	Severity    string     `json:"severity"`
+	Lat         float64    `json:"lat"`
+	Lng         float64    `json:"lng"`
+	CreatedAt   time.Time  `json:"createdAt"`
+	UpdatedAt   time.Time  `json:"updatedAt"`
+}

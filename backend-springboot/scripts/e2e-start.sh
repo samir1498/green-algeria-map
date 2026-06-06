@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-const { spawn } = require('child_process')
+const { spawn, execSync } = require('child_process')
 const net = require('net')
 const path = require('path')
+
+const COMPOSE_FILE = path.resolve(__dirname, '..', '..', 'config', 'docker-compose.dev.yml')
 
 async function waitForPort(port, host, timeout = 60000) {
   const start = Date.now()
@@ -22,6 +24,8 @@ async function waitForPort(port, host, timeout = 60000) {
 
 async function main() {
   const cwd = path.resolve(__dirname, '..')
+  console.log('Starting dependencies (PostgreSQL)...')
+  execSync(`docker compose -f "${COMPOSE_FILE}" up -d`, { stdio: 'inherit' })
   console.log('Waiting for PostgreSQL...')
   await waitForPort(5432, 'localhost')
 

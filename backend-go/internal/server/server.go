@@ -34,21 +34,31 @@ func New(cfg Config) *Server {
 
 	var itemRepo service.ItemRepository
 	var authRepo service.AuthRepository
+	var zoneRepo service.ZoneRepository
+	var damageRepo service.DamageReportRepository
 
 	if cfg.StoreType == "postgres" && cfg.Pool != nil {
 		pg := repository.NewPostgresStore(cfg.Pool)
 		itemRepo = pg
 		authRepo = pg
+		zoneRepo = pg
+		damageRepo = pg
 	} else {
 		itemRepo = store
 		authRepo = store
+		zoneRepo = store
+		damageRepo = store
 	}
 
 	authSvc := service.NewAuthService(authRepo)
 	crudSvc := service.NewCRUDService(itemRepo)
+	zoneSvc := service.NewZoneService(zoneRepo)
+	damageSvc := service.NewDamageReportService(damageRepo)
 
 	authH := handler.NewAuthHandler(authSvc)
 	crudH := handler.NewCRUDHandler(crudSvc)
+	zoneH := handler.NewZoneHandler(zoneSvc)
+	damageH := handler.NewDamageReportHandler(damageSvc)
 
 	// Match Spring Boot: health at root
 	r.Get("/healthz", handler.Live)
@@ -66,24 +76,26 @@ func New(cfg Config) *Server {
 			r.Get("/map", handler.Ping)
 		})
 
-		// Auth (matching Spring Boot routes exactly)
+		// Auth (matching NestJS/Spring Boot routes exactly)
 		r.Post("/auth/sign-up/email", authH.SignUp)
 		r.Post("/auth/sign-in/email", authH.SignIn)
 		r.Get("/auth/get-session", authH.GetSession)
 		r.Post("/auth/sign-out", authH.SignOut)
 
-		// Zones (stub matching Spring Boot public GET/POST)
+		// Zones
 		r.Route("/zones", func(r chi.Router) {
-			r.Get("/", handler.Ping)
-			r.Post("/", handler.Ping)
-			r.Get("/{id}", handler.Ping)
+			r.Get("/", zoneH.List)
+			r.Post("/", zoneH.Create)
+			r.Get("/{id}", zoneH.GetByID)
+			r.Put("/{id}", zoneH.Update)
+			r.Delete("/{id}", zoneH.Delete)
 		})
 
-		// Damage reports (stub matching Spring Boot public GET/POST)
+		// Damage reports
 		r.Route("/damage-reports", func(r chi.Router) {
-			r.Get("/", handler.Ping)
-			r.Post("/", handler.Ping)
-			r.Get("/{id}", handler.Ping)
+			r.Get("/", damageH.List)
+			r.Post("/", damageH.Create)
+			r.Get("/{id}", damageH.GetByID)
 		})
 
 		// Items CRUD

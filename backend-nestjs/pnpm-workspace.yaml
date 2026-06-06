@@ -1,0 +1,8 @@
+allowBuilds:
+  '@nestjs/core': true
+  '@nestjs/cli': true
+  'unrs-resolver': true
+  '@scarf/scarf': true
+  'cpu-features': true
+  'protobufjs': true
+  'ssh2': true
