@@ -21,6 +21,9 @@ class TestController {
 }
 
 describe('Rate Limiting', () => {
+  beforeAll(() => {
+    process.env.DISABLE_RATE_LIMIT = 'false';
+  });
   let app: INestApplication;
 
   beforeAll(async () => {

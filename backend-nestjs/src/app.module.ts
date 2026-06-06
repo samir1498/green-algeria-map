@@ -13,24 +13,28 @@ import { PublicModule } from './modules/public/public.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    ThrottlerModule.forRoot([
-      {
-        name: 'read',
-        ttl: 60000,
-        limit: 100,
-        skipIf: (context) =>
-          context.switchToHttp().getRequest<{ url?: string }>().url
-            ?.startsWith('/api/auth') ?? false,
-      },
-      {
-        name: 'write',
-        ttl: 60000,
-        limit: 30,
-        skipIf: (context) =>
-          context.switchToHttp().getRequest<{ url?: string }>().url
-            ?.startsWith('/api/auth') ?? false,
-      },
-    ]),
+    ...(process.env.DISABLE_RATE_LIMIT === 'true'
+      ? []
+      : [
+          ThrottlerModule.forRoot([
+            {
+              name: 'read',
+              ttl: 60000,
+              limit: 100,
+              skipIf: (context) =>
+                context.switchToHttp().getRequest<{ url?: string }>().url
+                  ?.startsWith('/api/auth') ?? false,
+            },
+            {
+              name: 'write',
+              ttl: 60000,
+              limit: 30,
+              skipIf: (context) =>
+                context.switchToHttp().getRequest<{ url?: string }>().url
+                  ?.startsWith('/api/auth') ?? false,
+            },
+          ]),
+        ]),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -57,10 +61,14 @@ import { PublicModule } from './modules/public/public.module';
     PublicModule,
   ],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
+    ...(process.env.DISABLE_RATE_LIMIT === 'true'
+      ? []
+      : [
+          {
+            provide: APP_GUARD,
+            useClass: ThrottlerGuard,
+          },
+        ]),
   ],
 })
 export class AppModule {}
