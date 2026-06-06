@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
-import { AppThrottlerGuard } from './lib/guards/throttler.guard';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ZonesModule } from './modules/zones/zones.module';
 import { DamageReportsModule } from './modules/damage-reports/damage-reports.module';
@@ -19,11 +18,17 @@ import { PublicModule } from './modules/public/public.module';
         name: 'read',
         ttl: 60000,
         limit: 100,
+        skipIf: (context) =>
+          context.switchToHttp().getRequest<{ url?: string }>().url
+            ?.startsWith('/api/auth') ?? false,
       },
       {
         name: 'write',
         ttl: 60000,
         limit: 30,
+        skipIf: (context) =>
+          context.switchToHttp().getRequest<{ url?: string }>().url
+            ?.startsWith('/api/auth') ?? false,
       },
     ]),
     TypeOrmModule.forRootAsync({
@@ -54,7 +59,7 @@ import { PublicModule } from './modules/public/public.module';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: AppThrottlerGuard,
+      useClass: ThrottlerGuard,
     },
   ],
 })

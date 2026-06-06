@@ -41,6 +41,7 @@ export const auth = betterAuth({
       '/sign-in/email': { window: 60, max: 5 },
       '/sign-up/email': { window: 60, max: 5 },
     },
+    storage: 'memory',
   },
   user: {
     additionalFields: {
