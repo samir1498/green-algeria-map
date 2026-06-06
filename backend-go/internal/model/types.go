@@ -9,12 +9,12 @@ type PingResponse struct {
 
 // --- Echo ---
 type EchoRequest struct {
-	Name     string            `json:"name"     validate:"required"`
-	Email    string            `json:"email"    validate:"required,email"`
-	Age      int               `json:"age"      validate:"gte=0,lte=150"`
-	Address  Address           `json:"address"  validate:"required"`
-	Tags     []string          `json:"tags"     validate:"required,min=1"`
-	Metadata map[string]any    `json:"metadata" validate:"required"`
+	Name     string         `json:"name"     validate:"required"`
+	Email    string         `json:"email"    validate:"required,email"`
+	Age      int            `json:"age"      validate:"gte=0,lte=150"`
+	Address  Address        `json:"address"  validate:"required"`
+	Tags     []string       `json:"tags"     validate:"required,min=1"`
+	Metadata map[string]any `json:"metadata" validate:"required"`
 }
 
 type Address struct {
@@ -29,12 +29,12 @@ type EchoResponse struct {
 
 // --- Validate ---
 type ValidateRequest struct {
-	Name     string            `json:"name"     validate:"required"`
-	Email    string            `json:"email"    validate:"required,email"`
-	Age      int               `json:"age"      validate:"gte=0,lte=150"`
-	Address  Address           `json:"address"  validate:"required"`
-	Tags     []string          `json:"tags"     validate:"required,min=1"`
-	Metadata map[string]any    `json:"metadata" validate:"required"`
+	Name     string         `json:"name"     validate:"required"`
+	Email    string         `json:"email"    validate:"required,email"`
+	Age      int            `json:"age"      validate:"gte=0,lte=150"`
+	Address  Address        `json:"address"  validate:"required"`
+	Tags     []string       `json:"tags"     validate:"required,min=1"`
+	Metadata map[string]any `json:"metadata" validate:"required"`
 }
 
 type ValidateResponse struct {
@@ -54,14 +54,14 @@ type LoginRequest struct {
 }
 
 type UserResponse struct {
-	ID            string     `json:"id"`
-	Name          string     `json:"name"`
-	Email         string     `json:"email"`
-	EmailVerified bool       `json:"emailVerified"`
-	Image         *string    `json:"image"`
-	Role          string     `json:"role"`
-	CreatedAt     time.Time  `json:"createdAt"`
-	UpdatedAt     time.Time  `json:"updatedAt"`
+	ID            string    `json:"id"`
+	Name          string    `json:"name"`
+	Email         string    `json:"email"`
+	EmailVerified bool      `json:"emailVerified"`
+	Image         *string   `json:"image"`
+	Role          string    `json:"role"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 type AuthResponse struct {

@@ -1,5 +1,6 @@
 node_modules/
 dist/
+backend-go/api
 .env
 .env.local
 *.log

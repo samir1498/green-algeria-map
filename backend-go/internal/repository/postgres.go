@@ -309,13 +309,13 @@ type ZoneEntity struct {
 }
 
 type DamageReportEntity struct {
-	ID          string     `json:"id"`
-	ZoneID      *string    `json:"zone_id"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	Severity    string     `json:"severity"`
-	Lat         float64    `json:"lat"`
-	Lng         float64    `json:"lng"`
-	CreatedAt   time.Time  `json:"createdAt"`
-	UpdatedAt   time.Time  `json:"updatedAt"`
+	ID          string    `json:"id"`
+	ZoneID      *string   `json:"zone_id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Severity    string    `json:"severity"`
+	Lat         float64   `json:"lat"`
+	Lng         float64   `json:"lng"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
