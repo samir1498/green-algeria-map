@@ -2,7 +2,7 @@ import { resolve } from "node:path";
 import { consola } from "consola";
 import { run } from "../shell";
 
-const ROOT = resolve(import.meta.dir, "../../../..");
+const ROOT = resolve(import.meta.dir, "../../..");
 
 function failureMessage(result: { exitCode: number; stdout: string; stderr: string }, command: string): string {
   return `${command} failed with exit code ${result.exitCode}: ${result.stderr || result.stdout || "no output"}`;
@@ -45,12 +45,10 @@ export async function verifyInfra(): Promise<void> {
   let storageReady = false;
   for (let i = 0; i < 30; i++) {
     try {
-      const res = await fetch("http://localhost:9000/");
-      if (res.ok) {
-        consola.success("  Object storage ready");
-        storageReady = true;
-        break;
-      }
+      await fetch("http://localhost:9000/");
+      consola.success("  Object storage ready");
+      storageReady = true;
+      break;
     } catch {
       if (i % 5 === 0) consola.info(`    Waiting... (attempt ${i + 1}/30)`);
       await Bun.sleep(2000);

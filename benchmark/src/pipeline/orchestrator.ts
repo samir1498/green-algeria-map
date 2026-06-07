@@ -265,10 +265,15 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
 
     section("Running migrations");
     consola.info("  -> [Spring Boot] Migrations run on startup");
-    for (const backend of Object.values(config.backends)) {
-      await ensureDatabaseExists(config, backend.dbName);
+    for (const backendName of opts.backends) {
+      const backend = config.backends[backendName];
+      if (backend) {
+        await ensureDatabaseExists(config, backend.dbName);
+      }
     }
-    await runGoMigrations(config);
+    if (opts.backends.includes("go")) {
+      await runGoMigrations(config);
+    }
     consola.success("  Databases ready");
 
     await Bun.write(

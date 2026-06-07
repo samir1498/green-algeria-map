@@ -9,6 +9,7 @@ export interface ShellOptions {
   stream?: boolean;
   env?: Record<string, string>;
   timeout?: number;
+  suppressStderr?: boolean;
 }
 
 async function readStream(
@@ -58,7 +59,10 @@ export async function run(cmd: string, args: string[], opts: ShellOptions = {}):
     }
 
     const stdoutPromise = readStream(proc.stdout, opts.stream ? process.stdout : undefined);
-    const stderrPromise = readStream(proc.stderr, opts.stream ? process.stderr : undefined);
+    const stderrPromise = readStream(
+      proc.stderr,
+      opts.stream && !opts.suppressStderr ? process.stderr : undefined,
+    );
     const exitCode = await proc.exited;
     const [stdout, stderr] = await Promise.all([stdoutPromise, stderrPromise]);
 
