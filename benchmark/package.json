@@ -1,0 +1,27 @@
+{
+  "name": "bench",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "bench": "./src/index.ts"
+  },
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check src/",
+    "format": "biome format src/ --write",
+    "check": "bun run typecheck && bun run lint",
+    "test": "bun test",
+    "ci": "bun run typecheck && bun run lint && bun test"
+  },
+  "dependencies": {
+    "citty": "^0.1.6",
+    "consola": "^3.4.2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/bun": "latest",
+    "typescript": "^5.8.3"
+  }
+}

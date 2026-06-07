@@ -1,0 +1,39 @@
+name: CI Benchmark CLI
+
+on:
+  push:
+    branches: [main]
+    paths: ['benchmark/src/**', 'benchmark/scripts/**', 'benchmark/package.json', 'benchmark/bun.lock', 'benchmark/biome.json', 'benchmark/tsconfig.json', 'benchmark/bench.config.json', '.github/workflows/ci-bench.yml']
+  pull_request:
+    paths: ['benchmark/src/**', 'benchmark/scripts/**', 'benchmark/package.json', 'benchmark/bun.lock', 'benchmark/biome.json', 'benchmark/tsconfig.json', 'benchmark/bench.config.json', '.github/workflows/ci-bench.yml']
+
+jobs:
+  check:
+    runs-on: ubuntu-slim
+    defaults:
+      run:
+        working-directory: benchmark
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun run lint
+
+  test:
+    runs-on: ubuntu-slim
+    defaults:
+      run:
+        working-directory: benchmark
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun test
