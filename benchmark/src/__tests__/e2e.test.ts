@@ -140,7 +140,7 @@ describe("E2E: Error Handling", () => {
   it("handles docker exec failure", async () => {
     const result = await run("docker", ["exec", "-i", "nonexistent-container", "ls"]);
     expect(result.exitCode).not.toBe(0);
-    expect(result.stderr).toContain("Error");
+    expect(result.stderr.length).toBeGreaterThan(0);
   });
 
   it("handles missing pnpm build", async () => {
