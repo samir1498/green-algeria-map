@@ -1,0 +1,70 @@
+import { mkdir } from "node:fs/promises";
+import { resolve } from "node:path";
+import { consola } from "consola";
+import { step } from "../logger";
+import { run } from "../shell";
+import type { BackendConfig, ScenarioConfig } from "../types";
+
+const BENCHMARK_DIR = resolve(import.meta.dir, "../../..");
+
+export async function runWarmup(backend: string, config: BackendConfig, iterations: number): Promise<void> {
+  step(backend, `Warmup (${iterations} iterations)...`);
+  await run(
+    "k6",
+    [
+      "run",
+      "--iterations",
+      String(iterations),
+      "-e",
+      `BASE_URL=http://localhost:${config.port}`,
+      "-e",
+      `API_PREFIX=${config.apiPrefix}`,
+      "scripts/all.js",
+    ],
+    { cwd: BENCHMARK_DIR },
+  );
+  step(backend, "Warmup complete");
+}
+
+export async function runScenario(
+  backend: string,
+  backendConfig: BackendConfig,
+  scenario: string,
+  scenarioConfig: ScenarioConfig,
+  outdir: string,
+  runIndex: number,
+  vusOverride?: number,
+  rampOverride?: string,
+  holdOverride?: string,
+): Promise<void> {
+  await mkdir(outdir, { recursive: true });
+  const env = [
+    "-e",
+    `BASE_URL=http://localhost:${backendConfig.port}`,
+    "-e",
+    `API_PREFIX=${backendConfig.apiPrefix}`,
+    "-e",
+    `VUS=${vusOverride ?? scenarioConfig.vus}`,
+    "-e",
+    `RAMP_DURATION=${rampOverride ?? scenarioConfig.rampDuration}`,
+    "-e",
+    `HOLD_DURATION=${holdOverride ?? scenarioConfig.holdDuration}`,
+  ];
+  step(backend, `Running ${scenario} (run ${runIndex})...`);
+  const result = await run(
+    "k6",
+    [
+      "run",
+      "--out",
+      `json=${outdir}/run-${runIndex}.json`,
+      "--summary-export",
+      `${outdir}/run-${runIndex}-summary.json`,
+      ...env,
+      `scripts/${scenario}.js`,
+    ],
+    { cwd: BENCHMARK_DIR, stream: true },
+  );
+  if (result.exitCode !== 0) {
+    consola.warn(`[${backend}] ${scenario} run ${runIndex} had failures`);
+  }
+}
