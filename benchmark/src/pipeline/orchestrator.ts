@@ -117,17 +117,16 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
     },
   });
 
-  // Run migrations inside container
-  consola.info("  -> [NestJS] Running migrations...");
-  const migrationResult = await run("docker", [
-    "exec",
-    "green-algeria-nestjs",
-    "npm",
-    "run",
-    "migration:run",
-  ]);
+  // Run migrations locally (TypeScript files available locally, not in Docker image)
+  consola.info("  -> [NestJS] Running migrations locally...");
+  const migrationResult = await run("npx", ["typeorm-ts-node-commonjs", "migration:run", "-d", "src/data-source.ts"], {
+    cwd: nestDir,
+    env: dbEnv,
+  });
   if (migrationResult.exitCode !== 0) {
-    consola.warn("Migration output:", migrationResult.stderr || migrationResult.stdout);
+    consola.warn("Migration warning:", migrationResult.stderr || migrationResult.stdout);
+  } else {
+    consola.success("  Migrations completed");
   }
 }
 
