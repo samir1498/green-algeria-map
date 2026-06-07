@@ -1,5 +1,6 @@
-import { resolve } from "node:path";
-import type { AggregatedSummary } from "../types";
+import { basename, resolve } from "node:path";
+import type { AggregatedSummary, K6Summary } from "../types";
+import { summarizeScenarioRuns } from "./aggregate";
 
 interface ComparisonRow {
   backend: string;
@@ -10,23 +11,83 @@ interface ComparisonRow {
   rps: number;
 }
 
-export async function loadComparisonData(pipelineDir: string): Promise<Map<string, AggregatedSummary[]>> {
-  const backends = new Map<string, AggregatedSummary[]>();
+function isAggregatedSummary(data: unknown): data is AggregatedSummary {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "backend" in data &&
+    "scenario" in data &&
+    "metrics" in data &&
+    "runs" in data
+  );
+}
 
-  for await (const entry of new Bun.Glob("*/").scan({ cwd: pipelineDir, dot: false })) {
-    const backend = entry.replace("/", "");
+function inferBackendAndScenario(pipelineDir: string, file: string): { backend: string; scenario: string } | null {
+  const relativePath = file.slice(pipelineDir.length + 1);
+  const segments = relativePath.split("/");
+  if (segments.length < 2) return null;
+
+  const backend = segments[0];
+  const fileName = basename(file);
+
+  if (segments.length >= 3) {
+    return { backend, scenario: segments[1] };
+  }
+
+  const scenarioFromSummary = fileName
+    .replace(/-summary\.json$/, "")
+    .replace(/-run-\d+$/, "")
+    .replace(/-run-\d+-summary$/, "");
+  if (!scenarioFromSummary) return null;
+  return { backend, scenario: scenarioFromSummary };
+}
+
+export async function loadComparisonData(pipelineDir: string): Promise<Map<string, AggregatedSummary[]>> {
+  const grouped = new Map<string, Map<string, { raw: K6Summary[]; aggregated?: AggregatedSummary }>>();
+
+  for await (const file of new Bun.Glob("**/*summary.json").scan({ cwd: pipelineDir, absolute: true })) {
+    let parsed: unknown;
+    try {
+      parsed = await Bun.file(file).json();
+    } catch {
+      continue;
+    }
+
+    const location = inferBackendAndScenario(pipelineDir, file);
+    if (!location) continue;
+
+    if (!grouped.has(location.backend)) {
+      grouped.set(location.backend, new Map());
+    }
+
+    const backendBucket = grouped.get(location.backend)!;
+    if (!backendBucket.has(location.scenario)) {
+      backendBucket.set(location.scenario, { raw: [] });
+    }
+
+    const scenarioBucket = backendBucket.get(location.scenario)!;
+    if (isAggregatedSummary(parsed)) {
+      scenarioBucket.aggregated = parsed;
+    } else if (typeof parsed === "object" && parsed !== null && "metrics" in parsed) {
+      scenarioBucket.raw.push(parsed as K6Summary);
+    }
+  }
+
+  const backends = new Map<string, AggregatedSummary[]>();
+  for (const [backend, scenarios] of grouped.entries()) {
     const summaries: AggregatedSummary[] = [];
-    for await (const file of new Bun.Glob("*-summary.json").scan({
-      cwd: resolve(pipelineDir, backend),
-      absolute: true,
-    })) {
-      try {
-        summaries.push(await Bun.file(file).json());
-      } catch {
-        /* skip */
+    for (const [scenario, bucket] of scenarios.entries()) {
+      if (bucket.aggregated) {
+        summaries.push(bucket.aggregated);
+        continue;
+      }
+      if (bucket.raw.length > 0) {
+        summaries.push(summarizeScenarioRuns(backend, scenario, bucket.raw));
       }
     }
-    if (summaries.length > 0) backends.set(backend, summaries);
+    if (summaries.length > 0) {
+      backends.set(backend, summaries);
+    }
   }
 
   return backends;
