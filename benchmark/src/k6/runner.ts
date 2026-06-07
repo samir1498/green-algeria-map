@@ -1,6 +1,5 @@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import { consola } from "consola";
 import { step } from "../logger";
 import { run } from "../shell";
 import type { BackendConfig, ScenarioConfig } from "../types";
@@ -61,9 +60,11 @@ export async function runScenario(
     `HOLD_DURATION=${holdOverride ?? scenarioConfig.holdDuration}`,
   ];
   step(backend, `Running ${scenario} (run ${runIndex})...`);
-  const result = await run(
-    "k6",
-    [
+  // Use inherit for stdout to preserve k6's colored progress bar,
+  // pipe stderr to capture warnings only on failure
+  const proc = Bun.spawn({
+    cmd: [
+      "k6",
       "run",
       "--out",
       `json=${outdir}/run-${runIndex}.json`,
@@ -72,11 +73,25 @@ export async function runScenario(
       ...env,
       `scripts/${scenario}.js`,
     ],
-    { cwd: BENCHMARK_DIR, stream: true, suppressStderr: true },
-  );
-  if (result.exitCode !== 0) {
+    cwd: BENCHMARK_DIR,
+    stdout: "inherit",
+    stderr: "pipe",
+  });
+  const stderrReader = proc.stderr?.getReader();
+  const decoder = new TextDecoder();
+  let stderr = "";
+  if (stderrReader) {
+    while (true) {
+      const { value, done } = await stderrReader.read();
+      if (done) break;
+      stderr += decoder.decode(value, { stream: true });
+    }
+    stderr += decoder.decode();
+  }
+  const exitCode = await proc.exited;
+  if (exitCode !== 0) {
     throw new Error(
-      `[${backend}] ${scenario} run ${runIndex} failed: ${result.stderr || result.stdout || "no output"}`,
+      `[${backend}] ${scenario} run ${runIndex} failed: ${stderr.trim() || "no output"}`,
     );
   }
 }
