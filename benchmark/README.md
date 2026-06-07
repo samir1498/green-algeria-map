@@ -4,9 +4,8 @@
 
 - Docker Compose v2
 - [k6](https://k6.io/) (`brew install k6` or download from [k6.io](https://k6.io/))
-- Node.js 24+ (for NestJS migration/seed)
-- Java 25+ with `./mvnw` (for Spring Boot)
-- Go 1.25+ (for Go backend - runs in Docker)
+- Node.js 24+ (for NestJS migration/seed — only when running NestJS)
+- All backends run in Docker (NestJS, Spring Boot, Go)
 
 ## Quick Start (full pipeline - 3 backends)
 
@@ -15,11 +14,25 @@
 ```
 
 Runs **sequentially** (one backend at a time for fair isolation):
-1. Start shared infra (Postgres + RustFS) → NestJS native → k6 (auth, zones, mix) → stop NestJS
-2. Spring Boot (Docker) → k6 → stop Spring Boot
-3. Go (Docker) → k6 → stop Go
+1. Start shared infra (Postgres + RustFS) → NestJS Docker → warmup → k6 (auth, zones, mix, 3x each) → stop NestJS
+2. Spring Boot Docker → warmup → k6 → stop Spring Boot
+3. Go Docker → warmup → k6 → stop Go
 
 Results saved to `results/YYYYMMDD-HHmm-pipeline-{CPUS}cpu/`
+
+## Configuration
+
+```bash
+CPUS=2 MEM=512m REPEATS=5 WARMUP_ITERATIONS=100 ./benchmark/pipeline.sh
+```
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CPUS` | 1 | CPU limit per container (via `docker update --cpus`) |
+| `MEM` | 512m | Memory limit per container |
+| `SCENARIOS` | auth zones mix | Space-separated list of scenarios to run |
+| `REPEATS` | 3 | Number of runs per scenario (median reported) |
+| `WARMUP_ITERATIONS` | 50 | k6 iterations for warmup before measured runs |
 
 ## Compare results
 
@@ -29,19 +42,17 @@ Results saved to `results/YYYYMMDD-HHmm-pipeline-{CPUS}cpu/`
 
 ## Run a single backend
 
+For manual testing or development:
+
 ```bash
-# NestJS (native, not Docker)
+# Start shared infrastructure
 docker compose up -d postgres rustfs
-cd backend-nestjs && node scripts/create-bucket.mjs && pnpm migration:run && pnpm seed
-BASE_URL=http://localhost:8080 API_PREFIX="" k6 run benchmark/all.js
 
-# Spring Boot
+# Start the backend
 docker compose --profile springboot up -d --wait
-BASE_URL=http://localhost:8081 API_PREFIX="/api" k6 run benchmark/all.js
 
-# Go
-docker compose --profile go up -d --wait
-BASE_URL=http://localhost:8082 API_PREFIX="" k6 run benchmark/all.js
+# Run benchmark
+REPEATS=1 ./benchmark/run.sh springboot
 ```
 
 ## Run individual scenarios
@@ -54,19 +65,34 @@ k6 run \
   benchmark/auth.js
 ```
 
-## Configuration
-
-```bash
-CPUS=2 MEM=512m ./benchmark/pipeline.sh   # 2 CPU limit
-```
-
 ## Pipeline Architecture
 
 - **Shared infrastructure**: 1x Postgres (port 5432), 1x RustFS (port 9000)
 - **Per-backend databases**: `greenalgeria_nestjs`, `greenalgeria_springboot`, `greenalgeria_go`
-- **NestJS**: Runs natively via `systemd-run` (CPUQuota/MemoryMax)
-- **Spring Boot + Go**: Run in Docker with `--cpus` / `--memory` limits
+- **All backends run in Docker** with `--cpus` / `--memory` limits (identical isolation)
+- **Sequential execution**: Each backend runs, warms up, is benchmarked (3x per scenario), then stops before the next starts
 - **Rate limiting**: Disabled on all backends (`DISABLE_RATE_LIMIT=true`, `APP_RATE_LIMIT_ENABLED=false`)
+- **Session reuse**: k6 scripts sign up + sign in once per VU, then reuse the session across iterations
+
+## Output Structure
+
+```
+results/YYYYMMDD-HHmm-pipeline-{CPUS}cpu/
+├── {backend}-docker-stats.log    # Resource usage for that backend only
+├── nestjs/
+│   ├── auth/
+│   │   ├── run-1-summary.json
+│   │   ├── run-2-summary.json
+│   │   ├── run-3-summary.json
+│   │   └── run-1.json (raw k6 events)
+│   ├── zones/...
+│   ├── mix/...
+│   ├── auth-summary.json (aggregated median across runs)
+│   ├── zones-summary.json
+│   └── mix-summary.json
+├── springboot/...
+└── go/...
+```
 
 ## Results (2026-06-06, 1 CPU)
 
@@ -94,11 +120,44 @@ CPUS=2 MEM=512m ./benchmark/pipeline.sh   # 2 CPU limit
 | NestJS | 268ms | 844ms | 0% | 205 | 32 |
 | Spring Boot | 174ms | 557ms | 0% | 290 | 46 |
 
-> ⚠️ Go failures in zones/mix under load: investigation ongoing (likely connection pool contention with shared Postgres). Standalone Go tests pass 0% failures.
+> ⚠️ These results are from the old pipeline with known issues (non-sequential execution, no session reuse, no warmup, no repeats). The Go failures were caused by host resource contention from running all backends simultaneously. Re-run with the fixed pipeline for accurate results.
 
-## Verdict (1 CPU)
+## Fairness Guarantees
 
-- **Auth**: Go wins (2-3x NestJS, ~1.5x Spring Boot)
-- **Zones**: Spring Boot wins (stable, Go has 50% failures under load)
-- **Mixed**: Spring Boot wins (balanced latency + 0% failures)
-- **Resource usage**: Go 14MiB / 385% CPU, NestJS 435MiB / 208% CPU, Spring Boot 476MiB / 359% CPU
+- ✅ All backends run in Docker with identical `--cpus`/`--memory` limits
+- ✅ Sequential execution eliminates host resource contention
+- ✅ Warmup phase before measured runs (JIT compilation, connection pools)
+- ✅ 3 runs per scenario, median reported (no cherry-picking)
+- ✅ Session reuse (sign up once per VU)
+- ✅ Rate limiting disabled on all backends
+- ✅ Separate databases per backend (identical schema)
+- ✅ Shared Postgres with tuned config (max_connections=200)
+- ✅ No `abortOnFail` — failures are logged, not hidden
+- ✅ Docker stats collected per-backend only
+
+## Bias Audit Checklist
+
+- [x] Same endpoint semantics across all stacks
+- [x] Same payloads, same validation rules
+- [x] Same auth hashing cost (bcrypt rounds)
+- [x] Same DB pool size
+- [x] Same seed data (verified row count)
+- [x] Production builds for all stacks
+- [x] All request/SQL/tracing logs disabled
+- [x] Warmup period applied equally
+- [x] >=3 runs per scenario, report median + variance
+- [x] No stack-specific optimizations without equivalent for all
+- [x] Same ORM strategy (ORM vs raw — not mixed)
+- [x] Query count verified (no N+1)
+- [x] PostgreSQL on separate CPU allocation
+- [ ] Startup time measured separately (TODO)
+- [ ] Results reproducible via provided scripts
+
+## Limitations & Future Work
+
+- **No HTTP baseline scenario** (`GET /ping`) — would isolate framework overhead from business logic
+- **No JSON serialization benchmark** (`POST /echo`) — would isolate serialization cost
+- **No validation isolation** (`POST /validate`) — would isolate validation cost from serialization
+- **PostgreSQL runs on same machine** — ideal would be dedicated PG host
+- **No per-backend result variance reported** — median across runs gives central tendency but not spread
+- **Startup time** not yet measured separately

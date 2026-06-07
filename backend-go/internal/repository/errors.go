@@ -3,6 +3,6 @@ package repository
 import "errors"
 
 var (
-	ErrEmailTaken  = errors.New("email already registered")
-	ErrNotFound    = errors.New("not found")
+	ErrEmailTaken = errors.New("email already registered")
+	ErrNotFound   = errors.New("not found")
 )
