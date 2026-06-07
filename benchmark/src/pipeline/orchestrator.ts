@@ -292,8 +292,7 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
     for (const backendName of opts.backends) {
       const backend = config.backends[backendName];
       if (!backend) {
-        consola.error(`Unknown backend: ${backendName}`);
-        continue;
+        throw new Error(`Unknown backend: ${backendName}. Available: ${Object.keys(config.backends).join(", ")}`);
       }
 
       consola.box(`Benchmarking: ${backendName}\n  profile: ${backend.profile} | DB: ${backend.dbName}`);
@@ -311,8 +310,7 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
       for (const scenario of opts.scenarios) {
         const scenarioConfig = config.scenarios[scenario];
         if (!scenarioConfig) {
-          consola.warn(`Unknown scenario: ${scenario}`);
-          continue;
+          throw new Error(`Unknown scenario: ${scenario}. Available: ${Object.keys(config.scenarios).join(", ")}`);
         }
         const scenarioOutdir = resolve(outdir, backendName, scenario);
         for (let i = 1; i <= opts.repeats; i++) {

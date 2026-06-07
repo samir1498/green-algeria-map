@@ -4,66 +4,139 @@
 
 - Docker Compose v2
 - [k6](https://k6.io/) (`brew install k6` or download from [k6.io](https://k6.io/))
+- [Bun](https://bun.sh/) 1.2+
 - Node.js 24+ (for NestJS migration/seed — only when running NestJS)
 - All backends run in Docker (NestJS, Spring Boot, Go)
 
 ## Quick Start (full pipeline - 3 backends)
 
 ```bash
-./benchmark/pipeline.sh
+bun run bench run
 ```
 
 Runs **sequentially** (one backend at a time for fair isolation):
-1. Start shared infra (Postgres + RustFS) → NestJS Docker → warmup → k6 (auth, zones, mix, 3x each) → stop NestJS
-2. Spring Boot Docker → warmup → k6 → stop Spring Boot
-3. Go Docker → warmup → k6 → stop Go
+1. Start shared infra (Postgres + RustFS) → verify readiness → create databases
+2. For each backend: run migrations → start Docker → warmup → k6 (auth, zones, mix, 3x each) → stop → wait for port free
+3. Aggregate results (median across runs)
+4. Cleanup all Docker resources
 
 Results saved to `results/YYYYMMDD-HHmm-pipeline-{CPUS}cpu/`
 
-## Configuration
+## CLI Commands
+
+### `bun run bench run` — Full pipeline
 
 ```bash
-CPUS=2 MEM=512m REPEATS=5 WARMUP_ITERATIONS=100 ./benchmark/pipeline.sh
+bun run bench run                                   # all backends, all scenarios
+bun run bench run -b go                             # single backend
+bun run bench run -b nestjs,springboot             # specific backends
+bun run bench run -s auth                          # single scenario
+bun run bench run -s auth,tree                     # multiple scenarios
+bun run bench run -c 2 -m 1g                       # CPU/memory limits
+bun run bench run -r 5                             # 5 repeats
+bun run bench run -w 100                           # warmup iterations
+bun run bench run --dry-run                        # generate report without running
 ```
+
+### `bun run bench single <backend>` — Single backend (infra must be running)
+
+```bash
+bun run bench single go                            # benchmark go only
+bun run bench single go -s auth                    # benchmark go, auth scenario only
+```
+
+### `bun run bench compare <dir>` — Compare results
+
+```bash
+bun run bench compare results/20260607-pipeline-1cpu
+bun run bench compare results/20260607-pipeline-1cpu --format json
+bun run bench compare results/20260607-pipeline-1cpu --format markdown
+```
+
+### `bun run bench clean` — Cleanup Docker resources
+
+```bash
+bun run bench clean
+```
+
+## Configuration
+
+All configuration is in `bench.config.json`:
+
+```json
+{
+  "defaults": {
+    "cpus": 1,
+    "memory": "512m",
+    "repeats": 3,
+    "warmup": 50
+  },
+  "database": { ... },
+  "infrastructure": { ... },
+  "backends": {
+    "nestjs": { "port": 8080, ... },
+    "springboot": { "port": 8081, ... },
+    "go": { "port": 8082, ... }
+  },
+  "scenarios": {
+    "auth": { "vus": 20, "rampDuration": "30s", "holdDuration": "1m" },
+    "zones": { "vus": 50, ... },
+    "mix": { "vus": 30, ... }
+  }
+}
+```
+
+Legacy shell scripts (pipeline.sh, run.sh, compare.sh) are archived in `benchmark/legacy/`.
+
+## Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CPUS` | 1 | CPU limit per container (via `docker update --cpus`) |
-| `MEM` | 512m | Memory limit per container |
-| `SCENARIOS` | auth zones mix | Space-separated list of scenarios to run |
-| `REPEATS` | 3 | Number of runs per scenario (median reported) |
-| `WARMUP_ITERATIONS` | 50 | k6 iterations for warmup before measured runs |
+| `CPUS` (CLI: `-c`) | 1 | CPU limit per container (via `docker update --cpus`) |
+| `MEM` (CLI: `-m`) | 512m | Memory limit per container |
+| `REPEATS` (CLI: `-r`) | 3 | Number of runs per scenario (median reported) |
+| `WARMUP` (CLI: `-w`) | 50 | k6 iterations for warmup before measured runs |
 
-## Compare results
+## Output Structure
 
-```bash
-./benchmark/compare.sh results/YYYYMMDD-HHmm-pipeline-1cpu
+```
+results/YYYYMMDD-HHmm-pipeline-{CPUS}cpu/
+├── config.json                       # Run configuration snapshot
+├── {backend}-docker-stats.log        # Resource usage for that backend only
+├── nestjs/
+│   ├── auth/
+│   │   ├── run-1-summary.json        # k6 summary export
+│   │   ├── run-2-summary.json
+│   │   ├── run-3-summary.json
+│   │   └── run-1.json                # Raw k6 events (JSON stream)
+│   ├── zones/...
+│   ├── mix/...
+│   ├── auth-summary.json             # Aggregated median across runs
+│   ├── zones-summary.json
+│   └── mix-summary.json
+├── springboot/...
+└── go/...
 ```
 
-## Run a single backend
-
-For manual testing or development:
+## Testing
 
 ```bash
-# Start shared infrastructure
-docker compose up -d postgres rustfs
-
-# Start the backend
-docker compose --profile springboot up -d --wait
-
-# Run benchmark
-REPEATS=1 ./benchmark/run.sh springboot
+cd benchmark
+bun test                    # 43 tests
+bun run typecheck           # TypeScript type checking
+bun run lint                # Biome lint
+bun run ci                  # typecheck + lint + test
 ```
 
-## Run individual scenarios
-
-```bash
-k6 run \
-  --summary-export=results/auth-summary.json \
-  -e BASE_URL=http://localhost:8080 \
-  -e API_PREFIX="" \
-  benchmark/auth.js
-```
+Test files in `benchmark/src/__tests__/`:
+- `e2e.test.ts` — Shell resolution, config loading, command building, error handling
+- `integrity.test.ts` — k6 failures, missing summaries, raw+aggregated format loading
+- `hardening.test.ts` — Infra timeouts, NestJS bootstrap failures, compare edge cases
+- `stats.test.ts` — Docker stats lifecycle (awaitable stop)
+- `compare.test.ts` — determineWinner logic
+- `loader.test.ts` — Config loading
+- `logger.test.ts` — Duration formatting
+- `shell.test.ts` — Streamed stdout/stderr capture
 
 ## Pipeline Architecture
 
@@ -73,26 +146,18 @@ k6 run \
 - **Sequential execution**: Each backend runs, warms up, is benchmarked (3x per scenario), then stops before the next starts
 - **Rate limiting**: Disabled on all backends (`DISABLE_RATE_LIMIT=true`, `APP_RATE_LIMIT_ENABLED=false`)
 - **Session reuse**: k6 scripts sign up + sign in once per VU, then reuse the session across iterations
+- **NestJS bootstrap**: Local `pnpm build` (if dist/ missing) → bucket creation → local TypeORM migrations → seed
+- **Go migrations**: SQL executed via `docker exec psql`
 
-## Output Structure
+## Fail-fast Behavior
 
-```
-results/YYYYMMDD-HHmm-pipeline-{CPUS}cpu/
-├── {backend}-docker-stats.log    # Resource usage for that backend only
-├── nestjs/
-│   ├── auth/
-│   │   ├── run-1-summary.json
-│   │   ├── run-2-summary.json
-│   │   ├── run-3-summary.json
-│   │   └── run-1.json (raw k6 events)
-│   ├── zones/...
-│   ├── mix/...
-│   ├── auth-summary.json (aggregated median across runs)
-│   ├── zones-summary.json
-│   └── mix-summary.json
-├── springboot/...
-└── go/...
-```
+The CLI stops on the first error and does NOT silently skip failures:
+
+- 🚨 Infrastructure timeout (Postgres/RustFS not ready) → pipeline aborts
+- 🚨 NestJS build/migration/bucket/seed failure → pipeline aborts
+- 🚨 k6 non-zero exit → run marked as failed, pipeline aborts
+- 🚨 Missing summary file → aggregation refuses to proceed
+- 🚨 Malformed JSON in summary → silently skipped (graceful)
 
 ## Results (2026-06-06, 1 CPU)
 

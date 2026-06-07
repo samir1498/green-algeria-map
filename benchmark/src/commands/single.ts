@@ -45,8 +45,7 @@ export const singleCommand = defineCommand({
     for (const scenario of scenarios) {
       const scenarioConfig = config.scenarios[scenario];
       if (!scenarioConfig) {
-        consola.warn(`Unknown scenario: ${scenario}`);
-        continue;
+        throw new Error(`Unknown scenario: ${scenario}. Available: ${Object.keys(config.scenarios).join(", ")}`);
       }
       const scenarioOutdir = resolve(outdir, scenario);
       for (let i = 1; i <= repeats; i++) {
