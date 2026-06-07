@@ -11,11 +11,15 @@ const params = { headers: { 'Content-Type': 'application/json', 'Origin': BASE_U
 // Per-VU session reuse
 let vuSessionCookie = null
 
+const VUS = parseInt(__ENV.VUS || '30')
+const RAMP = __ENV.RAMP_DURATION || '1m'
+const HOLD = __ENV.HOLD_DURATION || '2m'
+
 export const options = {
   stages: [
-    { duration: '1m', target: 30 },
-    { duration: '2m', target: 30 },
-    { duration: '30s', target: 0 },
+    { duration: RAMP, target: VUS },
+    { duration: HOLD, target: VUS },
+    { duration: RAMP, target: 0 },
   ],
   thresholds: {
     http_req_duration: ['p(95)<1500'],

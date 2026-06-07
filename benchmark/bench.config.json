@@ -1,0 +1,65 @@
+{
+  "defaults": {
+    "cpus": 1,
+    "memory": "512m",
+    "repeats": 3,
+    "warmup": 50
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "username": "greenalgeria",
+    "password": "greenalgeria"
+  },
+  "infrastructure": {
+    "dbContainerName": "green-algeria-db",
+    "storageContainerName": "green-algeria-rustfs",
+    "objectStorageEndpoint": "http://localhost:9000",
+    "objectStorageBucket": "green-algeria",
+    "objectStorageAccessKey": "greenalgeria-access",
+    "objectStorageSecretKey": "greenalgeria-secret-change-me"
+  },
+  "backends": {
+    "nestjs": {
+      "port": 8080,
+      "apiPrefix": "",
+      "healthUrl": "http://localhost:8080/api/health/live",
+      "profile": "nestjs",
+      "dbName": "greenalgeria_nestjs",
+      "containerName": "green-algeria-nestjs"
+    },
+    "springboot": {
+      "port": 8081,
+      "apiPrefix": "/api",
+      "healthUrl": "http://localhost:8081/readyz",
+      "profile": "springboot",
+      "dbName": "greenalgeria_springboot",
+      "containerName": "green-algeria-springboot"
+    },
+    "go": {
+      "port": 8082,
+      "apiPrefix": "",
+      "healthUrl": "http://localhost:8082/readyz",
+      "profile": "go",
+      "dbName": "greenalgeria_go",
+      "containerName": "green-algeria-go"
+    }
+  },
+  "scenarios": {
+    "auth": {
+      "vus": 20,
+      "rampDuration": "30s",
+      "holdDuration": "1m"
+    },
+    "zones": {
+      "vus": 50,
+      "rampDuration": "30s",
+      "holdDuration": "1m"
+    },
+    "mix": {
+      "vus": 30,
+      "rampDuration": "1m",
+      "holdDuration": "2m"
+    }
+  }
+}

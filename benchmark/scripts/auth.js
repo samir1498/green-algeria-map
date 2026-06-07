@@ -7,11 +7,15 @@ const AUTH_BASE = `${BASE_URL}/api/auth`
 // Per-VU session reuse
 let vuSessionCookie = null
 
+const VUS = parseInt(__ENV.VUS || '20')
+const RAMP = __ENV.RAMP_DURATION || '30s'
+const HOLD = __ENV.HOLD_DURATION || '1m'
+
 export const options = {
   stages: [
-    { duration: '30s', target: 20 },
-    { duration: '1m', target: 20 },
-    { duration: '30s', target: 0 },
+    { duration: RAMP, target: VUS },
+    { duration: HOLD, target: VUS },
+    { duration: RAMP, target: 0 },
   ],
   thresholds: {
     http_req_duration: ['p(95)<2000'],
