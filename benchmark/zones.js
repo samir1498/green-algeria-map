@@ -1,4 +1,4 @@
-import { check, sleep, group } from 'k6'
+import { check, group } from 'k6'
 import http from 'k6/http'
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080'
@@ -43,5 +43,5 @@ export default function () {
     }), params)
     check(create, { 'create zone': (r) => r.status === 200 || r.status === 201 })
   })
-  sleep(1)
 }
+
