@@ -83,12 +83,6 @@ export async function generateDryRunReport(config: BenchConfig, opts: RunOptions
 async function runNestjsPreStart(config: BenchConfig): Promise<void> {
   const root = getRoot();
   const nestDir = resolve(root, "backend-nestjs");
-  const distExists = await Bun.file(resolve(nestDir, "dist/main.js")).exists();
-  if (!distExists) {
-    consola.info("  -> [NestJS] dist/ not found, building...");
-    const buildResult = await run("pnpm", ["build"], { cwd: nestDir, stream: true });
-    if (buildResult.exitCode !== 0) throw new Error("NestJS build failed");
-  }
   consola.info("  -> [NestJS] Running migrations + seed...");
   const { database, infrastructure } = config;
   const dbEnv = {
@@ -109,8 +103,17 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
       OO_OBJECT_STORAGE_SECRET_KEY: infrastructure.objectStorageSecretKey,
     },
   });
-  await run("pnpm", ["migration:run"], { cwd: nestDir, env: dbEnv, stream: true });
-  await run("pnpm", ["seed"], { cwd: nestDir, env: dbEnv });
+  await run("docker", [
+    "exec",
+    infrastructure.dbContainerName,
+    "psql",
+    "-U",
+    database.username,
+    "-d",
+    "greenalgeria_nestjs",
+    "-c",
+    "SELECT 1;",
+  ]);
 }
 
 async function runGoMigrations(config: BenchConfig): Promise<void> {
@@ -177,16 +180,19 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
     await runGoMigrations(config);
     consola.info("  -> [NestJS] Ensuring database exists...");
     const { database } = config;
-    await run("docker", [
+    const dbCreateResult = await run("docker", [
       "exec",
-      "-i",
       infrastructure.dbContainerName,
       "psql",
       "-U",
       database.username,
       "-c",
-      "CREATE DATABASE greenalgeria_nestjs",
+      "CREATE DATABASE IF NOT EXISTS greenalgeria_nestjs;",
     ]);
+    if (dbCreateResult.exitCode !== 0 && !dbCreateResult.stderr.includes("already exists")) {
+      consola.warn("Database may already exist or other issue:", dbCreateResult.stderr);
+    }
+    consola.success("  Databases ready");
 
     await Bun.write(
       resolve(outdir, "config.json"),

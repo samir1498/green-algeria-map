@@ -12,21 +12,32 @@ export async function startInfra(): Promise<void> {
   consola.info("Starting shared infrastructure (postgres + rustfs)...");
   const result = await run("docker", ["compose", "up", "-d", "postgres", "rustfs", "--wait"], { cwd: ROOT });
   if (result.exitCode !== 0) {
+    consola.info("  Waiting for services (--wait flag failed, polling manually)...");
     await run("docker", ["compose", "up", "-d", "postgres", "rustfs"], { cwd: ROOT });
   }
 }
 
 export async function verifyInfra(): Promise<void> {
+  consola.info("  Verifying database...");
   for (let i = 0; i < 30; i++) {
     const result = await run("docker", ["exec", "green-algeria-db", "pg_isready", "-U", "greenalgeria"]);
-    if (result.exitCode === 0) break;
+    if (result.exitCode === 0) {
+      consola.success("  Database ready");
+      break;
+    }
+    if (i % 5 === 0) consola.info(`    Waiting... (attempt ${i + 1}/30)`);
     await Bun.sleep(2000);
   }
+  consola.info("  Verifying object storage...");
   for (let i = 0; i < 30; i++) {
     try {
       const res = await fetch("http://localhost:9000/");
-      if (res.ok) break;
+      if (res.ok) {
+        consola.success("  Object storage ready");
+        break;
+      }
     } catch {
+      if (i % 5 === 0) consola.info(`    Waiting... (attempt ${i + 1}/30)`);
       await Bun.sleep(2000);
     }
   }
