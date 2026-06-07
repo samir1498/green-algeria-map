@@ -17,8 +17,8 @@ import (
 )
 
 var (
-	testPool        *pgxpool.Pool
-	testContainer   testcontainers.Container
+	testPool      *pgxpool.Pool
+	testContainer testcontainers.Container
 )
 
 func TestMain(m *testing.M) {

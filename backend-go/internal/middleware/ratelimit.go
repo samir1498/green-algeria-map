@@ -25,7 +25,7 @@ var (
 const defaultCapacity = 20
 
 type limitConfig struct {
-	rps float64
+	rps   float64
 	burst int
 }
 
