@@ -10,6 +10,12 @@ describe("E2E: Shell & Config", () => {
     expect(result.stdout).toContain(".");
   });
 
+  it("resolves pnpm with different cwd", async () => {
+    const result = await run("pnpm", ["--version"], { cwd: "/tmp" });
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain(".");
+  });
+
   it("resolves npm from PATH", async () => {
     const result = await run("npm", ["--version"]);
     expect(result.exitCode).toBe(0);
