@@ -11,31 +11,14 @@ export interface ShellOptions {
   timeout?: number;
 }
 
-async function resolveCommand(cmd: string): Promise<string> {
-  const whichResult = Bun.spawn({
-    cmd: ["which", cmd],
-    stdout: "pipe",
-  });
-
-  const exitCode = await whichResult.exited;
-  if (exitCode === 0) {
-    const path = await new Response(whichResult.stdout).text();
-    return path.trim();
-  }
-
-  return cmd;
-}
-
 export async function run(
   cmd: string,
   args: string[],
   opts: ShellOptions = {},
 ): Promise<ShellResult> {
-  const resolvedCmd = await resolveCommand(cmd);
-
   try {
     const proc = Bun.spawn({
-      cmd: [resolvedCmd, ...args],
+      cmd: [cmd, ...args],
       cwd: opts.cwd ?? process.cwd(),
       env: { ...process.env, ...opts.env },
       stdout: opts.stream ? "inherit" : "pipe",
