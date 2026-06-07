@@ -83,8 +83,21 @@ export async function generateDryRunReport(config: BenchConfig, opts: RunOptions
 async function runNestjsPreStart(config: BenchConfig): Promise<void> {
   const root = getRoot();
   const nestDir = resolve(root, "backend-nestjs");
-  consola.info("  -> [NestJS] Running migrations + seed...");
+
+  // Check if dist exists; build if missing
+  const distExists = await Bun.file(resolve(nestDir, "dist/main.js")).exists();
+  if (!distExists) {
+    consola.info("  -> [NestJS] dist/ not found, building locally...");
+    const buildResult = await run("pnpm", ["build"], { cwd: nestDir, stream: true });
+    if (buildResult.exitCode !== 0) throw new Error("NestJS build failed");
+  } else {
+    consola.info("  -> [NestJS] dist/ found, skipping build");
+  }
+
   const { database, infrastructure } = config;
+
+  // Create S3 bucket
+  consola.info("  -> [NestJS] Creating object storage bucket...");
   const dbEnv = {
     DB_HOST: database.host,
     DB_PORT: String(database.port),
@@ -103,17 +116,19 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
       OO_OBJECT_STORAGE_SECRET_KEY: infrastructure.objectStorageSecretKey,
     },
   });
-  await run("docker", [
+
+  // Run migrations inside container
+  consola.info("  -> [NestJS] Running migrations...");
+  const migrationResult = await run("docker", [
     "exec",
-    infrastructure.dbContainerName,
-    "psql",
-    "-U",
-    database.username,
-    "-d",
-    "greenalgeria_nestjs",
-    "-c",
-    "SELECT 1;",
+    "green-algeria-nestjs",
+    "npm",
+    "run",
+    "migration:run",
   ]);
+  if (migrationResult.exitCode !== 0) {
+    consola.warn("Migration output:", migrationResult.stderr || migrationResult.stdout);
+  }
 }
 
 async function runGoMigrations(config: BenchConfig): Promise<void> {
