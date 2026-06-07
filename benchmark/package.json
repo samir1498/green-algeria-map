@@ -7,7 +7,7 @@
     "bench": "./src/index.ts"
   },
   "scripts": {
-    "start": "bun run src/index.ts",
+    "bench": "bun run src/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src/",
     "format": "biome format src/ --write",
