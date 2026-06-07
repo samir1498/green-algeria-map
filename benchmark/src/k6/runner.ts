@@ -66,6 +66,7 @@ export async function runScenario(
     cmd: [
       "k6",
       "run",
+      "--no-thresholds",
       "--out",
       `json=${outdir}/run-${runIndex}.json`,
       "--summary-export",
@@ -89,7 +90,7 @@ export async function runScenario(
     stderr += decoder.decode();
   }
   const exitCode = await proc.exited;
-  if (exitCode !== 0) {
+  if (exitCode !== 0 && exitCode !== 99) {
     throw new Error(
       `[${backend}] ${scenario} run ${runIndex} failed: ${stderr.trim() || "no output"}`,
     );

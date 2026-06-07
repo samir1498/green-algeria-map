@@ -347,7 +347,7 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
     );
   } catch (err) {
     consola.error("Pipeline failed:", err);
-    await fullCleanup();
+    consola.info("Infrastructure left running. Clean up manually with: bun run bench clean");
     process.exit(1);
   }
 }
