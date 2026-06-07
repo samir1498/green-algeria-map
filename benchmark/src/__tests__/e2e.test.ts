@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeAll, afterAll } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { resolve } from "node:path";
-import { run } from "../shell";
 import { loadConfig } from "../loader";
+import { run } from "../shell";
 
 describe("E2E: Shell & Config", () => {
   it("resolves pnpm from PATH", async () => {
@@ -138,12 +138,7 @@ describe("E2E: Command Building", () => {
 
 describe("E2E: Error Handling", () => {
   it("handles docker exec failure", async () => {
-    const result = await run("docker", [
-      "exec",
-      "-i",
-      "nonexistent-container",
-      "ls",
-    ]);
+    const result = await run("docker", ["exec", "-i", "nonexistent-container", "ls"]);
     expect(result.exitCode).not.toBe(0);
     expect(result.stderr).toContain("Error");
   });

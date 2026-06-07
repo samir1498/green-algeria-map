@@ -4,6 +4,10 @@ import { run } from "../shell";
 
 const ROOT = resolve(import.meta.dir, "../../../..");
 
+function failureMessage(result: { exitCode: number; stdout: string; stderr: string }, command: string): string {
+  return `${command} failed with exit code ${result.exitCode}: ${result.stderr || result.stdout || "no output"}`;
+}
+
 export function getRoot(): string {
   return ROOT;
 }
@@ -13,27 +17,38 @@ export async function startInfra(): Promise<void> {
   const result = await run("docker", ["compose", "up", "-d", "postgres", "rustfs", "--wait"], { cwd: ROOT });
   if (result.exitCode !== 0) {
     consola.info("  Waiting for services (--wait flag failed, polling manually)...");
-    await run("docker", ["compose", "up", "-d", "postgres", "rustfs"], { cwd: ROOT });
+    const retry = await run("docker", ["compose", "up", "-d", "postgres", "rustfs"], { cwd: ROOT });
+    if (retry.exitCode !== 0) {
+      throw new Error(failureMessage(retry, "docker compose up -d postgres rustfs"));
+    }
   }
 }
 
 export async function verifyInfra(): Promise<void> {
   consola.info("  Verifying database...");
+  let databaseReady = false;
   for (let i = 0; i < 30; i++) {
     const result = await run("docker", ["exec", "green-algeria-db", "pg_isready", "-U", "greenalgeria"]);
     if (result.exitCode === 0) {
       consola.success("  Database ready");
+      databaseReady = true;
       break;
     }
     if (i % 5 === 0) consola.info(`    Waiting... (attempt ${i + 1}/30)`);
     await Bun.sleep(2000);
   }
+  if (!databaseReady) {
+    throw new Error("Postgres was not ready after 30 attempts");
+  }
+
   consola.info("  Verifying object storage...");
+  let storageReady = false;
   for (let i = 0; i < 30; i++) {
     try {
       const res = await fetch("http://localhost:9000/");
       if (res.ok) {
         consola.success("  Object storage ready");
+        storageReady = true;
         break;
       }
     } catch {
@@ -41,6 +56,10 @@ export async function verifyInfra(): Promise<void> {
       await Bun.sleep(2000);
     }
   }
+  if (!storageReady) {
+    throw new Error("RustFS was not ready after 30 attempts");
+  }
+
   consola.success("Infrastructure verified");
 }
 
@@ -48,7 +67,10 @@ export async function startBackend(profile: string): Promise<void> {
   consola.info(`Starting ${profile}...`);
   const result = await run("docker", ["compose", "--profile", profile, "up", "-d", "--wait"], { cwd: ROOT });
   if (result.exitCode !== 0) {
-    await run("docker", ["compose", "--profile", profile, "up", "-d"], { cwd: ROOT });
+    const retry = await run("docker", ["compose", "--profile", profile, "up", "-d"], { cwd: ROOT });
+    if (retry.exitCode !== 0) {
+      throw new Error(failureMessage(retry, `docker compose --profile ${profile} up -d`));
+    }
   }
 }
 

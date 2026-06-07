@@ -11,27 +11,56 @@ export interface ShellOptions {
   timeout?: number;
 }
 
-export async function run(
-  cmd: string,
-  args: string[],
-  opts: ShellOptions = {},
-): Promise<ShellResult> {
+async function readStream(
+  stream: ReadableStream<Uint8Array> | null | undefined,
+  forwardTo?: { write: (chunk: string) => unknown },
+): Promise<string> {
+  if (!stream) return "";
+
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let output = "";
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    const chunk = decoder.decode(value, { stream: true });
+    output += chunk;
+    if (forwardTo && chunk.length > 0) {
+      forwardTo.write(chunk);
+    }
+  }
+
+  const tail = decoder.decode();
+  if (tail.length > 0) {
+    output += tail;
+    if (forwardTo) {
+      forwardTo.write(tail);
+    }
+  }
+
+  return output;
+}
+
+export async function run(cmd: string, args: string[], opts: ShellOptions = {}): Promise<ShellResult> {
   try {
     const proc = Bun.spawn({
       cmd: [cmd, ...args],
       cwd: opts.cwd ?? process.cwd(),
       env: { ...process.env, ...opts.env },
-      stdout: opts.stream ? "inherit" : "pipe",
-      stderr: opts.stream ? "inherit" : "pipe",
+      stdout: "pipe",
+      stderr: "pipe",
     });
 
     if (opts.timeout) {
       setTimeout(() => proc.kill(), opts.timeout);
     }
 
+    const stdoutPromise = readStream(proc.stdout, opts.stream ? process.stdout : undefined);
+    const stderrPromise = readStream(proc.stderr, opts.stream ? process.stderr : undefined);
     const exitCode = await proc.exited;
-    const stdout = opts.stream ? "" : await new Response(proc.stdout).text();
-    const stderr = opts.stream ? "" : await new Response(proc.stderr).text();
+    const [stdout, stderr] = await Promise.all([stdoutPromise, stderrPromise]);
 
     return { exitCode, stdout: stdout.trim(), stderr: stderr.trim() };
   } catch (err) {

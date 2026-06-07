@@ -80,16 +80,68 @@ export async function generateDryRunReport(config: BenchConfig, opts: RunOptions
   return outPath;
 }
 
+async function ensureDatabaseExists(config: BenchConfig, dbName: string): Promise<void> {
+  const { database, infrastructure } = config;
+  const checkResult = await run("docker", [
+    "exec",
+    "-i",
+    infrastructure.dbContainerName,
+    "psql",
+    "-U",
+    database.username,
+    "-d",
+    "postgres",
+    "-tAc",
+    `SELECT 1 FROM pg_database WHERE datname = '${dbName}'`,
+  ]);
+  if (checkResult.exitCode !== 0) {
+    throw new Error(`Failed to check database ${dbName}: ${checkResult.stderr || checkResult.stdout || "no output"}`);
+  }
+
+  if (checkResult.stdout.trim() === "1") {
+    consola.info(`  -> [Postgres] ${dbName} database already exists`);
+    return;
+  }
+
+  consola.info(`  -> [Postgres] Creating ${dbName} database...`);
+  const createResult = await run("docker", [
+    "exec",
+    "-i",
+    infrastructure.dbContainerName,
+    "psql",
+    "-U",
+    database.username,
+    "-d",
+    "postgres",
+    "-v",
+    "ON_ERROR_STOP=1",
+    "-c",
+    `CREATE DATABASE "${dbName}"`,
+  ]);
+  if (createResult.exitCode !== 0) {
+    throw new Error(
+      `Failed to create database ${dbName}: ${createResult.stderr || createResult.stdout || "no output"}`,
+    );
+  }
+}
+
 async function runNestjsPreStart(config: BenchConfig): Promise<void> {
   const root = getRoot();
   const nestDir = resolve(root, "backend-nestjs");
+  const nestBackend = config.backends.nestjs;
+  if (!nestBackend) {
+    throw new Error("NestJS backend configuration is missing");
+  }
+  const dbName = nestBackend.dbName;
 
   // Check if dist exists; build if missing
   const distExists = await Bun.file(resolve(nestDir, "dist/main.js")).exists();
   if (!distExists) {
     consola.info("  -> [NestJS] dist/ not found, building locally...");
     const buildResult = await run("pnpm", ["build"], { cwd: nestDir, stream: true });
-    if (buildResult.exitCode !== 0) throw new Error("NestJS build failed");
+    if (buildResult.exitCode !== 0) {
+      throw new Error(`NestJS build failed: ${buildResult.stderr || buildResult.stdout || "no output"}`);
+    }
   } else {
     consola.info("  -> [NestJS] dist/ found, skipping build");
   }
@@ -103,10 +155,10 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
     DB_PORT: String(database.port),
     DB_USERNAME: database.username,
     DB_PASSWORD: database.password,
-    DB_NAME: "greenalgeria_nestjs",
-    DATABASE_URL: `postgresql://${database.username}:${database.password}@${database.host}:${database.port}/greenalgeria_nestjs`,
+    DB_NAME: dbName,
+    DATABASE_URL: `postgresql://${database.username}:${database.password}@${database.host}:${database.port}/${dbName}`,
   };
-  await run("node", ["scripts/create-bucket.mjs"], {
+  const bucketResult = await run("node", ["scripts/create-bucket.mjs"], {
     cwd: nestDir,
     env: {
       ...dbEnv,
@@ -115,19 +167,34 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
       OO_OBJECT_STORAGE_ACCESS_KEY: infrastructure.objectStorageAccessKey,
       OO_OBJECT_STORAGE_SECRET_KEY: infrastructure.objectStorageSecretKey,
     },
+    stream: true,
   });
+  if (bucketResult.exitCode !== 0) {
+    throw new Error(`NestJS bucket creation failed: ${bucketResult.stderr || bucketResult.stdout || "no output"}`);
+  }
 
   // Run migrations locally (TypeScript files available locally, not in Docker image)
   consola.info("  -> [NestJS] Running migrations locally...");
   const migrationResult = await run("npx", ["typeorm-ts-node-commonjs", "migration:run", "-d", "src/data-source.ts"], {
     cwd: nestDir,
     env: dbEnv,
+    stream: true,
   });
   if (migrationResult.exitCode !== 0) {
-    consola.warn("Migration warning:", migrationResult.stderr || migrationResult.stdout);
-  } else {
-    consola.success("  Migrations completed");
+    throw new Error(`NestJS migration failed: ${migrationResult.stderr || migrationResult.stdout || "no output"}`);
   }
+
+  consola.info("  -> [NestJS] Seeding demo data...");
+  const seedResult = await run("pnpm", ["seed"], {
+    cwd: nestDir,
+    env: dbEnv,
+    stream: true,
+  });
+  if (seedResult.exitCode !== 0) {
+    throw new Error(`NestJS seed failed: ${seedResult.stderr || seedResult.stdout || "no output"}`);
+  }
+
+  consola.success("  NestJS bootstrap completed");
 }
 
 async function runGoMigrations(config: BenchConfig): Promise<void> {
@@ -139,18 +206,25 @@ async function runGoMigrations(config: BenchConfig): Promise<void> {
   if (!upSection) return;
   consola.info("  -> [Go] Running migrations...");
   const { database, infrastructure } = config;
-  await run("docker", [
-    "exec",
-    "-i",
-    infrastructure.dbContainerName,
-    "psql",
-    "-U",
-    database.username,
-    "-d",
-    "greenalgeria_go",
-    "-c",
-    upSection,
-  ]);
+  const migrationResult = await run(
+    "docker",
+    [
+      "exec",
+      "-i",
+      infrastructure.dbContainerName,
+      "psql",
+      "-U",
+      database.username,
+      "-d",
+      "greenalgeria_go",
+      "-c",
+      upSection,
+    ],
+    { stream: true },
+  );
+  if (migrationResult.exitCode !== 0) {
+    throw new Error(`Go migrations failed: ${migrationResult.stderr || migrationResult.stdout || "no output"}`);
+  }
 }
 
 export async function runPipeline(opts: RunOptions): Promise<void> {
@@ -191,21 +265,10 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
 
     section("Running migrations");
     consola.info("  -> [Spring Boot] Migrations run on startup");
-    await runGoMigrations(config);
-    consola.info("  -> [NestJS] Ensuring database exists...");
-    const { database } = config;
-    const dbCreateResult = await run("docker", [
-      "exec",
-      infrastructure.dbContainerName,
-      "psql",
-      "-U",
-      database.username,
-      "-c",
-      "CREATE DATABASE IF NOT EXISTS greenalgeria_nestjs;",
-    ]);
-    if (dbCreateResult.exitCode !== 0 && !dbCreateResult.stderr.includes("already exists")) {
-      consola.warn("Database may already exist or other issue:", dbCreateResult.stderr);
+    for (const backend of Object.values(config.backends)) {
+      await ensureDatabaseExists(config, backend.dbName);
     }
+    await runGoMigrations(config);
     consola.success("  Databases ready");
 
     await Bun.write(
