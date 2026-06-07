@@ -1,4 +1,4 @@
-import { check, sleep } from 'k6'
+import { check } from 'k6'
 import http from 'k6/http'
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080'
@@ -72,7 +72,6 @@ export function authScenario() {
   const session = http.get(`${AUTH_BASE}/get-session`)
   check(session, { 'session': (r) => r.status === 200 })
 
-  sleep(1)
 }
 
 export function zonesScenario() {
@@ -97,7 +96,6 @@ export function zonesScenario() {
   const create = http.post(ZONE_BASE, JSON.stringify(zonePayload), params)
   check(create, { 'create zone': (r) => r.status === 200 || r.status === 201 })
 
-  sleep(1)
 }
 
 export function mixScenario() {
@@ -128,5 +126,5 @@ export function mixScenario() {
     check(resp, { 'write': (r) => r.status === 200 || r.status === 201 })
   }
 
-  sleep(1)
 }
+

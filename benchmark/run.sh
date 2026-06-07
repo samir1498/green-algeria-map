@@ -1,24 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BACKEND="${1:-nestjs}"
-if [ "$BACKEND" != "nestjs" ] && [ "$BACKEND" != "springboot" ]; then
-  echo "Usage: $0 {nestjs|springboot}"
-  exit 1
-fi
+# Map backend name to config
+case "${1:-nestjs}" in
+  nestjs)
+    BASE_URL="http://localhost:8080"
+    API_PREFIX=""
+    ;;
+  springboot)
+    BASE_URL="http://localhost:8081"
+    API_PREFIX="/api"
+    ;;
+  go)
+    BASE_URL="http://localhost:8082"
+    API_PREFIX=""
+    ;;
+  *)
+    echo "Usage: $0 {nestjs|springboot|go}"
+    exit 1
+    ;;
+esac
 
-if [ "$BACKEND" = "nestjs" ]; then
-  BASE_URL="http://localhost:8080"
-  API_PREFIX=""
-else
-  BASE_URL="http://localhost:8081"
-  API_PREFIX="/api"
-fi
-
-OUTDIR="results/$(date +%Y%m%d-%H%M)-$BACKEND"
+OUTDIR="results/$(date +%Y%m%d-%H%M)-$1"
 mkdir -p "$OUTDIR"
 
-echo "=== Benchmarking $BACKEND at $BASE_URL ==="
+echo "=== Benchmarking $1 at $BASE_URL ==="
 echo ""
 
 for SCENARIO in auth zones mix; do
