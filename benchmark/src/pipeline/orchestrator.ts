@@ -330,7 +330,7 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
         }
       }
 
-      stats.stop();
+      await stats.stop();
       step(backendName, "Generating summary...");
       await aggregateResults(backendName, resolve(outdir, backendName), opts.scenarios, opts.repeats);
       await stopBackend(backend.profile, backend.containerName, backend.port);
