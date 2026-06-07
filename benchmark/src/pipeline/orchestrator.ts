@@ -8,7 +8,7 @@ import { waitForHealth, waitForPortFree } from "../health";
 import { runScenario, runWarmup } from "../k6/runner";
 import { loadConfig } from "../loader";
 import { banner, formatDuration, section, step, timer } from "../logger";
-import { aggregateResults } from "../results/aggregate";
+import { aggregateResults } from "../report/aggregate";
 import { run } from "../shell";
 import type { BenchConfig, RunOptions } from "../types";
 

@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { defineCommand } from "citty";
-import { formatJson, formatMarkdown, formatTable, loadComparisonData } from "../results/compare";
+import { formatJson, formatMarkdown, formatTable, loadComparisonData } from "../report/compare";
 
 export const compareCommand = defineCommand({
   meta: { name: "compare", description: "Compare benchmark results" },

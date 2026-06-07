@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { determineWinner } from "../results/compare";
+import { determineWinner } from "../report/compare";
 
 describe("determineWinner", () => {
   it("returns null for less than 2 rows", () => {
