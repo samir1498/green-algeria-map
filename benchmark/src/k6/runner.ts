@@ -5,21 +5,28 @@ import { step } from "../logger";
 import { run } from "../shell";
 import type { BackendConfig, ScenarioConfig } from "../types";
 
-const BENCHMARK_DIR = resolve(import.meta.dir, "../../..");
+const BENCHMARK_DIR = resolve(import.meta.dir, "../..");
 
 export async function runWarmup(backend: string, config: BackendConfig, iterations: number): Promise<void> {
   step(backend, `Warmup (${iterations} iterations)...`);
+  // Use auth.js for warmup — override stages via -e STAGES to avoid --iterations/stages conflict
   const result = await run(
     "k6",
     [
       "run",
-      "--iterations",
-      String(iterations),
+      "--vus",
+      "1",
+      "--duration",
+      `${iterations}s`,
       "-e",
       `BASE_URL=http://localhost:${config.port}`,
       "-e",
       `API_PREFIX=${config.apiPrefix}`,
-      "scripts/all.js",
+      "-e",
+      "RAMP_DURATION=0s",
+      "-e",
+      "HOLD_DURATION=0s",
+      "scripts/auth.js",
     ],
     { cwd: BENCHMARK_DIR },
   );
@@ -65,7 +72,7 @@ export async function runScenario(
       ...env,
       `scripts/${scenario}.js`,
     ],
-    { cwd: BENCHMARK_DIR, stream: true },
+    { cwd: BENCHMARK_DIR, stream: true, suppressStderr: true },
   );
   if (result.exitCode !== 0) {
     throw new Error(
