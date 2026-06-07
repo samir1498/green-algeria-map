@@ -5,6 +5,20 @@
     "repeats": 3,
     "warmup": 50
   },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "username": "greenalgeria",
+    "password": "greenalgeria"
+  },
+  "infrastructure": {
+    "dbContainerName": "green-algeria-db",
+    "storageContainerName": "green-algeria-rustfs",
+    "objectStorageEndpoint": "http://localhost:9000",
+    "objectStorageBucket": "green-algeria",
+    "objectStorageAccessKey": "greenalgeria-access",
+    "objectStorageSecretKey": "greenalgeria-secret-change-me"
+  },
   "backends": {
     "nestjs": {
       "port": 8080,

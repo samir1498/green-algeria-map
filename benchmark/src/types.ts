@@ -20,8 +20,26 @@ export interface DefaultsConfig {
   warmup: number;
 }
 
+export interface DatabaseConfig {
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+}
+
+export interface InfrastructureConfig {
+  dbContainerName: string;
+  storageContainerName: string;
+  objectStorageEndpoint: string;
+  objectStorageBucket: string;
+  objectStorageAccessKey: string;
+  objectStorageSecretKey: string;
+}
+
 export interface BenchConfig {
   defaults: DefaultsConfig;
+  database: DatabaseConfig;
+  infrastructure: InfrastructureConfig;
   backends: Record<string, BackendConfig>;
   scenarios: Record<string, ScenarioConfig>;
 }

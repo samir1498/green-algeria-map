@@ -80,7 +80,7 @@ export async function generateDryRunReport(config: BenchConfig, opts: RunOptions
   return outPath;
 }
 
-async function runNestjsPreStart(): Promise<void> {
+async function runNestjsPreStart(config: BenchConfig): Promise<void> {
   const root = getRoot();
   const nestDir = resolve(root, "backend-nestjs");
   const distExists = await Bun.file(resolve(nestDir, "dist/main.js")).exists();
@@ -90,29 +90,30 @@ async function runNestjsPreStart(): Promise<void> {
     if (buildResult.exitCode !== 0) throw new Error("NestJS build failed");
   }
   consola.info("  -> [NestJS] Running migrations + seed...");
+  const { database, infrastructure } = config;
   const dbEnv = {
-    DB_HOST: "localhost",
-    DB_PORT: "5432",
-    DB_USERNAME: "greenalgeria",
-    DB_PASSWORD: "greenalgeria",
+    DB_HOST: database.host,
+    DB_PORT: String(database.port),
+    DB_USERNAME: database.username,
+    DB_PASSWORD: database.password,
     DB_NAME: "greenalgeria_nestjs",
-    DATABASE_URL: "postgresql://greenalgeria:greenalgeria@localhost:5432/greenalgeria_nestjs",
+    DATABASE_URL: `postgresql://${database.username}:${database.password}@${database.host}:${database.port}/greenalgeria_nestjs`,
   };
   await run("node", ["scripts/create-bucket.mjs"], {
     cwd: nestDir,
     env: {
       ...dbEnv,
-      OO_OBJECT_STORAGE_ENDPOINT: "http://localhost:9000",
-      OO_OBJECT_STORAGE_BUCKET: "green-algeria",
-      OO_OBJECT_STORAGE_ACCESS_KEY: "greenalgeria-access",
-      OO_OBJECT_STORAGE_SECRET_KEY: "greenalgeria-secret-change-me",
+      OO_OBJECT_STORAGE_ENDPOINT: infrastructure.objectStorageEndpoint,
+      OO_OBJECT_STORAGE_BUCKET: infrastructure.objectStorageBucket,
+      OO_OBJECT_STORAGE_ACCESS_KEY: infrastructure.objectStorageAccessKey,
+      OO_OBJECT_STORAGE_SECRET_KEY: infrastructure.objectStorageSecretKey,
     },
   });
   await run("pnpm", ["migration:run"], { cwd: nestDir, env: dbEnv, stream: true });
   await run("pnpm", ["seed"], { cwd: nestDir, env: dbEnv });
 }
 
-async function runGoMigrations(): Promise<void> {
+async function runGoMigrations(config: BenchConfig): Promise<void> {
   const root = getRoot();
   const migrationFile = resolve(root, "backend-go/migrations/001_init.sql");
   if (!(await Bun.file(migrationFile).exists())) return;
@@ -120,13 +121,14 @@ async function runGoMigrations(): Promise<void> {
   const upSection = sql.match(/goose Up([\s\S]*?)goose Down/)?.[1]?.trim();
   if (!upSection) return;
   consola.info("  -> [Go] Running migrations...");
+  const { database, infrastructure } = config;
   await run("docker", [
     "exec",
     "-i",
-    "green-algeria-db",
+    infrastructure.dbContainerName,
     "psql",
     "-U",
-    "greenalgeria",
+    database.username,
     "-d",
     "greenalgeria_go",
     "-c",
@@ -164,22 +166,24 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
     await fullCleanup();
     section("Starting shared infrastructure");
     await startInfra();
-    for (const c of ["green-algeria-db", "green-algeria-rustfs"]) {
+    const { infrastructure } = config;
+    for (const c of [infrastructure.dbContainerName, infrastructure.storageContainerName]) {
       await applyLimits(c, opts.cpus, opts.memory);
     }
     await verifyInfra();
 
     section("Running migrations");
     consola.info("  -> [Spring Boot] Migrations run on startup");
-    await runGoMigrations();
+    await runGoMigrations(config);
     consola.info("  -> [NestJS] Ensuring database exists...");
+    const { database } = config;
     await run("docker", [
       "exec",
       "-i",
-      "green-algeria-db",
+      infrastructure.dbContainerName,
       "psql",
       "-U",
-      "greenalgeria",
+      database.username,
       "-c",
       "CREATE DATABASE greenalgeria_nestjs",
     ]);
@@ -211,7 +215,7 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
 
       consola.box(`Benchmarking: ${backendName}\n  profile: ${backend.profile} | DB: ${backend.dbName}`);
 
-      if (backendName === "nestjs") await runNestjsPreStart();
+      if (backendName === "nestjs") await runNestjsPreStart(config);
 
       await startBackend(backend.profile);
       await applyLimits(backend.containerName, opts.cpus, opts.memory);
