@@ -9,7 +9,7 @@ const BENCHMARK_DIR = resolve(import.meta.dir, "../../..");
 
 export async function runWarmup(backend: string, config: BackendConfig, iterations: number): Promise<void> {
   step(backend, `Warmup (${iterations} iterations)...`);
-  await run(
+  const result = await run(
     "k6",
     [
       "run",
@@ -23,6 +23,9 @@ export async function runWarmup(backend: string, config: BackendConfig, iteratio
     ],
     { cwd: BENCHMARK_DIR },
   );
+  if (result.exitCode !== 0) {
+    throw new Error(`Warmup failed for ${backend}: ${result.stderr || result.stdout || "no output"}`);
+  }
   step(backend, "Warmup complete");
 }
 
@@ -65,6 +68,8 @@ export async function runScenario(
     { cwd: BENCHMARK_DIR, stream: true },
   );
   if (result.exitCode !== 0) {
-    consola.warn(`[${backend}] ${scenario} run ${runIndex} had failures`);
+    throw new Error(
+      `[${backend}] ${scenario} run ${runIndex} failed: ${result.stderr || result.stdout || "no output"}`,
+    );
   }
 }
