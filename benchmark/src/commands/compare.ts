@@ -1,7 +1,7 @@
 import { readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { defineCommand } from "citty";
-import { formatJson, formatMarkdown, formatTable, loadComparisonData } from "../report/compare";
+import { formatJson, formatMarkdown, formatTable, loadComparisonData, loadDockerStats } from "../report/compare";
 
 async function findLatestResultDir(): Promise<string | null> {
   const resultsDir = resolve(import.meta.dir, "../../results");
@@ -31,7 +31,7 @@ export const compareCommand = defineCommand({
       process.exit(1);
     }
     const dir = resolve(dirArg);
-    const backends = await loadComparisonData(dir);
+    const [backends, stats] = await Promise.all([loadComparisonData(dir), loadDockerStats(dir)]);
 
     if (backends.size === 0) {
       console.error("No results found in", dir);
@@ -43,10 +43,10 @@ export const compareCommand = defineCommand({
         console.log(formatJson(backends));
         break;
       case "markdown":
-        console.log(formatMarkdown(backends));
+        console.log(formatMarkdown(backends, stats));
         break;
       default:
-        console.log(formatTable(backends));
+        console.log(formatTable(backends, stats));
     }
   },
 });

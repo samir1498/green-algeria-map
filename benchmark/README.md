@@ -50,10 +50,13 @@ bun run bench single go -P full                    # with full profile
 ### `bun run bench compare <dir>` — Compare results
 
 ```bash
-bun run bench compare results/20260607-pipeline-1cpu
-bun run bench compare results/20260607-pipeline-1cpu --format json
-bun run bench compare results/20260607-pipeline-1cpu --format markdown
+bun run bench compare results/20260607-pipeline-1cpu          # table with 🥇🥈🥉 + CPU/Mem
+bun run bench compare results/20260607-pipeline-1cpu -f json  # raw JSON
+bun run bench compare results/20260607-pipeline-1cpu -f markdown  # markdown table
 ```
+
+Output includes trophy emoji ranking (sorted by latency, penalizing failures), Iterations,
+Req/s, average CPU%, and average memory per backend parsed from `docker stats` logs.
 
 ### `bun run bench clean` — Cleanup Docker resources
 
@@ -178,33 +181,35 @@ The CLI stops on the first error and does NOT silently skip failures:
 - 🚨 Missing summary file → aggregation refuses to proceed
 - 🚨 Malformed JSON in summary → silently skipped (graceful)
 
-## Results (2026-06-06, 1 CPU)
+## Results (2026-06-08, 1 CPU, fixed pipeline)
 
-### Auth (20 VUs, 2 min)
+Run: `bun run bench compare results/202606081118-pipeline-1cpu`
 
-| Backend | avg | p95 | fail | iter | req/s |
-|---|---|---|---|---|---|
-| **Go** | 274ms | 680ms | 0% | 2,215 | 55 |
-| NestJS | 743ms | 1,708ms | 0% | 824 | 19 |
-| Spring Boot | 318ms | 1,005ms | 0% | 1,907 | 48 |
+### Auth (20 VUs, 30s hold, 3 repeats)
 
-### Zones (50 VUs, 2 min)
+| Rank | Backend | avg | p95 | fail | iter | req/s | CPU | Mem |
+|---|---|---|---|---|---|---|---|---|
+| 🥇 | go | 1ms | 2ms | 0.0% | 4,711,462 | 12,833 | 451.6% | 693MiB |
+| 🥈 | springboot | 1ms | 3ms | 0.0% | 3,604,857 | 9,551 | 312.0% | 1,317MiB |
+| 🥉 | nestjs | 9ms | 22ms | 0.0% | 592,968 | 1,634 | 134.2% | 659MiB |
 
-| Backend | avg | p95 | fail | iter | req/s |
-|---|---|---|---|---|---|
-| **Go** | 480ms | 1,502ms | 50% | 2,368 | 73 |
-| NestJS | 1,657ms | 3,572ms | 0% | 701 | 23 |
-| Spring Boot | 748ms | 2,080ms | 0% | 1,543 | 51 |
+### Zones (50 VUs, 30s hold, 3 repeats)
 
-### Mixed (30 VUs, 3.5 min)
+| Rank | Backend | avg | p95 | fail | iter | req/s | CPU | Mem |
+|---|---|---|---|---|---|---|---|---|
+| 🥇 | go | 301ms | 678ms | 0.0% | 29,897 | 125 | 451.6% | 693MiB |
+| 🥈 | springboot | 947ms | 1,735ms | 0.0% | 9,603 | 40 | 312.0% | 1,317MiB |
+| 🥉 | nestjs | 883ms | 2,123ms | 0.0% | 9,766 | 43 | 134.2% | 659MiB |
 
-| Backend | avg | p95 | fail | iter | req/s |
-|---|---|---|---|---|---|
-| **Go** | 109ms | 441ms | 59.7% | 522 | 80 |
-| NestJS | 268ms | 844ms | 0% | 205 | 32 |
-| Spring Boot | 174ms | 557ms | 0% | 290 | 46 |
+### Mix (30 VUs, 30s hold, 3 repeats)
 
-> ⚠️ These results are from the old pipeline with known issues (non-sequential execution, no session reuse, no warmup, no repeats, wrong Go `apiPrefix`). Re-run with the fixed pipeline for accurate results.
+| Rank | Backend | avg | p95 | fail | iter | req/s | CPU | Mem |
+|---|---|---|---|---|---|---|---|---|---|
+| 🥇 | go | 277ms | 1,055ms | 0.0% | 20,360 | 82 | 451.6% | 693MiB |
+| 🥈 | nestjs | 633ms | 1,743ms | 0.0% | 9,007 | 36 | 134.2% | 659MiB |
+| 🥉 | springboot | 833ms | 1,941ms | 0.0% | 6,655 | 27 | 312.0% | 1,317MiB |
+
+> ✅ These results use the fixed pipeline (sequential execution, session reuse, warmup, 3 repeats, correct Go `apiPrefix`). Go dominates auth throughput and wins zones/mix on latency. Spring Boot uses ~2x the memory of Go/NestJS.
 
 ## Fairness Guarantees
 

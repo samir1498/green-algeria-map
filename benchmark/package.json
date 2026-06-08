@@ -12,8 +12,9 @@
     "lint": "biome check src/",
     "format": "biome format src/ --write",
     "check": "bun run typecheck && bun run lint",
+    "knip": "knip --config knip.config.ts",
     "test": "bun test",
-    "ci": "bun run typecheck && bun run lint && bun test"
+    "ci": "bun run typecheck && bun run lint && bun run knip && bun test"
   },
   "dependencies": {
     "citty": "^0.1.6",
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@types/bun": "latest",
+    "knip": "^6.12.2",
     "typescript": "^5.8.3"
   }
 }
