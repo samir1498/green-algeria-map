@@ -20,12 +20,6 @@ export interface DefaultsConfig {
   warmup: number;
 }
 
-export interface ScenarioOverride {
-  vus?: number;
-  rampDuration?: string;
-  holdDuration?: string;
-}
-
 export interface ProfileConfig {
   repeats?: number;
   warmup?: number;
