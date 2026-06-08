@@ -78,11 +78,12 @@ export async function stopBackend(profile: string, containerName: string, port: 
   await run("docker", ["rm", "-f", containerName]);
 }
 
-export async function fullCleanup(): Promise<void> {
+export async function fullCleanup(removeVolumes = false): Promise<void> {
   consola.info("Cleanup...");
-  await run("docker", ["compose", "down", "--remove-orphans", "-v"], { cwd: ROOT });
+  const vol = removeVolumes ? ["-v"] : [];
+  await run("docker", ["compose", "down", "--remove-orphans", ...vol], { cwd: ROOT });
   for (const profile of ["nestjs", "springboot", "go"]) {
-    await run("docker", ["compose", "--profile", profile, "down", "--remove-orphans", "-v"], { cwd: ROOT });
+    await run("docker", ["compose", "--profile", profile, "down", "--remove-orphans", ...vol], { cwd: ROOT });
   }
   const containers = [
     "green-algeria-db",
