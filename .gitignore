@@ -6,7 +6,7 @@ backend-go/api
 *.log
 .DS_Store
 coverage
-AGENTS.md
+# AGENTS.md is tracked — opencode instructions
 results/
 
 .open-mem/
