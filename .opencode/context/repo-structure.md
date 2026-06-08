@@ -1,4 +1,4 @@
-<!-- Context: main@a933f1c8 -->
+<!-- Context: main@8ed336bc -->
 # repo-structure
 
 Last updated: 2026-06-08
@@ -86,6 +86,7 @@ green-algeria-map/
 - **Shared infra**: postgres (18-alpine, port 5432), rustfs (S3 bucket, ports 9000/9001)
 - **Profiles**: `[nestjs]` (8080), `[springboot]` (8081), `[go]` (8082)
 - Per-backend DB: `greenalgeria_nestjs`, `greenalgeria_springboot`, `greenalgeria_go`
+- Spring Boot: no `JAVA_TOOL_OPTIONS` — pipeline restarts container after `docker update` so JVM reads correct cgroup limit on startup (UseContainerSupport auto-sizes heap)
 
 `config/docker-compose.dev.yml` — infra only (no profiles, used by dev scripts)
 `config/docker-compose.e2e.yml` — E2E infra (separate container names)

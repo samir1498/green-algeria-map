@@ -96,7 +96,6 @@ services:
       rustfs:
         condition: service_healthy
     environment:
-      JAVA_TOOL_OPTIONS: "-XX:InitialRAMPercentage=50.0 -XX:MaxRAMPercentage=50.0 -XX:+UseSerialGC"
       SERVER_PORT: 8081
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/greenalgeria_springboot
       SPRING_DATASOURCE_USERNAME: *pguser

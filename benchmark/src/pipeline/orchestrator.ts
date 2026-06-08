@@ -246,11 +246,11 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
   banner(`BENCHMARK PIPELINE\n  CPUs: ${opts.cpus} | Memory: ${opts.memory} | Repeats: ${opts.repeats}${profileLabel}`);
 
   process.on("SIGINT", async () => {
-    await fullCleanup();
+    await fullCleanup(true);
     process.exit(1);
   });
   process.on("SIGTERM", async () => {
-    await fullCleanup();
+    await fullCleanup(true);
     process.exit(1);
   });
 
@@ -271,6 +271,24 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
       await applyLimits(c, opts.cpus, opts.memory);
     }
     await verifyInfra();
+
+    section("Creating S3 bucket");
+    const root = getRoot();
+    const bucketEnv = {
+      OO_OBJECT_STORAGE_ENDPOINT: infrastructure.objectStorageEndpoint,
+      OO_OBJECT_STORAGE_BUCKET: infrastructure.objectStorageBucket,
+      OO_OBJECT_STORAGE_ACCESS_KEY: infrastructure.objectStorageAccessKey,
+      OO_OBJECT_STORAGE_SECRET_KEY: infrastructure.objectStorageSecretKey,
+      OO_OBJECT_STORAGE_REGION: "us-east-1",
+    };
+    const bucketResult = await run("node", [resolve(root, "backend-nestjs/scripts/create-bucket.mjs")], {
+      env: bucketEnv,
+      stream: true,
+    });
+    if (bucketResult.exitCode !== 0) {
+      throw new Error(`S3 bucket creation failed: ${bucketResult.stderr || bucketResult.stdout}`);
+    }
+    consola.success("  S3 bucket ready");
 
     section("Running migrations");
     consola.info("  -> [Spring Boot] Migrations run on startup");
@@ -312,6 +330,9 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
 
       await startBackend(backend.profile);
       await applyLimits(backend.containerName, opts.cpus, opts.memory);
+      if (backendName === "springboot") {
+        await run("docker", ["restart", backend.containerName]);
+      }
       await waitForHealth(backend.healthUrl, backendName);
 
       if (!opts.skipWarmup) await runWarmup(backendName, backend, opts.warmup);
@@ -347,14 +368,14 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
       await waitForPortFree(backend.port);
     }
 
-    await fullCleanup();
+    await fullCleanup(true);
     const elapsed = pipelineTimer.stop();
     consola.box(
       `PIPELINE COMPLETE\n\n  Results: ${outdir}\n  Duration: ${formatDuration(elapsed)}\n\n  Compare: bun run bench compare ${outdir}`,
     );
   } catch (err) {
     consola.error("Pipeline failed:", err);
-    await fullCleanup();
+    await fullCleanup(true);
     process.exit(1);
   }
 }
