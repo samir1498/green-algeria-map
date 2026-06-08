@@ -204,7 +204,7 @@ Run: `bun run bench compare results/202606081118-pipeline-1cpu`
 ### Mix (30 VUs, 30s hold, 3 repeats)
 
 | Rank | Backend | avg | p95 | fail | iter | req/s | CPU | Mem |
-|---|---|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|---|---|---|
 | 🥇 | go | 277ms | 1,055ms | 0.0% | 20,360 | 82 | 451.6% | 693MiB |
 | 🥈 | nestjs | 633ms | 1,743ms | 0.0% | 9,007 | 36 | 134.2% | 659MiB |
 | 🥉 | springboot | 833ms | 1,941ms | 0.0% | 6,655 | 27 | 312.0% | 1,317MiB |
