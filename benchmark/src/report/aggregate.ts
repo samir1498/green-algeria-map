@@ -16,10 +16,12 @@ function aggregateSummaries(backend: string, scenario: string, summaries: K6Summ
     const fails = summaries.map((s) => s.metrics[key]?.value ?? 0);
     const rates = summaries.map((s) => s.metrics[key]?.rate ?? 0);
     const counts = summaries.map((s) => s.metrics[key]?.count ?? 0);
+    const values = summaries.map((s) => s.metrics[key]?.value ?? 0);
     const hasRate = rates.some((r) => r > 0);
     const hasCount = counts.some((c) => c > 0);
+    const hasValue = values.some((v) => v > 0);
 
-    if (avgs.length > 0 || hasRate || hasCount) {
+    if (avgs.length > 0 || hasRate || hasCount || hasValue) {
       metrics[key] = {
         avgMedian: avgs.length > 0 ? median(avgs) : 0,
         p95Median: p95s.length > 0 ? median(p95s) : 0,
