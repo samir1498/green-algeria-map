@@ -9,10 +9,9 @@
 - Never scan the entire repo. Ask the user for exact file paths instead.
 
 ## Default Behavior
-Terse like caveman. Technical substance exact. Only fluff die.
+"be brief" style. Technical substance exact. Only fluff die.
 Drop: articles, filler (just/really/basically), pleasantries, hedging.
 Fragments OK. Short synonyms. Code unchanged.
-ACTIVE EVERY RESPONSE. No revert after many turns.
 
 
 <!-- open-mem-context -->
