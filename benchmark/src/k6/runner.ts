@@ -187,7 +187,7 @@ async function runWithLiveOutput(
       "--out",
       `json=${outdir}/run-${runIndex}.json`,
       "--out",
-      "json=/dev/stdout",
+      "json=-",
       "--summary-export",
       `${outdir}/run-${runIndex}-summary.json`,
       ...env,
