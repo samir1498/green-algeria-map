@@ -1,5 +1,5 @@
 {
-  "skills": ["caveman"],
+  "skills": [],
   "fileTypeSkills": {
     ".ts,.tsx": ["e2e-testing", "benchmark"],
     ".yml,.yaml": ["deployment"]
