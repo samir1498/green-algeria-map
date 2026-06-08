@@ -1,0 +1,13 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "opencode-plugin-preload-skills",
+    "@tuanhung303/opencode-acp@latest",
+    "opencode-skills-collection@latest",
+    "open-mem"
+  ],
+  "instructions": [
+    "AGENTS.md",
+    ".opencode/context/**/*.md"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "skills": ["caveman"],
+  "fileTypeSkills": {
+    ".ts,.tsx": ["e2e-testing", "benchmark"],
+    ".yml,.yaml": ["deployment"]
+  },
+  "maxTokens": 8000
+}
