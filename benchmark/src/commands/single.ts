@@ -88,6 +88,7 @@ export const singleCommand = defineCommand({
           globalVus ?? so?.vus,
           globalRamp ?? so?.rampDuration,
           globalHold ?? so?.holdDuration,
+          repeats,
         );
       }
     }
