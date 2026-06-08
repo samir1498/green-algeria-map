@@ -1,0 +1,15 @@
+{
+  "enabled": true,
+  "strategies": {
+    "aggressivePruning": {
+      "preset": "balanced"
+    }
+  },
+  "protectedFilePatterns": [
+    "**/opencode.json",
+    "**/opencode.jsonc",
+    "**/.opencode/**",
+    "**/AGENTS.md",
+    "**/SKILL.md"
+  ]
+}
