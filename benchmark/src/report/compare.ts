@@ -120,7 +120,11 @@ export async function loadComparisonData(pipelineDir: string): Promise<Map<strin
 
     const scenarioBucket = backendBucket.get(location.scenario)!;
     if (isAggregatedSummary(parsed)) {
-      if (parsed.metrics.http_reqs?.countTotal !== undefined && parsed.metrics.http_reqs.countTotal > 0) {
+      if (
+        parsed.metrics.http_reqs?.countTotal !== undefined &&
+        parsed.metrics.http_reqs.countTotal > 0 &&
+        parsed.metrics.http_req_failed !== undefined
+      ) {
         scenarioBucket.aggregated = parsed;
       }
       continue;
@@ -161,13 +165,14 @@ function buildComparison(
     const duration = summary.metrics.http_req_duration;
     const reqs = summary.metrics.http_reqs;
     const iterations = summary.metrics.iterations;
+    const failures = summary.metrics.http_req_failed;
     const st = stats[summary.backend];
     if (duration) {
       result[scenario].push({
         backend: summary.backend,
         avg: duration.avgMedian,
         p95: duration.p95Median,
-        failRate: duration.failRateAvg,
+        failRate: failures?.failRateAvg ?? duration.failRateAvg,
         iterations: iterations?.countTotal ?? 0,
         rps: reqs?.rateMedian ?? 0,
         avgCpu: st?.avgCpu,
