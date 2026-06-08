@@ -333,7 +333,10 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
       if (backendName === "springboot") {
         await run("docker", ["restart", backend.containerName]);
       }
+      const startTimer = timer();
       await waitForHealth(backend.healthUrl, backendName);
+      const startupMs = startTimer.stop();
+      await Bun.write(resolve(outdir, `${backendName}-startup.log`), `${startupMs}\n`);
 
       if (!opts.skipWarmup) await runWarmup(backendName, backend, opts.warmup);
 
@@ -357,11 +360,38 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
             opts.vus ?? so?.vus,
             opts.rampDuration ?? so?.rampDuration,
             opts.holdDuration ?? so?.holdDuration,
+            opts.repeats,
           );
         }
       }
 
       await stats.stop();
+
+      if (backendName === "springboot") {
+        const gcResult = await run("docker", [
+          "cp",
+          `${backend.containerName}:/tmp/gc.log`,
+          resolve(outdir, "springboot-gc.log"),
+        ]);
+        if (gcResult.exitCode !== 0) {
+          consola.warn("  GC log not available (non-fatal)");
+        }
+        try {
+          const baseUrl = `http://localhost:${backend.port}`;
+          const jvmMetrics = ["jvm.memory.used", "jvm.memory.max", "jvm.gc.pause"];
+          const jvmData: Record<string, unknown> = {};
+          for (const metric of jvmMetrics) {
+            const resp = await fetch(`${baseUrl}/metrics/${metric}`);
+            if (resp.ok) jvmData[metric] = await resp.json();
+          }
+          if (Object.keys(jvmData).length > 0) {
+            await Bun.write(resolve(outdir, "springboot-jvm-metrics.json"), JSON.stringify(jvmData, null, 2));
+          }
+        } catch {
+          consola.warn("  JVM metrics not available (non-fatal)");
+        }
+      }
+
       step(backendName, "Generating summary...");
       await aggregateResults(backendName, resolve(outdir, backendName), opts.scenarios, opts.repeats);
       await stopBackend(backend.profile, backend.containerName, backend.port);

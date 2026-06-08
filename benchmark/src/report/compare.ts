@@ -7,6 +7,8 @@ const TROPHIES = ["🥇", "🥈", "🥉"];
 interface ComparisonRow {
   backend: string;
   avg: number;
+  med: number;
+  p90: number;
   p95: number;
   failRate: number;
   iterations: number;
@@ -171,6 +173,8 @@ function buildComparison(
       result[scenario].push({
         backend: summary.backend,
         avg: duration.avgMedian,
+        med: duration.medMedian,
+        p90: duration.p90Median,
         p95: duration.p95Median,
         failRate: failures?.failRateAvg ?? duration.failRateAvg,
         iterations: iterations?.countTotal ?? 0,
@@ -200,6 +204,17 @@ function formatVal(v: number | undefined, digits = 0): string {
   return v !== undefined ? String(Math.round(v * 10 ** digits) / 10 ** digits) : "—";
 }
 
+function tallyWins(comparison: Record<string, ComparisonRow[]>): Record<string, number> {
+  const wins: Record<string, number> = {};
+  for (const rows of Object.values(comparison)) {
+    const winner = rankRows(rows)[0];
+    if (winner && rows.length > 1) {
+      wins[winner.backend] = (wins[winner.backend] ?? 0) + 1;
+    }
+  }
+  return wins;
+}
+
 export function formatTable(
   backends: Map<string, AggregatedSummary[]>,
   stats: Record<string, DockerStats> = {},
@@ -212,13 +227,13 @@ export function formatTable(
     const ranked = rankRows(rows);
     lines.push(`  Scenario: ${scenario}`);
     lines.push(
-      "  ┌──────────────────┬──────────────┬──────────────┬──────────────┬──────────────┬──────────────┬──────────────┬──────────────┐",
+      "  ┌──────────────────┬──────────────┬──────────────┬──────────────┬──────────────┬──────────────┬──────────────┬──────────────┬──────────────┬──────────────┐",
     );
     lines.push(
-      "  │ Backend          │     Avg (ms) │    p95 (ms)  │    Failed %   │  Iterations  │   Req/s      │   CPU (avg)  │  Mem (avg)   │",
+      "  │ Backend          │     Avg (ms) │    Med (ms)  │    p90 (ms)  │    p95 (ms)  │    Failed %   │  Iterations  │   Req/s      │   CPU (avg)  │  Mem (avg)   │",
     );
     lines.push(
-      "  ├──────────────────┼──────────────┼──────────────┼──────────────┼──────────────┼──────────────┼──────────────┼──────────────┤",
+      "  ├──────────────────┼──────────────┼──────────────┼──────────────┼──────────────┼──────────────┼──────────────┼──────────────┼──────────────┼──────────────┤",
     );
     for (let i = 0; i < ranked.length; i++) {
       const row = ranked[i];
@@ -226,14 +241,22 @@ export function formatTable(
       const cpuStr = row.avgCpu !== undefined ? `${row.avgCpu.toFixed(1)}%` : "—";
       const memStr = row.avgMemMb !== undefined ? `${row.avgMemMb.toFixed(0)}MiB` : "—";
       lines.push(
-        `  │ ${trophy} ${row.backend.padEnd(13)} │ ${String(Math.round(row.avg)).padStart(12)} │ ${String(Math.round(row.p95)).padStart(12)} │ ${(row.failRate * 100).toFixed(1).padStart(11)}% │ ${String(Math.round(row.iterations)).padStart(12)} │ ${String(Math.round(row.rps)).padStart(12)} │ ${cpuStr.padStart(12)} │ ${memStr.padStart(12)} │`,
+        `  │ ${trophy} ${row.backend.padEnd(13)} │ ${String(Math.round(row.avg)).padStart(12)} │ ${String(Math.round(row.med)).padStart(12)} │ ${String(Math.round(row.p90)).padStart(12)} │ ${String(Math.round(row.p95)).padStart(12)} │ ${(row.failRate * 100).toFixed(1).padStart(11)}% │ ${String(Math.round(row.iterations)).padStart(12)} │ ${String(Math.round(row.rps)).padStart(12)} │ ${cpuStr.padStart(12)} │ ${memStr.padStart(12)} │`,
       );
     }
     lines.push(
-      "  └──────────────────┴──────────────┴──────────────┴──────────────┴──────────────┴──────────────┴──────────────┴──────────────┘",
+      "  └──────────────────┴──────────────┴──────────────┴──────────────┴──────────────┴──────────────┴──────────────┴──────────────┴──────────────┴──────────────┘",
     );
     const winner = ranked.length > 1 ? ranked[0].backend : null;
     if (winner) lines.push(`  ${TROPHIES[0]} Winner: ${winner}`);
+    lines.push("");
+  }
+
+  const wins = tallyWins(comparison);
+  const totalWins = Object.entries(wins).sort((a, b) => b[1] - a[1]);
+  if (totalWins.length > 1) {
+    const totalRow = totalWins.map(([b, w]) => `${b}=${w}`).join(", ");
+    lines.push(`  ${TROPHIES[0]} Total wins: ${totalRow}`);
     lines.push("");
   }
 
@@ -251,8 +274,8 @@ export function formatMarkdown(
     lines.push(
       `### ${scenario.charAt(0).toUpperCase() + scenario.slice(1)}`,
       "",
-      "| Rank | Backend | avg | p95 | fail | iter | req/s | CPU | Mem |",
-      "|---|---|---|---|---|---|---|---|---|",
+      "| Rank | Backend | avg | med | p90 | p95 | fail | iter | req/s | CPU | Mem |",
+      "|---|---|---|---|---|---|---|---|---|---|---|---|",
     );
     for (let i = 0; i < ranked.length; i++) {
       const row = ranked[i];
@@ -260,11 +283,20 @@ export function formatMarkdown(
       const cpuStr = row.avgCpu !== undefined ? `${row.avgCpu.toFixed(1)}%` : "—";
       const memStr = row.avgMemMb !== undefined ? `${row.avgMemMb.toFixed(0)}MiB` : "—";
       lines.push(
-        `| ${trophy} | ${row.backend} | ${Math.round(row.avg)}ms | ${Math.round(row.p95)}ms | ${(row.failRate * 100).toFixed(1)}% | ${Math.round(row.iterations)} | ${Math.round(row.rps)} | ${cpuStr} | ${memStr} |`,
+        `| ${trophy} | ${row.backend} | ${Math.round(row.avg)}ms | ${Math.round(row.med)}ms | ${Math.round(row.p90)}ms | ${Math.round(row.p95)}ms | ${(row.failRate * 100).toFixed(1)}% | ${Math.round(row.iterations)} | ${Math.round(row.rps)} | ${cpuStr} | ${memStr} |`,
       );
     }
     lines.push("");
   }
+
+  const wins = tallyWins(comparison);
+  const totalWins = Object.entries(wins).sort((a, b) => b[1] - a[1]);
+  if (totalWins.length > 1) {
+    const totalRow = totalWins.map(([b, w]) => `${b}=${w}`).join(", ");
+    lines.push(`**Total wins:** ${totalRow}`);
+    lines.push("");
+  }
+
   return lines.join("\n");
 }
 

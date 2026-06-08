@@ -13,6 +13,8 @@ function aggregateSummaries(backend: string, scenario: string, summaries: K6Summ
   for (const key of Object.keys(summaries[0].metrics)) {
     const avgs = summaries.map((s) => s.metrics[key]?.avg).filter((v): v is number => v !== undefined);
     const p95s = summaries.map((s) => s.metrics[key]?.["p(95)"]).filter((v): v is number => v !== undefined);
+    const p90s = summaries.map((s) => s.metrics[key]?.["p(90)"]).filter((v): v is number => v !== undefined);
+    const meds = summaries.map((s) => s.metrics[key]?.med).filter((v): v is number => v !== undefined);
     const fails = summaries.map((s) => s.metrics[key]?.value ?? 0);
     const rates = summaries.map((s) => s.metrics[key]?.rate ?? 0);
     const counts = summaries.map((s) => s.metrics[key]?.count ?? 0);
@@ -25,6 +27,8 @@ function aggregateSummaries(backend: string, scenario: string, summaries: K6Summ
       metrics[key] = {
         avgMedian: avgs.length > 0 ? median(avgs) : 0,
         p95Median: p95s.length > 0 ? median(p95s) : 0,
+        p90Median: p90s.length > 0 ? median(p90s) : 0,
+        medMedian: meds.length > 0 ? median(meds) : 0,
         failRateAvg: fails.length > 0 ? fails.reduce((a, b) => a + b, 0) / fails.length : 0,
         rateMedian: median(rates),
         countTotal: counts.reduce((a, b) => a + b, 0),
