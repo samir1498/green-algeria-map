@@ -27,13 +27,14 @@ Results saved to `results/YYYYMMDD-HHmm-pipeline-{CPUS}cpu/`
 ### `bun run bench run` — Full pipeline
 
 ```bash
-bun run bench run                                   # all backends, all scenarios
-bun run bench run -b go                             # single backend
+bun run bench run                                   # fast profile (1 repeat, 30s holds, ~7 min/backend)
+bun run bench run -P full                          # full profile (3 repeats, 2m holds, ~34 min/backend)
+bun run bench run -b go                            # single backend
 bun run bench run -b nestjs,springboot             # specific backends
 bun run bench run -s auth                          # single scenario
-bun run bench run -s auth,tree                     # multiple scenarios
+bun run bench run -s auth,zones                    # multiple scenarios
 bun run bench run -c 2 -m 1g                       # CPU/memory limits
-bun run bench run -r 5                             # 5 repeats
+bun run bench run -r 5                             # 5 repeats (overrides profile)
 bun run bench run -w 100                           # warmup iterations
 bun run bench run --dry-run                        # generate report without running
 ```
@@ -43,6 +44,7 @@ bun run bench run --dry-run                        # generate report without run
 ```bash
 bun run bench single go                            # benchmark go only
 bun run bench single go -s auth                    # benchmark go, auth scenario only
+bun run bench single go -P full                    # with full profile
 ```
 
 ### `bun run bench compare <dir>` — Compare results
@@ -68,8 +70,19 @@ All configuration is in `bench.config.json`:
   "defaults": {
     "cpus": 1,
     "memory": "512m",
-    "repeats": 3,
-    "warmup": 50
+    "repeats": 1,
+    "warmup": 10
+  },
+  "profiles": {
+    "full": {
+      "repeats": 3,
+      "warmup": 50,
+      "scenarios": {
+        "auth": { "holdDuration": "1m" },
+        "zones": { "holdDuration": "1m" },
+        "mix": { "holdDuration": "2m" }
+      }
+    }
   },
   "database": { ... },
   "infrastructure": { ... },
@@ -79,12 +92,17 @@ All configuration is in `bench.config.json`:
     "go": { "port": 8082, ... }
   },
   "scenarios": {
-    "auth": { "vus": 20, "rampDuration": "30s", "holdDuration": "1m" },
+    "auth": { "vus": 20, "rampDuration": "30s", "holdDuration": "30s" },
     "zones": { "vus": 50, ... },
     "mix": { "vus": 30, ... }
   }
 }
 ```
+
+**Profiles** are named presets that override defaults. Use `--profile` / `-P`:
+- `bun run bench run` — fast defaults (1 repeat, 30s holds)
+- `bun run bench run --profile full` — original defaults (3 repeats, longer holds)
+- `bun run bench run -P full -r 5` — full profile, but 5 repeats wins (CLI > profile)
 
 Legacy shell scripts (pipeline.sh, run.sh, compare.sh) are archived in `benchmark/legacy/`.
 
@@ -94,8 +112,9 @@ Legacy shell scripts (pipeline.sh, run.sh, compare.sh) are archived in `benchmar
 |----------|---------|-------------|
 | `CPUS` (CLI: `-c`) | 1 | CPU limit per container (via `docker update --cpus`) |
 | `MEM` (CLI: `-m`) | 512m | Memory limit per container |
-| `REPEATS` (CLI: `-r`) | 3 | Number of runs per scenario (median reported) |
-| `WARMUP` (CLI: `-w`) | 50 | k6 iterations for warmup before measured runs |
+| `REPEATS` (CLI: `-r`) | 1 | Number of runs per scenario (median reported) |
+| `WARMUP` (CLI: `-w`) | 10 | k6 iterations for warmup before measured runs |
+| `PROFILE` (CLI: `-P`) | — | Named preset overriding defaults (e.g. `full`) |
 
 ## Output Structure
 
@@ -185,7 +204,7 @@ The CLI stops on the first error and does NOT silently skip failures:
 | NestJS | 268ms | 844ms | 0% | 205 | 32 |
 | Spring Boot | 174ms | 557ms | 0% | 290 | 46 |
 
-> ⚠️ These results are from the old pipeline with known issues (non-sequential execution, no session reuse, no warmup, no repeats). The Go failures were caused by host resource contention from running all backends simultaneously. Re-run with the fixed pipeline for accurate results.
+> ⚠️ These results are from the old pipeline with known issues (non-sequential execution, no session reuse, no warmup, no repeats, wrong Go `apiPrefix`). Re-run with the fixed pipeline for accurate results.
 
 ## Fairness Guarantees
 
@@ -210,7 +229,7 @@ The CLI stops on the first error and does NOT silently skip failures:
 - [x] Production builds for all stacks
 - [x] All request/SQL/tracing logs disabled
 - [x] Warmup period applied equally
-- [x] >=3 runs per scenario, report median + variance
+- [x] >=3 runs per scenario with `--profile full`, report median + variance
 - [x] No stack-specific optimizations without equivalent for all
 - [x] Same ORM strategy (ORM vs raw — not mixed)
 - [x] Query count verified (no N+1)

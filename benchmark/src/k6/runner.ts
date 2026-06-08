@@ -91,8 +91,6 @@ export async function runScenario(
   }
   const exitCode = await proc.exited;
   if (exitCode !== 0 && exitCode !== 99) {
-    throw new Error(
-      `[${backend}] ${scenario} run ${runIndex} failed: ${stderr.trim() || "no output"}`,
-    );
+    throw new Error(`[${backend}] ${scenario} run ${runIndex} failed: ${stderr.trim() || "no output"}`);
   }
 }

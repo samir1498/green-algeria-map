@@ -20,6 +20,21 @@ export interface DefaultsConfig {
   warmup: number;
 }
 
+export interface ScenarioOverride {
+  vus?: number;
+  rampDuration?: string;
+  holdDuration?: string;
+}
+
+export interface ProfileConfig {
+  repeats?: number;
+  warmup?: number;
+  cpus?: number;
+  memory?: string;
+  skipWarmup?: boolean;
+  scenarios?: Record<string, Partial<ScenarioConfig>>;
+}
+
 export interface DatabaseConfig {
   host: string;
   port: number;
@@ -42,6 +57,7 @@ export interface BenchConfig {
   infrastructure: InfrastructureConfig;
   backends: Record<string, BackendConfig>;
   scenarios: Record<string, ScenarioConfig>;
+  profiles?: Record<string, ProfileConfig>;
 }
 
 export interface RunOptions {
@@ -57,6 +73,8 @@ export interface RunOptions {
   output?: string;
   skipWarmup: boolean;
   dryRun: boolean;
+  profile?: string;
+  scenarioOverrides?: Record<string, Partial<ScenarioConfig>>;
 }
 
 export interface K6Metric {

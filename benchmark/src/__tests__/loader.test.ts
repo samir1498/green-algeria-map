@@ -7,8 +7,15 @@ describe("loadConfig", () => {
     expect(config.defaults).toBeDefined();
     expect(config.defaults.cpus).toBe(1);
     expect(config.defaults.memory).toBe("512m");
-    expect(config.defaults.repeats).toBe(3);
-    expect(config.defaults.warmup).toBe(50);
+    expect(config.defaults.repeats).toBe(1);
+    expect(config.defaults.warmup).toBe(10);
+  });
+
+  it("has profiles", async () => {
+    const config = await loadConfig();
+    expect(config.profiles).toBeDefined();
+    expect(Object.keys(config.profiles!)).toEqual(["full"]);
+    expect(config.profiles!.full.repeats).toBe(3);
   });
 
   it("has all backends", async () => {
