@@ -3,9 +3,9 @@ name: CI Benchmark CLI
 on:
   push:
     branches: [main]
-    paths: ['benchmark/src/**', 'benchmark/scripts/**', 'benchmark/package.json', 'benchmark/bun.lock', 'benchmark/biome.json', 'benchmark/tsconfig.json', 'benchmark/bench.config.json', '.github/workflows/ci-bench.yml']
+    paths: ['benchmark/src/**', 'benchmark/scripts/**', 'benchmark/package.json', 'benchmark/bun.lock', 'benchmark/biome.json', 'benchmark/tsconfig.json', 'benchmark/knip.config.ts', 'benchmark/bench.config.json', '.github/workflows/ci-bench.yml']
   pull_request:
-    paths: ['benchmark/src/**', 'benchmark/scripts/**', 'benchmark/package.json', 'benchmark/bun.lock', 'benchmark/biome.json', 'benchmark/tsconfig.json', 'benchmark/bench.config.json', '.github/workflows/ci-bench.yml']
+    paths: ['benchmark/src/**', 'benchmark/scripts/**', 'benchmark/package.json', 'benchmark/bun.lock', 'benchmark/biome.json', 'benchmark/tsconfig.json', 'benchmark/knip.config.ts', 'benchmark/bench.config.json', '.github/workflows/ci-bench.yml']
 
 jobs:
   check:
@@ -24,6 +24,7 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run typecheck
       - run: bun run lint
+      - run: bun run knip
 
   test:
     runs-on: ubuntu-slim

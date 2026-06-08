@@ -16,8 +16,8 @@ describe("infra timeout behavior", () => {
   it("rejects when pg_isready never succeeds", async () => {
     const origSpawn = Bun.spawn;
     const encoder = new TextEncoder();
-    Bun.spawn = ((cmd, _opts) => {
-      const args = Array.isArray(cmd) ? cmd : [];
+    Bun.spawn = ((cmd: any, _opts: any) => {
+      const args: string[] = Array.isArray(cmd) ? cmd : (cmd?.cmd ?? []);
       if (args.some((a) => a.includes("pg_isready"))) {
         return {
           stdout: new ReadableStream({

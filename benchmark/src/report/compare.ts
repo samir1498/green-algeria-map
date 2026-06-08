@@ -25,9 +25,12 @@ function parseMemMb(memStr: string): number {
   if (!match) return 0;
   const val = Number.parseFloat(match[1]);
   switch (match[2]) {
-    case "GiB": return val * 1024;
-    case "KiB": return val / 1024;
-    default: return val;
+    case "GiB":
+      return val * 1024;
+    case "KiB":
+      return val / 1024;
+    default:
+      return val;
   }
 }
 
