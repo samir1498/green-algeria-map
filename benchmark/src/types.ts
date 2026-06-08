@@ -92,6 +92,8 @@ export interface K6Summary {
 export interface AggregatedMetric {
   avgMedian: number;
   p95Median: number;
+  p90Median: number;
+  medMedian: number;
   failRateAvg: number;
   rateMedian: number;
   countTotal: number;
