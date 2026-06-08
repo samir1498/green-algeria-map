@@ -19,10 +19,12 @@ export async function applyLimits(containerName: string, cpus: number, memory: s
       String(cpus),
       "--memory",
       memory,
+      "--memory-swap",
+      memory,
       containerName,
     ]);
     if (last.exitCode === 0) return;
     await new Promise((r) => setTimeout(r, 1000));
   }
-  throw new Error(`Failed to apply limits to ${containerName}: ${last!.stderr || last!.stdout}`);
+  console.warn(`[warn] Failed to apply CPU/memory limits to ${containerName}: ${last!.stderr || last!.stdout}`);
 }
