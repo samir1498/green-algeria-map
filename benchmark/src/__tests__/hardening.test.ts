@@ -19,7 +19,22 @@ describe("infra timeout behavior", () => {
     Bun.spawn = ((cmd, _opts) => {
       const args = Array.isArray(cmd) ? cmd : [];
       if (args.some((a) => a.includes("pg_isready"))) {
-        return { stdout: new ReadableStream({ start(c) { c.close(); } }), exited: Promise.resolve(1), pid: 0, stderr: new ReadableStream({ start(c) { c.close(); } }), stdin: null as any, kill: () => {} };
+        return {
+          stdout: new ReadableStream({
+            start(c) {
+              c.close();
+            },
+          }),
+          exited: Promise.resolve(1),
+          pid: 0,
+          stderr: new ReadableStream({
+            start(c) {
+              c.close();
+            },
+          }),
+          stdin: null as any,
+          kill: () => {},
+        };
       }
       return origSpawn(cmd, _opts);
     }) as typeof Bun.spawn;
@@ -92,12 +107,7 @@ exit 0
     process.env.PATH = `${binDir}:${process.env.PATH}`;
 
     const { run } = await import("../shell");
-    const result = await run("npx", [
-      "typeorm-ts-node-commonjs",
-      "migration:run",
-      "-d",
-      "src/data-source.ts",
-    ]);
+    const result = await run("npx", ["typeorm-ts-node-commonjs", "migration:run", "-d", "src/data-source.ts"]);
     expect(result.exitCode).not.toBe(0);
     expect(result.stderr).toContain("Migration failed");
 

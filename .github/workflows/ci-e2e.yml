@@ -175,7 +175,6 @@ jobs:
       - name: Build frontend (Go backend)
         run: pnpm build
         env:
-          VITE_API_BACKEND: spring
           VITE_API_URL: http://localhost:8082
       - name: Install Playwright browsers
         run: pnpm exec playwright install chromium

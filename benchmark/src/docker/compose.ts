@@ -74,7 +74,7 @@ export async function startBackend(profile: string): Promise<void> {
 
 export async function stopBackend(profile: string, containerName: string, port: number): Promise<void> {
   consola.info(`Stopping ${profile} (port ${port})...`);
-  await run("docker", ["compose", "--profile", profile, "down", "-v"], { cwd: ROOT });
+  await run("docker", ["stop", containerName]);
   await run("docker", ["rm", "-f", containerName]);
 }
 
