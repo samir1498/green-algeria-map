@@ -2,8 +2,19 @@
   "defaults": {
     "cpus": 1,
     "memory": "512m",
-    "repeats": 3,
-    "warmup": 50
+    "repeats": 1,
+    "warmup": 10
+  },
+  "profiles": {
+    "full": {
+      "repeats": 3,
+      "warmup": 50,
+      "scenarios": {
+        "auth": { "holdDuration": "1m" },
+        "zones": { "holdDuration": "1m" },
+        "mix": { "holdDuration": "2m" }
+      }
+    }
   },
   "database": {
     "host": "localhost",
@@ -38,7 +49,7 @@
     },
     "go": {
       "port": 8082,
-      "apiPrefix": "",
+      "apiPrefix": "/api",
       "healthUrl": "http://localhost:8082/readyz",
       "profile": "go",
       "dbName": "greenalgeria_go",
@@ -49,17 +60,17 @@
     "auth": {
       "vus": 20,
       "rampDuration": "30s",
-      "holdDuration": "1m"
+      "holdDuration": "30s"
     },
     "zones": {
       "vus": 50,
       "rampDuration": "30s",
-      "holdDuration": "1m"
+      "holdDuration": "30s"
     },
     "mix": {
       "vus": 30,
       "rampDuration": "1m",
-      "holdDuration": "2m"
+      "holdDuration": "30s"
     }
   }
 }

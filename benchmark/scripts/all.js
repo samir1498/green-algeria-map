@@ -3,7 +3,7 @@ import http from 'k6/http'
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080'
 const AUTH_BASE = `${BASE_URL}/api/auth`
-const API_PREFIX = __ENV.API_PREFIX || ''
+const API_PREFIX = __ENV.API_PREFIX !== undefined ? __ENV.API_PREFIX : '/api'
 const ZONE_BASE = `${BASE_URL}${API_PREFIX}/zones`
 const REPORTS_BASE = `${BASE_URL}${API_PREFIX}/damage-reports`
 

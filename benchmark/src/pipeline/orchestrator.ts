@@ -21,9 +21,10 @@ function parseDuration(d: string): number {
 function estimateDuration(opts: RunOptions, config: BenchConfig): string {
   let totalMinutes = 0;
   for (const scenario of opts.scenarios) {
+    const so = opts.scenarioOverrides?.[scenario];
     const s = config.scenarios[scenario];
-    const ramp = parseDuration(opts.rampDuration ?? s.rampDuration);
-    const hold = parseDuration(opts.holdDuration ?? s.holdDuration);
+    const ramp = parseDuration(opts.rampDuration ?? so?.rampDuration ?? s.rampDuration);
+    const hold = parseDuration(opts.holdDuration ?? so?.holdDuration ?? s.holdDuration);
     const perRun = ramp * 2 + hold;
     totalMinutes += (perRun / 60) * opts.repeats;
   }
@@ -41,6 +42,7 @@ export async function generateDryRunReport(config: BenchConfig, opts: RunOptions
     config: {
       backends: opts.backends,
       scenarios: opts.scenarios,
+      profile: opts.profile ?? null,
       cpus: opts.cpus,
       memory: opts.memory,
       repeats: opts.repeats,
@@ -240,7 +242,8 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
     return;
   }
 
-  banner(`BENCHMARK PIPELINE\n  CPUs: ${opts.cpus} | Memory: ${opts.memory} | Repeats: ${opts.repeats}`);
+  const profileLabel = opts.profile ? ` | Profile: ${opts.profile}` : "";
+  banner(`BENCHMARK PIPELINE\n  CPUs: ${opts.cpus} | Memory: ${opts.memory} | Repeats: ${opts.repeats}${profileLabel}`);
 
   process.on("SIGINT", async () => {
     await fullCleanup();
@@ -250,6 +253,12 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
     await fullCleanup();
     process.exit(1);
   });
+
+  for (const backendName of opts.backends) {
+    if (!config.backends[backendName]) {
+      throw new Error(`Unknown backend: "${backendName}". Available: ${Object.keys(config.backends).join(", ")}`);
+    }
+  }
 
   const pipelineTimer = timer();
 
@@ -296,9 +305,6 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
 
     for (const backendName of opts.backends) {
       const backend = config.backends[backendName];
-      if (!backend) {
-        throw new Error(`Unknown backend: ${backendName}. Available: ${Object.keys(config.backends).join(", ")}`);
-      }
 
       consola.box(`Benchmarking: ${backendName}\n  profile: ${backend.profile} | DB: ${backend.dbName}`);
 
@@ -318,6 +324,7 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
           throw new Error(`Unknown scenario: ${scenario}. Available: ${Object.keys(config.scenarios).join(", ")}`);
         }
         const scenarioOutdir = resolve(outdir, backendName, scenario);
+        const so = opts.scenarioOverrides?.[scenario];
         for (let i = 1; i <= opts.repeats; i++) {
           await runScenario(
             backendName,
@@ -326,9 +333,9 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
             scenarioConfig,
             scenarioOutdir,
             i,
-            opts.vus,
-            opts.rampDuration,
-            opts.holdDuration,
+            opts.vus ?? so?.vus,
+            opts.rampDuration ?? so?.rampDuration,
+            opts.holdDuration ?? so?.holdDuration,
           );
         }
       }
@@ -343,7 +350,7 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
     await fullCleanup();
     const elapsed = pipelineTimer.stop();
     consola.box(
-      `PIPELINE COMPLETE\n\n  Results: ${outdir}\n  Duration: ${formatDuration(elapsed)}\n\n  Compare: bun run src/index.ts compare ${outdir}`,
+      `PIPELINE COMPLETE\n\n  Results: ${outdir}\n  Duration: ${formatDuration(elapsed)}\n\n  Compare: bun run bench compare ${outdir}`,
     );
   } catch (err) {
     consola.error("Pipeline failed:", err);

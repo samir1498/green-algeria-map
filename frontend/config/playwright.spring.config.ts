@@ -4,7 +4,6 @@ const STORAGE_STATE = 'playwright/.auth/user.json'
 
 export default defineConfig({
   testDir: '../e2e',
-  testMatch: ['**/auth*'],
   testIgnore: ['**/prod/**'],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
