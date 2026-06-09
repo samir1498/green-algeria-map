@@ -8,6 +8,8 @@ export const COVERAGE_EXCLUDES = [
   '**/*.entity.ts',
   '**/*.module.ts',
   '**/*.controller.ts',
+  '**/*.repository.ts',
+  '**/*.mapper.ts',
   '**/main.ts',
   '**/data-source.ts',
   '**/node_modules/**',
