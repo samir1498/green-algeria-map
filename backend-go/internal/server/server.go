@@ -1,6 +1,8 @@
 package server
 
 import (
+	"context"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -53,6 +55,9 @@ func New(cfg Config) *Server {
 	authSvc := service.NewAuthService(authRepo)
 	crudSvc := service.NewCRUDService(itemRepo)
 	zoneSvc := service.NewZoneService(zoneRepo)
+	if cfg.Pool != nil {
+		seedZones(context.Background(), zoneRepo)
+	}
 	damageSvc := service.NewDamageReportService(damageRepo)
 
 	authH := handler.NewAuthHandler(authSvc)
@@ -109,4 +114,52 @@ func New(cfg Config) *Server {
 	})
 
 	return &Server{Router: r}
+}
+
+type zoneSeeder interface {
+	ListZones(ctx context.Context) ([]*repository.ZoneEntity, error)
+	CreateZone(ctx context.Context, name, zoneType, status string, lat, lng float64, description string) (*repository.ZoneEntity, error)
+}
+
+func seedZones(ctx context.Context, repo zoneSeeder) {
+	existing, err := repo.ListZones(ctx)
+	if err != nil {
+		log.Printf("seed: failed to check existing zones: %v", err)
+		return
+	}
+	if len(existing) > 0 {
+		log.Printf("seed: zones already exist (%d), skipping", len(existing))
+		return
+	}
+
+	type seedZone struct {
+		name        string
+		zoneType    string
+		status      string
+		lat         float64
+		lng         float64
+		description string
+	}
+
+	zones := []seedZone{
+		{"Chrea National Park", "planting", "in-progress", 36.4424, 2.8695, "Reforestation of cedar forests destroyed by wildfires."},
+		{"Tlemcen National Park", "planting", "planned", 34.8386, -1.2939, "Restoring Mediterranean pine and oak ecosystems."},
+		{"El Kala National Park", "planting", "completed", 36.8794, 8.4389, "Completed cork oak and wetland reforestation."},
+		{"Bejaia Coast Cleanup", "trash", "in-progress", 36.7509, 5.0859, "Beach and coastal trash collection point."},
+		{"Oran Bay Cleanup", "trash", "planned", 35.7043, -0.6401, "Organized cleanup of Oran coastline."},
+		{"Djurdjura Cleanup", "cleanup", "in-progress", 36.4333, 4.25, "Mountain trail cleanup and maintenance."},
+		{"Hoggar Mountains Planting", "planting", "planned", 23.2872, 5.6358, "Acacia and drought-resistant tree planting in the Sahara."},
+		{"Mila Olive Grove", "planting", "in-progress", 36.4514, 6.2644, "Community olive tree planting project."},
+		{"Annaba Dunes Cleanup", "trash", "completed", 36.9139, 7.7639, "Completed dune and beach cleanup operation."},
+		{"Tizi Ouzou Reforestation", "planting", "in-progress", 36.7167, 4.05, "Mixed oak and pine reforestation in Kabylie region."},
+	}
+
+	log.Printf("seed: inserting %d demo zones...", len(zones))
+	for _, z := range zones {
+		_, err := repo.CreateZone(ctx, z.name, z.zoneType, z.status, z.lat, z.lng, z.description)
+		if err != nil {
+			log.Printf("seed: failed to create zone %q: %v", z.name, err)
+		}
+	}
+	log.Printf("seed: done")
 }

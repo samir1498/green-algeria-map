@@ -1,5 +1,6 @@
 import { cpus } from "node:os";
 import { run } from "../shell";
+import { status } from "../ui/status";
 
 function cpusetArg(requested: number): string {
   const hostCores = cpus().length;
@@ -26,5 +27,5 @@ export async function applyLimits(containerName: string, cpus: number, memory: s
     if (last.exitCode === 0) return;
     await new Promise((r) => setTimeout(r, 1000));
   }
-  console.warn(`[warn] Failed to apply CPU/memory limits to ${containerName}: ${last!.stderr || last!.stdout}`);
+  status.setWarning(`Failed to apply CPU/memory limits to ${containerName}: ${last!.stderr || last!.stdout}`);
 }
