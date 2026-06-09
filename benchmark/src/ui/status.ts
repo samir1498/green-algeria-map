@@ -32,7 +32,7 @@ interface StatusState {
   verbose: boolean;
 }
 
-class StatusBar {
+export class StatusBar {
   private state: StatusState;
   private history: RingBuffer;
   private renderTimer: ReturnType<typeof setInterval> | null = null;
