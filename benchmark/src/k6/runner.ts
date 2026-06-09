@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { step } from "../logger";
 import { run } from "../shell";
 import type { BackendConfig, ScenarioConfig } from "../types";
-import { type LiveMetrics, createProgressDisplay } from "../ui/progress";
+import { status } from "../ui/status";
 
 const BENCHMARK_DIR = resolve(import.meta.dir, "../..");
 
@@ -122,6 +122,15 @@ async function readStream(stream: ReadableStream<Uint8Array>): Promise<string> {
   return result;
 }
 
+interface LiveMetrics {
+  requests: number;
+  failures: number;
+  totalDuration: number;
+  durationCount: number;
+  currentVUs: number;
+  elapsedSec: number;
+}
+
 async function parseJsonStream(
   stream: ReadableStream<Uint8Array>,
   state: LiveMetrics,
@@ -176,7 +185,7 @@ async function runWithLiveOutput(
   totalRuns: number,
   env: string[],
 ): Promise<void> {
-  const display = createProgressDisplay(backend, scenario, runIndex, totalRuns);
+  status.setPhase(`Running ${scenario} (${runIndex}/${totalRuns})`);
 
   const proc = Bun.spawn({
     cmd: [
@@ -209,10 +218,10 @@ async function runWithLiveOutput(
 
   const startedAt: { value: number } = { value: 0 };
 
-  const renderTimer = setInterval(() => {
+  const updateTimer = setInterval(() => {
     if (startedAt.value > 0) {
       state.elapsedSec = (Date.now() - startedAt.value) / 1000;
-      display.update(state);
+      status.setMetrics(backend, scenario, runIndex, totalRuns, state);
     }
   }, 200);
 
@@ -222,14 +231,14 @@ async function runWithLiveOutput(
     proc.stderr ? readStream(proc.stderr) : Promise.resolve(""),
   ]);
 
-  clearInterval(renderTimer);
+  clearInterval(updateTimer);
 
   state.elapsedSec = startedAt.value > 0 ? (Date.now() - startedAt.value) / 1000 : 0;
 
   if (exitCode !== 0 && exitCode !== 99) {
-    display.fail(`exit code ${exitCode}`);
+    status.setError(`[${backend}] ${scenario} run ${runIndex} failed (exit ${exitCode})`);
     throw new Error(`[${backend}] ${scenario} run ${runIndex} failed (exit ${exitCode})`);
   }
 
-  display.done(state, exitCode);
+  status.setDone(`${scenario} (${runIndex}/${totalRuns}) complete`);
 }

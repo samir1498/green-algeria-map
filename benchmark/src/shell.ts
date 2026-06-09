@@ -44,6 +44,26 @@ async function readStream(
   return output;
 }
 
+export async function runSilent(cmd: string, args: string[], opts: ShellOptions = {}): Promise<ShellResult> {
+  const proc = Bun.spawn({
+    cmd: [cmd, ...args],
+    cwd: opts.cwd ?? process.cwd(),
+    env: { ...process.env, ...opts.env },
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+
+  if (opts.timeout) {
+    setTimeout(() => proc.kill(), opts.timeout);
+  }
+
+  const stdout = await readStream(proc.stdout);
+  const stderr = await readStream(proc.stderr);
+  const exitCode = await proc.exited;
+
+  return { exitCode, stdout: stdout.trim(), stderr: stderr.trim() };
+}
+
 export async function run(cmd: string, args: string[], opts: ShellOptions = {}): Promise<ShellResult> {
   try {
     const proc = Bun.spawn({

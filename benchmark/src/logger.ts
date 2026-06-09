@@ -1,15 +1,15 @@
-import { consola } from "consola";
+import { status } from "./ui/status";
 
 export function banner(title: string): void {
-  consola.box(title);
+  status.setPhase(title);
 }
 
 export function section(title: string): void {
-  consola.info(`\n-- ${title} --`);
+  status.setPhase(title);
 }
 
 export function step(backend: string, message: string): void {
-  consola.log(`  -> [${backend}] ${message}`);
+  status.setSubtask(`[${backend}] ${message}`);
 }
 
 export function timer(): { stop: () => number } {
