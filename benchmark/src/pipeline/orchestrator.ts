@@ -1,6 +1,14 @@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import { fullCleanup, getRoot, startBackend, startInfra, stopBackend, verifyInfra } from "../docker/compose";
+import {
+  createBackend,
+  fullCleanup,
+  getRoot,
+  startBackend,
+  startInfra,
+  stopBackend,
+  verifyInfra,
+} from "../docker/compose";
 import { applyLimits } from "../docker/limits";
 import { startStatsCollection } from "../docker/stats";
 import { waitForHealth, waitForPortFree } from "../health";
@@ -304,10 +312,16 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
       if (backendName === "go") await runGoMigrations(config);
 
       // Start backend
-      await startBackend(backend.profile);
-      await applyLimits(backend.containerName, opts.cpus, opts.memory);
+      // Spring Boot: create container first, apply limits, then start.
+      // This lets the JVM see correct cgroup memory limits at startup,
+      // avoiding the need for a restart that doubles boot time.
       if (backendName === "springboot") {
-        await run("docker", ["restart", backend.containerName]);
+        await createBackend(backend.profile);
+        await applyLimits(backend.containerName, opts.cpus, opts.memory);
+        await run("docker", ["start", backend.containerName]);
+      } else {
+        await startBackend(backend.profile);
+        await applyLimits(backend.containerName, opts.cpus, opts.memory);
       }
 
       // Health check + startup time

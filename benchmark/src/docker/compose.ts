@@ -67,6 +67,14 @@ export async function startBackend(profile: string): Promise<void> {
   }
 }
 
+export async function createBackend(profile: string): Promise<void> {
+  status.setSubtask(`Creating ${profile} container...`);
+  const result = await run("docker", ["compose", "--profile", profile, "create"], { cwd: ROOT });
+  if (result.exitCode !== 0) {
+    throw new Error(failureMessage(result, `docker compose --profile ${profile} create`));
+  }
+}
+
 export async function stopBackend(profile: string, containerName: string, port: number): Promise<void> {
   status.setSubtask(`Stopping ${profile}...`);
   await run("docker", ["stop", containerName]);
