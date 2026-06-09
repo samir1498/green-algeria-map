@@ -25,7 +25,7 @@ export async function applyLimits(containerName: string, cpus: number, memory: s
       containerName,
     ]);
     if (last.exitCode === 0) return;
-    await new Promise((r) => setTimeout(r, 1000));
+    await Bun.sleep(1000);
   }
   status.setWarning(`Failed to apply CPU/memory limits to ${containerName}: ${last!.stderr || last!.stdout}`);
 }

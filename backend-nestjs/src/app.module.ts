@@ -63,6 +63,7 @@ import { PublicModule } from './modules/public/public.module';
             : false,
         autoLoadEntities: true,
         synchronize: false,
+        extra: { max: 50 },
       }),
     }),
     AuthModule,

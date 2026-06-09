@@ -1,7 +1,6 @@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import {
-  createBackend,
   fullCleanup,
   getRoot,
   startBackend,
@@ -262,10 +261,6 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
     await verifyInfra();
     status.setDone("Infrastructure verified");
 
-    status.setPhase("Creating S3 bucket...");
-    await createBucket(config);
-    status.setDone("S3 bucket ready");
-
     await Bun.write(
       resolve(outdir, "config.json"),
       JSON.stringify(
@@ -307,22 +302,27 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
       status.setSubtask("Setting up database...");
       await ensureDatabaseExists(config, backend.dbName);
 
+      // Recreate S3 bucket (fullCleanup wipes RustFS volume)
+      status.setSubtask("Creating S3 bucket...");
+      await createBucket(config);
+
       // Pre-start: migrations and seeding
       if (backendName === "nestjs") await runNestjsPreStart(config);
       if (backendName === "go") await runGoMigrations(config);
 
       // Start backend
-      // Spring Boot: create container first, apply limits, then start.
-      // This lets the JVM see correct cgroup memory limits at startup,
-      // avoiding the need for a restart that doubles boot time.
-      if (backendName === "springboot") {
-        await createBackend(backend.profile);
-        await applyLimits(backend.containerName, opts.cpus, opts.memory);
-        await run("docker", ["start", backend.containerName]);
-      } else {
-        await startBackend(backend.profile);
-        await applyLimits(backend.containerName, opts.cpus, opts.memory);
+      // Inject bench-mode env vars for each backend
+      if (backendName === "nestjs") {
+        const heapMb = Math.round(parseInt(opts.memory) * 0.5);
+        process.env.NODE_OPTIONS = `--max-old-space-size=${heapMb}`;
+        process.env.DISABLE_SWAGGER = 'true';
       }
+      if (backendName === "springboot") {
+        const heapMb = Math.round(parseInt(opts.memory) * 0.5);
+        process.env.JAVA_TOOLS_SB = `-Xmx${heapMb}m -Xms${heapMb}m -Xlog:gc*:file=/tmp/gc.log:time,level,tags`;
+      }
+      await startBackend(backend.profile);
+      await applyLimits(backend.containerName, opts.cpus, opts.memory);
 
       // Health check + startup time
       const startTimer = timer();
@@ -361,6 +361,13 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
             opts.holdDuration ?? so?.holdDuration,
             opts.repeats,
           );
+          // Quick health check — abort if server OOM'd mid-run
+          let alive = false;
+          for (let h = 0; h < 3 && !alive; h++) {
+            alive = await fetch(backend.healthUrl).then(r => r.ok).catch(() => false);
+            if (!alive) await Bun.sleep(2000);
+          }
+          if (!alive) throw new Error(`[${backendName}] Backend down after ${scenario} (run ${i})`);
         }
       }
 
