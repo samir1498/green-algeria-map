@@ -12,8 +12,8 @@ let origSetInterval: typeof globalThis.setInterval;
 let origClearInterval: typeof globalThis.clearInterval;
 let origSetTimeout: typeof globalThis.setTimeout;
 let origClearTimeout: typeof globalThis.clearTimeout;
-let activeIntervals: Map<number, () => void> = new Map();
-let activeTimeouts: Map<number, () => void> = new Map();
+const activeIntervals: Map<number, () => void> = new Map();
+const activeTimeouts: Map<number, () => void> = new Map();
 let idCounter = 0;
 
 beforeEach(() => {
@@ -24,24 +24,53 @@ beforeEach(() => {
   origSetTimeout = globalThis.setTimeout.bind(globalThis);
   origClearTimeout = globalThis.clearTimeout.bind(globalThis);
 
-  process.stderr.write = ((chunk: any) => { stderrWrites.push(String(chunk)); return true; }) as any;
-  process.stdout.write = ((chunk: any) => { stdoutWrites.push(String(chunk)); return true; }) as any;
-  globalThis.setInterval = ((cb: Function) => { const id = ++idCounter; activeIntervals.set(id, cb as () => void); return id as any; }) as any;
-  globalThis.clearInterval = ((id: any) => { activeIntervals.delete(Number(id)); }) as any;
-  globalThis.setTimeout = ((cb: Function) => { const id = ++idCounter; activeTimeouts.set(id, cb as () => void); return id as any; }) as any;
-  globalThis.clearTimeout = ((id: any) => { activeTimeouts.delete(Number(id)); }) as any;
+  process.stderr.write = ((chunk: any) => {
+    stderrWrites.push(String(chunk));
+    return true;
+  }) as any;
+  process.stdout.write = ((chunk: any) => {
+    stdoutWrites.push(String(chunk));
+    return true;
+  }) as any;
+  globalThis.setInterval = ((cb: (...args: never[]) => unknown) => {
+    const id = ++idCounter;
+    activeIntervals.set(id, cb as () => void);
+    return id as any;
+  }) as any;
+  globalThis.clearInterval = ((id: any) => {
+    activeIntervals.delete(Number(id));
+  }) as any;
+  globalThis.setTimeout = ((cb: (...args: never[]) => unknown) => {
+    const id = ++idCounter;
+    activeTimeouts.set(id, cb as () => void);
+    return id as any;
+  }) as any;
+  globalThis.clearTimeout = ((id: any) => {
+    activeTimeouts.delete(Number(id));
+  }) as any;
 });
 
 afterEach(() => {
-  stderrWrites.length = 0; stdoutWrites.length = 0;
-  activeIntervals.clear(); activeTimeouts.clear(); idCounter = 0;
-  process.stderr.write = origStderrWrite; process.stdout.write = origStdoutWrite;
-  globalThis.setInterval = origSetInterval; globalThis.clearInterval = origClearInterval;
-  globalThis.setTimeout = origSetTimeout; globalThis.clearTimeout = origClearTimeout;
+  stderrWrites.length = 0;
+  stdoutWrites.length = 0;
+  activeIntervals.clear();
+  activeTimeouts.clear();
+  idCounter = 0;
+  process.stderr.write = origStderrWrite;
+  process.stdout.write = origStdoutWrite;
+  globalThis.setInterval = origSetInterval;
+  globalThis.clearInterval = origClearInterval;
+  globalThis.setTimeout = origSetTimeout;
+  globalThis.clearTimeout = origClearTimeout;
 });
 
-function tick() { for (const cb of activeIntervals.values()) cb(); }
-function tickTimeout() { for (const cb of activeTimeouts.values()) cb(); activeTimeouts.clear(); }
+function tick() {
+  for (const cb of activeIntervals.values()) cb();
+}
+function tickTimeout() {
+  for (const cb of activeTimeouts.values()) cb();
+  activeTimeouts.clear();
+}
 
 describe("StatusBar", () => {
   it("manages cursor: hides on start, shows on error/finish/stop", () => {
@@ -79,10 +108,41 @@ describe("StatusBar", () => {
   });
 
   it.each([
-    ["phase", (b: StatusBar) => { b.setPhase("building"); tick(); }],
-    ["metrics", (b: StatusBar) => { b.setMetrics("go", "zones", 1, 2, { requests: 100, failures: 1, totalDuration: 50000, durationCount: 100, currentVUs: 5, elapsedSec: 10 }); tick(); }],
-    ["warning", (b: StatusBar) => { b.setWarning("disk low"); tick(); }],
-    ["done", (b: StatusBar) => { b.setDone("migrated"); tick(); }],
+    [
+      "phase",
+      (b: StatusBar) => {
+        b.setPhase("building");
+        tick();
+      },
+    ],
+    [
+      "metrics",
+      (b: StatusBar) => {
+        b.setMetrics("go", "zones", 1, 2, {
+          requests: 100,
+          failures: 1,
+          totalDuration: 50000,
+          durationCount: 100,
+          currentVUs: 5,
+          elapsedSec: 10,
+        });
+        tick();
+      },
+    ],
+    [
+      "warning",
+      (b: StatusBar) => {
+        b.setWarning("disk low");
+        tick();
+      },
+    ],
+    [
+      "done",
+      (b: StatusBar) => {
+        b.setDone("migrated");
+        tick();
+      },
+    ],
   ] as const)("renders %s mode", (mode, act) => {
     const bar = new StatusBar();
     stderrWrites.length = 0;
