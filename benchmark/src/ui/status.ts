@@ -175,7 +175,7 @@ export class StatusBar {
         const rps = m.elapsedSec > 0 ? (m.requests / m.elapsedSec).toFixed(0) : "0";
         const failPct = m.requests > 0 ? ((m.failures / m.requests) * 100).toFixed(1) : "0.0";
         const avgDur = m.durationCount > 0 ? (m.totalDuration / m.durationCount).toFixed(0) : "—";
-        line = `🟢 ${this.state.backend} · ${this.state.scenario} (${this.state.runIndex}/${this.state.totalRuns}) · ${elapsed} · ${m.requests.toLocaleString()} reqs · ∅${avgDur}ms · ${failPct}% fail · ${rps} r/s · ${m.currentVUs} VUs`;
+        line = `🟢 ${this.state.backend} · ${this.state.scenario} (${this.state.runIndex}/${this.state.totalRuns}) · ${elapsed} · ${m.requests.toLocaleString()} reqs · ∅ ${avgDur} ms · ${failPct}% fail · ${rps} r/s · ${m.currentVUs} VUs`;
         break;
       }
       case "idle":
