@@ -4,10 +4,6 @@ export function banner(title: string): void {
   status.setPhase(title);
 }
 
-export function section(title: string): void {
-  status.setPhase(title);
-}
-
 export function step(backend: string, message: string): void {
   status.setSubtask(`[${backend}] ${message}`);
 }

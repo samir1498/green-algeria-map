@@ -17,8 +17,7 @@
     "ci": "bun run typecheck && bun run lint && bun run knip && bun test"
   },
   "dependencies": {
-    "citty": "^0.1.6",
-    "consola": "^3.4.2"
+    "citty": "^0.1.6"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
