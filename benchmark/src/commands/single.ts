@@ -1,12 +1,12 @@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { defineCommand } from "citty";
-import { consola } from "consola";
 import { waitForHealth } from "../health";
 import { runScenario, runWarmup } from "../k6/runner";
 import { loadConfig } from "../loader";
 import { banner, formatDuration, timer } from "../logger";
 import type { ProfileConfig } from "../types";
+import { status } from "../ui/status";
 
 function resolveProfile(
   config: { profiles?: Record<string, ProfileConfig> },
@@ -57,7 +57,7 @@ export const singleCommand = defineCommand({
 
     const profileLabel = a.profile ? ` | Profile: ${a.profile}` : "";
     banner(
-      `Benchmark: ${backendName}\n  Port: ${backend.port} | Scenarios: ${scenarios.join(", ")} | Repeats: ${repeats}${profileLabel}`,
+      `Benchmark: ${backendName} | Port: ${backend.port} | Scenarios: ${scenarios.join(", ")} | Repeats: ${repeats}${profileLabel}`,
     );
 
     const t = timer();
@@ -93,6 +93,7 @@ export const singleCommand = defineCommand({
       }
     }
 
-    consola.box(`Done in ${formatDuration(t.stop())}\n  Results: ${outdir}`);
+    status.setDone("Benchmark complete");
+    status.finish(`Done in ${formatDuration(t.stop())}\nResults: ${outdir}`);
   },
 });

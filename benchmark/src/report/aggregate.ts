@@ -1,6 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { AggregatedMetric, AggregatedSummary, K6Summary } from "../types";
+import { status } from "../ui/status";
 
 function median(values: number[]): number {
   if (values.length === 0) return 0;
@@ -72,6 +73,6 @@ export async function aggregateResults(
     const summaries = await readScenarioSummaries(scenarioDir, expectedRuns);
     const combined = aggregateSummaries(backend, scenario, summaries);
     await Bun.write(resolve(outdir, `${scenario}-summary.json`), JSON.stringify(combined, null, 2));
-    console.log(`    ${scenario}: ${summaries.length} runs aggregated`);
+    status.setSubtask(`${scenario}: ${summaries.length} runs aggregated`);
   }
 }

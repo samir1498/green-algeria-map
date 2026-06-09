@@ -1,16 +1,16 @@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import { consola } from "consola";
 import { fullCleanup, getRoot, startBackend, startInfra, stopBackend, verifyInfra } from "../docker/compose";
 import { applyLimits } from "../docker/limits";
 import { startStatsCollection } from "../docker/stats";
 import { waitForHealth, waitForPortFree } from "../health";
 import { runScenario, runWarmup } from "../k6/runner";
 import { loadConfig } from "../loader";
-import { banner, formatDuration, section, step, timer } from "../logger";
+import { formatDuration, timer } from "../logger";
 import { aggregateResults } from "../report/aggregate";
 import { run } from "../shell";
 import type { BenchConfig, RunOptions } from "../types";
+import { status } from "../ui/status";
 
 function parseDuration(d: string): number {
   const match = d.match(/^(\d+)(s|m)$/);
@@ -84,7 +84,7 @@ export async function generateDryRunReport(config: BenchConfig, opts: RunOptions
 
 async function ensureDatabaseExists(config: BenchConfig, dbName: string): Promise<void> {
   const { database, infrastructure } = config;
-  const checkResult = await run("docker", [
+  const result = await run("docker", [
     "exec",
     "-i",
     infrastructure.dbContainerName,
@@ -96,16 +96,10 @@ async function ensureDatabaseExists(config: BenchConfig, dbName: string): Promis
     "-tAc",
     `SELECT 1 FROM pg_database WHERE datname = '${dbName}'`,
   ]);
-  if (checkResult.exitCode !== 0) {
-    throw new Error(`Failed to check database ${dbName}: ${checkResult.stderr || checkResult.stdout || "no output"}`);
+  if (result.exitCode !== 0) {
+    throw new Error(`Failed to check database ${dbName}: ${result.stderr || result.stdout || "no output"}`);
   }
-
-  if (checkResult.stdout.trim() === "1") {
-    consola.info(`  -> [Postgres] ${dbName} database already exists`);
-    return;
-  }
-
-  consola.info(`  -> [Postgres] Creating ${dbName} database...`);
+  if (result.stdout.trim() === "1") return;
   const createResult = await run("docker", [
     "exec",
     "-i",
@@ -131,27 +125,20 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
   const root = getRoot();
   const nestDir = resolve(root, "backend-nestjs");
   const nestBackend = config.backends.nestjs;
-  if (!nestBackend) {
-    throw new Error("NestJS backend configuration is missing");
-  }
+  if (!nestBackend) throw new Error("NestJS backend configuration is missing");
   const dbName = nestBackend.dbName;
+  const { database, infrastructure } = config;
 
-  // Check if dist exists; build if missing
   const distExists = await Bun.file(resolve(nestDir, "dist/main.js")).exists();
   if (!distExists) {
-    consola.info("  -> [NestJS] dist/ not found, building locally...");
-    const buildResult = await run("pnpm", ["build"], { cwd: nestDir, stream: true });
+    status.setSubtask("Building NestJS dist/...");
+    const buildResult = await run("pnpm", ["build"], { cwd: nestDir });
     if (buildResult.exitCode !== 0) {
       throw new Error(`NestJS build failed: ${buildResult.stderr || buildResult.stdout || "no output"}`);
     }
-  } else {
-    consola.info("  -> [NestJS] dist/ found, skipping build");
   }
 
-  const { database, infrastructure } = config;
-
-  // Create S3 bucket
-  consola.info("  -> [NestJS] Creating object storage bucket...");
+  status.setSubtask("Creating object storage bucket...");
   const dbEnv = {
     DB_HOST: database.host,
     DB_PORT: String(database.port),
@@ -169,34 +156,25 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
       OO_OBJECT_STORAGE_ACCESS_KEY: infrastructure.objectStorageAccessKey,
       OO_OBJECT_STORAGE_SECRET_KEY: infrastructure.objectStorageSecretKey,
     },
-    stream: true,
   });
   if (bucketResult.exitCode !== 0) {
     throw new Error(`NestJS bucket creation failed: ${bucketResult.stderr || bucketResult.stdout || "no output"}`);
   }
 
-  // Run migrations locally (TypeScript files available locally, not in Docker image)
-  consola.info("  -> [NestJS] Running migrations locally...");
+  status.setSubtask("Running TypeORM migrations...");
   const migrationResult = await run("npx", ["typeorm-ts-node-commonjs", "migration:run", "-d", "src/data-source.ts"], {
     cwd: nestDir,
     env: dbEnv,
-    stream: true,
   });
   if (migrationResult.exitCode !== 0) {
     throw new Error(`NestJS migration failed: ${migrationResult.stderr || migrationResult.stdout || "no output"}`);
   }
 
-  consola.info("  -> [NestJS] Seeding demo data...");
-  const seedResult = await run("pnpm", ["seed"], {
-    cwd: nestDir,
-    env: dbEnv,
-    stream: true,
-  });
+  status.setSubtask("Seeding demo data...");
+  const seedResult = await run("pnpm", ["seed"], { cwd: nestDir, env: dbEnv });
   if (seedResult.exitCode !== 0) {
     throw new Error(`NestJS seed failed: ${seedResult.stderr || seedResult.stdout || "no output"}`);
   }
-
-  consola.success("  NestJS bootstrap completed");
 }
 
 async function runGoMigrations(config: BenchConfig): Promise<void> {
@@ -206,26 +184,40 @@ async function runGoMigrations(config: BenchConfig): Promise<void> {
   const sql = await Bun.file(migrationFile).text();
   const upSection = sql.match(/goose Up([\s\S]*?)goose Down/)?.[1]?.trim();
   if (!upSection) return;
-  consola.info("  -> [Go] Running migrations...");
+  status.setSubtask("Running Go migrations...");
   const { database, infrastructure } = config;
-  const migrationResult = await run(
-    "docker",
-    [
-      "exec",
-      "-i",
-      infrastructure.dbContainerName,
-      "psql",
-      "-U",
-      database.username,
-      "-d",
-      "greenalgeria_go",
-      "-c",
-      upSection,
-    ],
-    { stream: true },
-  );
-  if (migrationResult.exitCode !== 0) {
-    throw new Error(`Go migrations failed: ${migrationResult.stderr || migrationResult.stdout || "no output"}`);
+  const result = await run("docker", [
+    "exec",
+    "-i",
+    infrastructure.dbContainerName,
+    "psql",
+    "-U",
+    database.username,
+    "-d",
+    "greenalgeria_go",
+    "-c",
+    upSection,
+  ]);
+  if (result.exitCode !== 0) {
+    throw new Error(`Go migrations failed: ${result.stderr || result.stdout || "no output"}`);
+  }
+}
+
+async function createBucket(config: BenchConfig): Promise<void> {
+  const root = getRoot();
+  const { infrastructure } = config;
+  const bucketEnv = {
+    OO_OBJECT_STORAGE_ENDPOINT: infrastructure.objectStorageEndpoint,
+    OO_OBJECT_STORAGE_BUCKET: infrastructure.objectStorageBucket,
+    OO_OBJECT_STORAGE_ACCESS_KEY: infrastructure.objectStorageAccessKey,
+    OO_OBJECT_STORAGE_SECRET_KEY: infrastructure.objectStorageSecretKey,
+    OO_OBJECT_STORAGE_REGION: "us-east-1",
+  };
+  const bucketResult = await run("node", [resolve(root, "backend-nestjs/scripts/create-bucket.mjs")], {
+    env: bucketEnv,
+  });
+  if (bucketResult.exitCode !== 0) {
+    throw new Error(`S3 bucket creation failed: ${bucketResult.stderr || bucketResult.stdout}`);
   }
 }
 
@@ -238,21 +230,10 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
 
   if (opts.dryRun) {
     const reportPath = await generateDryRunReport(config, opts, outdir);
-    consola.box(`Dry-run report saved to:\n  ${reportPath}\n\nReview and commit, then run without --dry-run.`);
+    status.setDone(`Dry-run report saved to ${reportPath}`);
+    status.finish(`Dry-run report:\n  ${reportPath}`);
     return;
   }
-
-  const profileLabel = opts.profile ? ` | Profile: ${opts.profile}` : "";
-  banner(`BENCHMARK PIPELINE\n  CPUs: ${opts.cpus} | Memory: ${opts.memory} | Repeats: ${opts.repeats}${profileLabel}`);
-
-  process.on("SIGINT", async () => {
-    await fullCleanup(true);
-    process.exit(1);
-  });
-  process.on("SIGTERM", async () => {
-    await fullCleanup(true);
-    process.exit(1);
-  });
 
   for (const backendName of opts.backends) {
     if (!config.backends[backendName]) {
@@ -263,45 +244,19 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
   const pipelineTimer = timer();
 
   try {
+    status.setPhase("Starting shared infrastructure...");
     await fullCleanup();
-    section("Starting shared infrastructure");
     await startInfra();
     const { infrastructure } = config;
     for (const c of [infrastructure.dbContainerName, infrastructure.storageContainerName]) {
       await applyLimits(c, opts.cpus, opts.memory);
     }
     await verifyInfra();
+    status.setDone("Infrastructure verified");
 
-    section("Creating S3 bucket");
-    const root = getRoot();
-    const bucketEnv = {
-      OO_OBJECT_STORAGE_ENDPOINT: infrastructure.objectStorageEndpoint,
-      OO_OBJECT_STORAGE_BUCKET: infrastructure.objectStorageBucket,
-      OO_OBJECT_STORAGE_ACCESS_KEY: infrastructure.objectStorageAccessKey,
-      OO_OBJECT_STORAGE_SECRET_KEY: infrastructure.objectStorageSecretKey,
-      OO_OBJECT_STORAGE_REGION: "us-east-1",
-    };
-    const bucketResult = await run("node", [resolve(root, "backend-nestjs/scripts/create-bucket.mjs")], {
-      env: bucketEnv,
-      stream: true,
-    });
-    if (bucketResult.exitCode !== 0) {
-      throw new Error(`S3 bucket creation failed: ${bucketResult.stderr || bucketResult.stdout}`);
-    }
-    consola.success("  S3 bucket ready");
-
-    section("Running migrations");
-    consola.info("  -> [Spring Boot] Migrations run on startup");
-    for (const backendName of opts.backends) {
-      const backend = config.backends[backendName];
-      if (backend) {
-        await ensureDatabaseExists(config, backend.dbName);
-      }
-    }
-    if (opts.backends.includes("go")) {
-      await runGoMigrations(config);
-    }
-    consola.success("  Databases ready");
+    status.setPhase("Creating S3 bucket...");
+    await createBucket(config);
+    status.setDone("S3 bucket ready");
 
     await Bun.write(
       resolve(outdir, "config.json"),
@@ -319,29 +274,59 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
       ),
     );
 
-    section("Running benchmarks sequentially");
+    process.on("SIGINT", async () => {
+      status.stop();
+      await fullCleanup(true);
+      process.exit(1);
+    });
+    process.on("SIGTERM", async () => {
+      status.stop();
+      await fullCleanup(true);
+      process.exit(1);
+    });
 
     for (const backendName of opts.backends) {
       const backend = config.backends[backendName];
 
-      consola.box(`Benchmarking: ${backendName}\n  profile: ${backend.profile} | DB: ${backend.dbName}`);
+      // Per-backend: reset infra for clean state
+      status.setPhase(`Benchmarking ${backendName}...`);
+      status.setSubtask("Resetting shared infrastructure...");
+      await fullCleanup(true);
+      await startInfra();
+      await verifyInfra();
 
+      // Ensure per-backend database exists
+      status.setSubtask("Setting up database...");
+      await ensureDatabaseExists(config, backend.dbName);
+
+      // Pre-start: migrations and seeding
       if (backendName === "nestjs") await runNestjsPreStart(config);
+      if (backendName === "go") await runGoMigrations(config);
 
+      // Start backend
       await startBackend(backend.profile);
       await applyLimits(backend.containerName, opts.cpus, opts.memory);
       if (backendName === "springboot") {
         await run("docker", ["restart", backend.containerName]);
       }
+
+      // Health check + startup time
       const startTimer = timer();
       await waitForHealth(backend.healthUrl, backendName);
       const startupMs = startTimer.stop();
       await Bun.write(resolve(outdir, `${backendName}-startup.log`), `${startupMs}\n`);
+      status.setDone(`${backendName} ready (${Math.round(startupMs / 1000)}s startup)`);
 
-      if (!opts.skipWarmup) await runWarmup(backendName, backend, opts.warmup);
+      // Warmup
+      if (!opts.skipWarmup) {
+        status.setSubtask("Running warmup...");
+        await runWarmup(backendName, backend, opts.warmup);
+      }
 
+      // Docker stats collection
       const stats = await startStatsCollection(backend.containerName, outdir);
 
+      // Run scenarios
       for (const scenario of opts.scenarios) {
         const scenarioConfig = config.scenarios[scenario];
         if (!scenarioConfig) {
@@ -367,14 +352,16 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
 
       await stats.stop();
 
+      // Post-run collection
       if (backendName === "springboot") {
+        status.setSubtask("Collecting GC logs...");
         const gcResult = await run("docker", [
           "cp",
           `${backend.containerName}:/tmp/gc.log`,
           resolve(outdir, "springboot-gc.log"),
         ]);
         if (gcResult.exitCode !== 0) {
-          consola.warn("  GC log not available (non-fatal)");
+          status.setWarning("GC log not available (non-fatal)");
         }
         try {
           const baseUrl = `http://localhost:${backend.port}`;
@@ -388,23 +375,25 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
             await Bun.write(resolve(outdir, "springboot-jvm-metrics.json"), JSON.stringify(jvmData, null, 2));
           }
         } catch {
-          consola.warn("  JVM metrics not available (non-fatal)");
+          status.setWarning("JVM metrics not available (non-fatal)");
         }
       }
 
-      step(backendName, "Generating summary...");
+      status.setSubtask("Aggregating results...");
       await aggregateResults(backendName, resolve(outdir, backendName), opts.scenarios, opts.repeats);
       await stopBackend(backend.profile, backend.containerName, backend.port);
       await waitForPortFree(backend.port);
     }
 
+    status.setPhase("Final cleanup...");
     await fullCleanup(true);
     const elapsed = pipelineTimer.stop();
-    consola.box(
-      `PIPELINE COMPLETE\n\n  Results: ${outdir}\n  Duration: ${formatDuration(elapsed)}\n\n  Compare: bun run bench compare ${outdir}`,
+    status.finish(
+      `PIPELINE COMPLETE\n\nResults: ${outdir}\nDuration: ${formatDuration(elapsed)}\n\nCompare: bun run bench compare ${outdir}`,
     );
   } catch (err) {
-    consola.error("Pipeline failed:", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    status.setError(msg);
     await fullCleanup(true);
     process.exit(1);
   }

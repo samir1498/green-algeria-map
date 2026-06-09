@@ -1,4 +1,4 @@
-import { consola } from "consola";
+import { status } from "./ui/status";
 
 export async function waitForHealth(url: string, label: string, maxWaitSec = 90): Promise<void> {
   const start = Date.now();
@@ -6,7 +6,6 @@ export async function waitForHealth(url: string, label: string, maxWaitSec = 90)
     try {
       const res = await fetch(url);
       if (res.ok) {
-        consola.success(`${label} ready`);
         return;
       }
     } catch {
@@ -28,5 +27,5 @@ export async function waitForPortFree(port: number, maxWaitSec = 10): Promise<vo
       await Bun.sleep(1000);
     }
   }
-  consola.warn(`Port ${port} may still be in use`);
+  status.setWarning(`Port ${port} may still be in use`);
 }
