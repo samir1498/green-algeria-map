@@ -1,5 +1,10 @@
 # Changelog — Benchmark (CLI + pipeline)
 
+## [benchmark-v0.4.0] - 2026-06-10
+
+### Removed
+- `single` subcommand — use `bun run bench run -b <backend>` instead
+
 ## [benchmark-v0.3.0] - 2026-06-09
 
 ### Added
