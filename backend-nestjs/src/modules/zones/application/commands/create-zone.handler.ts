@@ -29,9 +29,11 @@ export class CreateZoneHandler implements ICommandHandler<
       treeSpecies: command.treeSpecies,
     });
     const saved = await this.repository.save(zone);
-    this.eventBus.publish(
-      new ZoneCreatedEvent(saved.id!, saved.name, saved.type),
-    );
+    if (process.env.DISABLE_EVENTS !== 'true') {
+      this.eventBus.publish(
+        new ZoneCreatedEvent(saved.id!, saved.name, saved.type),
+      );
+    }
     return saved;
   }
 }
