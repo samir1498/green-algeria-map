@@ -7,7 +7,7 @@ import { runCommand } from "./commands/run";
 const main = defineCommand({
   meta: {
     name: "bench",
-    version: "0.3.0",
+    version: "1.0.0",
     description: "Benchmark CLI for green-algeria-map backends",
   },
   subCommands: {
