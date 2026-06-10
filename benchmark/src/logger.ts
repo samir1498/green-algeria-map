@@ -1,13 +1,3 @@
-import { status } from "./ui/status";
-
-export function banner(title: string): void {
-  status.setPhase(title);
-}
-
-export function step(backend: string, message: string): void {
-  status.setSubtask(`[${backend}] ${message}`);
-}
-
 export function timer(): { stop: () => number } {
   const start = Date.now();
   return { stop: () => Date.now() - start };

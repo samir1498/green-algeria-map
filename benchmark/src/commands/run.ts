@@ -1,18 +1,8 @@
 import { defineCommand } from "citty";
 import { loadConfig } from "../loader";
 import { runPipeline } from "../pipeline/orchestrator";
-import type { ProfileConfig, RunOptions } from "../types";
-
-function resolveProfile(
-  config: { profiles?: Record<string, ProfileConfig> },
-  profileName?: string,
-): ProfileConfig | undefined {
-  if (!profileName) return undefined;
-  const profile = config.profiles?.[profileName];
-  if (!profile)
-    throw new Error(`Unknown profile: "${profileName}". Available: ${Object.keys(config.profiles ?? {}).join(", ")}`);
-  return profile;
-}
+import type { RunOptions } from "../types";
+import { pick, resolveProfile } from "../utils";
 
 export const runCommand = defineCommand({
   meta: { name: "run", description: "Run benchmark pipeline" },
@@ -36,13 +26,6 @@ export const runCommand = defineCommand({
     const a = args as Record<string, string | boolean | undefined>;
     const profile = resolveProfile(config, a.profile as string | undefined);
 
-    const pick = (key: string, fallback: string | number): string | number => {
-      const cli = a[key];
-      if (cli !== undefined && cli !== "") return cli as string;
-      const pv = profile?.[key as keyof ProfileConfig];
-      return pv !== undefined ? (pv as string | number) : fallback;
-    };
-
     const globalVus = a.vus ? Number(a.vus) : undefined;
     const globalRamp = a["ramp-duration"] as string | undefined;
     const globalHold = a["hold-duration"] as string | undefined;
@@ -63,10 +46,10 @@ export const runCommand = defineCommand({
     const opts: RunOptions = {
       backends: (a.backends as string)?.split(",") ?? Object.keys(config.backends),
       scenarios: (a.scenarios as string)?.split(",") ?? Object.keys(config.scenarios),
-      cpus: Number(pick("cpus", config.defaults.cpus)),
-      memory: pick("memory", config.defaults.memory) as string,
-      repeats: Number(pick("repeats", config.defaults.repeats)),
-      warmup: Number(pick("warmup", config.defaults.warmup)),
+      cpus: Number(pick(a, "cpus", profile, config.defaults.cpus)),
+      memory: pick(a, "memory", profile, config.defaults.memory) as string,
+      repeats: Number(pick(a, "repeats", profile, config.defaults.repeats)),
+      warmup: Number(pick(a, "warmup", profile, config.defaults.warmup)),
       vus: globalVus,
       rampDuration: globalRamp,
       holdDuration: globalHold,

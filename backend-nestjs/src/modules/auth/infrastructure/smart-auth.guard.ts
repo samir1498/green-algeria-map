@@ -1,7 +1,17 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { fromNodeHeaders } from 'better-auth/node';
 import { auth } from './better-auth.config';
+
+interface AuthRequest extends Request {
+  session: { user: unknown };
+  user: unknown;
+}
 
 @Injectable()
 export class SmartAuthGuard implements CanActivate {
@@ -14,7 +24,7 @@ export class SmartAuthGuard implements CanActivate {
     ]);
     if (isPublic) return true;
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<AuthRequest>();
     const session = await auth.api.getSession({
       headers: fromNodeHeaders(request.headers),
     });

@@ -47,14 +47,11 @@ describe("infra timeout behavior", () => {
   });
 
   it("rejects when RustFS health endpoint is unreachable", async () => {
-    // The health endpoint at localhost:9000/ isn't running — fetch should fail
     try {
       const res = await fetch("http://localhost:9000/");
-      // If docker is not running, we expect a connection refused error
       expect(res.ok).toBe(false);
     } catch {
-      // Connection refused / timeout — expected in test env
-      expect(true).toBe(true);
+      // Connection refused / timeout — expected in test env without Docker
     }
   });
 });

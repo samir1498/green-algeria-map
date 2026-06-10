@@ -1,4 +1,4 @@
 export default {
-  project: ['src/**/*.ts'],
+  project: ['src/**/*.ts', 'scripts/**/*.js'],
   ignoreExportsUsedInFile: true,
 }

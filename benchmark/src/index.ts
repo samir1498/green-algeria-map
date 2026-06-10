@@ -8,7 +8,7 @@ import { singleCommand } from "./commands/single";
 const main = defineCommand({
   meta: {
     name: "bench",
-    version: "0.1.0",
+    version: "0.3.0",
     description: "Benchmark CLI for green-algeria-map backends",
   },
   subCommands: {

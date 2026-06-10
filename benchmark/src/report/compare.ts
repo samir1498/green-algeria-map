@@ -187,21 +187,12 @@ function buildComparison(
   return result;
 }
 
-export function determineWinner(rows: ComparisonRow[]): string | null {
-  if (rows.length < 2) return null;
-  return rankRows(rows)[0].backend;
-}
-
 function rankRows(rows: ComparisonRow[]): ComparisonRow[] {
   return [...rows].sort((a, b) => {
     const aFail = a.failRate >= 0.05 ? 999999 : a.avg + a.p95;
     const bFail = b.failRate >= 0.05 ? 999999 : b.avg + b.p95;
     return aFail - bFail;
   });
-}
-
-function formatVal(v: number | undefined, digits = 0): string {
-  return v !== undefined ? String(Math.round(v * 10 ** digits) / 10 ** digits) : "—";
 }
 
 function tallyWins(comparison: Record<string, ComparisonRow[]>): Record<string, number> {

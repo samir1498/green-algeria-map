@@ -18,6 +18,7 @@ export interface DefaultsConfig {
   memory: string;
   repeats: number;
   warmup: number;
+  heapRatio?: number;
 }
 
 export interface ProfileConfig {
@@ -43,6 +44,7 @@ export interface InfrastructureConfig {
   objectStorageBucket: string;
   objectStorageAccessKey: string;
   objectStorageSecretKey: string;
+  objectStorageRegion: string;
 }
 
 export interface BenchConfig {

@@ -1,13 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import {
-  fullCleanup,
-  getRoot,
-  startBackend,
-  startInfra,
-  stopBackend,
-  verifyInfra,
-} from "../docker/compose";
+import pkg from "../../package.json";
+import { fullCleanup, getRoot, startBackend, startInfra, stopBackend, verifyInfra } from "../docker/compose";
 import { applyLimits } from "../docker/limits";
 import { startStatsCollection } from "../docker/stats";
 import { waitForHealth, waitForPortFree } from "../health";
@@ -18,12 +12,7 @@ import { aggregateResults } from "../report/aggregate";
 import { run } from "../shell";
 import type { BenchConfig, RunOptions } from "../types";
 import { status } from "../ui/status";
-
-function parseDuration(d: string): number {
-  const match = d.match(/^(\d+)(s|m)$/);
-  if (!match) return 30;
-  return Number.parseInt(match[1]) * (match[2] === "m" ? 60 : 1);
-}
+import { parseDuration } from "../utils";
 
 function estimateDuration(opts: RunOptions, config: BenchConfig): string {
   let totalMinutes = 0;
@@ -45,7 +34,7 @@ export async function generateDryRunReport(config: BenchConfig, opts: RunOptions
   await mkdir(outdir, { recursive: true });
   const report = {
     generatedAt: new Date().toISOString(),
-    cliVersion: "0.1.0",
+    cliVersion: pkg.version,
     config: {
       backends: opts.backends,
       scenarios: opts.scenarios,
@@ -146,6 +135,9 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
   }
 
   status.setSubtask("Creating object storage bucket...");
+  await createBucket(config);
+
+  status.setSubtask("Running TypeORM migrations...");
   const dbEnv = {
     DB_HOST: database.host,
     DB_PORT: String(database.port),
@@ -154,21 +146,6 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
     DB_NAME: dbName,
     DATABASE_URL: `postgresql://${database.username}:${database.password}@${database.host}:${database.port}/${dbName}`,
   };
-  const bucketResult = await run("node", ["scripts/create-bucket.mjs"], {
-    cwd: nestDir,
-    env: {
-      ...dbEnv,
-      OO_OBJECT_STORAGE_ENDPOINT: infrastructure.objectStorageEndpoint,
-      OO_OBJECT_STORAGE_BUCKET: infrastructure.objectStorageBucket,
-      OO_OBJECT_STORAGE_ACCESS_KEY: infrastructure.objectStorageAccessKey,
-      OO_OBJECT_STORAGE_SECRET_KEY: infrastructure.objectStorageSecretKey,
-    },
-  });
-  if (bucketResult.exitCode !== 0) {
-    throw new Error(`NestJS bucket creation failed: ${bucketResult.stderr || bucketResult.stdout || "no output"}`);
-  }
-
-  status.setSubtask("Running TypeORM migrations...");
   const migrationResult = await run("npx", ["typeorm-ts-node-commonjs", "migration:run", "-d", "src/data-source.ts"], {
     cwd: nestDir,
     env: dbEnv,
@@ -189,8 +166,11 @@ async function runGoMigrations(config: BenchConfig): Promise<void> {
   const migrationFile = resolve(root, "backend-go/migrations/001_init.sql");
   if (!(await Bun.file(migrationFile).exists())) return;
   const sql = await Bun.file(migrationFile).text();
-  const upSection = sql.match(/goose Up([\s\S]*?)goose Down/)?.[1]?.trim();
-  if (!upSection) return;
+  const upSection = sql.match(/\+goose Up([\s\S]*?)\+goose Down/)?.[1]?.trim();
+  if (!upSection) {
+    status.setWarning("No Go migration section found (non-fatal)");
+    return;
+  }
   status.setSubtask("Running Go migrations...");
   const { database, infrastructure } = config;
   const result = await run("docker", [
@@ -201,7 +181,7 @@ async function runGoMigrations(config: BenchConfig): Promise<void> {
     "-U",
     database.username,
     "-d",
-    "greenalgeria_go",
+    config.backends.go.dbName,
     "-c",
     upSection,
   ]);
@@ -218,13 +198,26 @@ async function createBucket(config: BenchConfig): Promise<void> {
     OO_OBJECT_STORAGE_BUCKET: infrastructure.objectStorageBucket,
     OO_OBJECT_STORAGE_ACCESS_KEY: infrastructure.objectStorageAccessKey,
     OO_OBJECT_STORAGE_SECRET_KEY: infrastructure.objectStorageSecretKey,
-    OO_OBJECT_STORAGE_REGION: "us-east-1",
+    OO_OBJECT_STORAGE_REGION: infrastructure.objectStorageRegion,
   };
   const bucketResult = await run("node", [resolve(root, "backend-nestjs/scripts/create-bucket.mjs")], {
     env: bucketEnv,
   });
   if (bucketResult.exitCode !== 0) {
     throw new Error(`S3 bucket creation failed: ${bucketResult.stderr || bucketResult.stdout}`);
+  }
+}
+
+function setBenchEnv(backendName: string, opts: RunOptions, config: BenchConfig): void {
+  const heapRatio = config.defaults.heapRatio ?? 0.5;
+  if (backendName === "nestjs") {
+    const heapMb = Math.round(Number.parseInt(opts.memory) * heapRatio);
+    process.env.NODE_OPTIONS = `--max-old-space-size=${heapMb}`;
+    process.env.DISABLE_SWAGGER = "true";
+  }
+  if (backendName === "springboot") {
+    const heapMb = Math.round(Number.parseInt(opts.memory) * heapRatio);
+    process.env.JAVA_TOOL_OPTIONS = `-Xmx${heapMb}m -Xms${heapMb}m -Xlog:gc*:file=/tmp/gc.log:time,level,tags`;
   }
 }
 
@@ -277,16 +270,13 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
       ),
     );
 
-    process.on("SIGINT", async () => {
+    const onSignal = async () => {
       status.stop();
       await fullCleanup(true);
       process.exit(1);
-    });
-    process.on("SIGTERM", async () => {
-      status.stop();
-      await fullCleanup(true);
-      process.exit(1);
-    });
+    };
+    process.on("SIGINT", onSignal);
+    process.on("SIGTERM", onSignal);
 
     for (const backendName of opts.backends) {
       const backend = config.backends[backendName];
@@ -311,16 +301,7 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
       if (backendName === "go") await runGoMigrations(config);
 
       // Start backend
-      // Inject bench-mode env vars for each backend
-      if (backendName === "nestjs") {
-        const heapMb = Math.round(parseInt(opts.memory) * 0.5);
-        process.env.NODE_OPTIONS = `--max-old-space-size=${heapMb}`;
-        process.env.DISABLE_SWAGGER = 'true';
-      }
-      if (backendName === "springboot") {
-        const heapMb = Math.round(parseInt(opts.memory) * 0.5);
-        process.env.JAVA_TOOLS_SB = `-Xmx${heapMb}m -Xms${heapMb}m -Xlog:gc*:file=/tmp/gc.log:time,level,tags`;
-      }
+      setBenchEnv(backendName, opts, config);
       await startBackend(backend.profile);
       await applyLimits(backend.containerName, opts.cpus, opts.memory);
 
@@ -364,7 +345,9 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
           // Quick health check — abort if server OOM'd mid-run
           let alive = false;
           for (let h = 0; h < 3 && !alive; h++) {
-            alive = await fetch(backend.healthUrl).then(r => r.ok).catch(() => false);
+            alive = await fetch(backend.healthUrl)
+              .then((r) => r.ok)
+              .catch(() => false);
             if (!alive) await Bun.sleep(2000);
           }
           if (!alive) throw new Error(`[${backendName}] Backend down after ${scenario} (run ${i})`);
@@ -402,7 +385,7 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
 
       status.setSubtask("Aggregating results...");
       await aggregateResults(backendName, resolve(outdir, backendName), opts.scenarios, opts.repeats);
-      await stopBackend(backend.profile, backend.containerName, backend.port);
+      await stopBackend(backend.profile, backend.containerName);
       await waitForPortFree(backend.port);
     }
 

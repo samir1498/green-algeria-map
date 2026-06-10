@@ -12,7 +12,7 @@ export interface ShellOptions {
   suppressStderr?: boolean;
 }
 
-async function readStream(
+export async function readStream(
   stream: ReadableStream<Uint8Array> | null | undefined,
   forwardTo?: { write: (chunk: string) => unknown },
 ): Promise<string> {

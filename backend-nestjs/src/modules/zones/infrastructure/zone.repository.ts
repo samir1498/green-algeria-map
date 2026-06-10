@@ -14,7 +14,17 @@ export class ZoneRepository {
 
   async findAll(): Promise<Zone[]> {
     const entities = await this.repo.find({
-      select: ['id', 'name', 'type', 'status', 'lat', 'lng', 'targetCount', 'currentCount', 'volunteerCount'],
+      select: [
+        'id',
+        'name',
+        'type',
+        'status',
+        'lat',
+        'lng',
+        'targetCount',
+        'currentCount',
+        'volunteerCount',
+      ],
       order: { name: 'ASC' },
     });
     return entities.map((e) => ZoneMapper.toDomain(e));

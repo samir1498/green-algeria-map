@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddZoneIndexes1779850000000 implements MigrationInterface {
-  name = "AddZoneIndexes1779850000000";
+  name = 'AddZoneIndexes1779850000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
