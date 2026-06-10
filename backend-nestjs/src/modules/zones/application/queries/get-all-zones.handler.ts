@@ -1,16 +1,16 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetAllZonesQuery } from './get-all-zones.query';
 import { ZoneRepository } from '../../infrastructure/zone.repository';
-import { Zone } from '../../domain/zone';
+import { ZoneResponseDto } from '../../dto/zone-response.dto';
 
 @QueryHandler(GetAllZonesQuery)
 export class GetAllZonesHandler implements IQueryHandler<
   GetAllZonesQuery,
-  Zone[]
+  ZoneResponseDto[]
 > {
   constructor(private readonly repository: ZoneRepository) {}
 
-  async execute(): Promise<Zone[]> {
+  async execute(): Promise<ZoneResponseDto[]> {
     return this.repository.findAll();
   }
 }

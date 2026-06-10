@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Zone } from '../domain/zone';
 import { ZoneOrmEntity } from './zone.orm-entity';
 import { ZoneMapper } from './zone.mapper';
+import { ZoneDtoMapper } from './zone-dto.mapper';
+import { ZoneResponseDto } from '../dto/zone-response.dto';
 
 @Injectable()
 export class ZoneRepository {
@@ -12,7 +14,7 @@ export class ZoneRepository {
     private readonly repo: Repository<ZoneOrmEntity>,
   ) {}
 
-  async findAll(): Promise<Zone[]> {
+  async findAll(): Promise<ZoneResponseDto[]> {
     const entities = await this.repo.find({
       select: [
         'id',
@@ -23,11 +25,15 @@ export class ZoneRepository {
         'lng',
         'targetCount',
         'currentCount',
+        'description',
+        'photos',
+        'organizerContact',
+        'treeSpecies',
         'volunteerCount',
       ],
       order: { name: 'ASC' },
     });
-    return entities.map((e) => ZoneMapper.toDomain(e));
+    return entities.map((e) => ZoneDtoMapper.toDto(e));
   }
 
   async findById(id: string): Promise<Zone | null> {

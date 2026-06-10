@@ -11,7 +11,8 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule, { bodyParser: false });
 
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  const enableTransform = process.env.DISABLE_TRANSFORM !== 'true';
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: enableTransform }));
   app.useGlobalFilters(new AllExceptionsFilter());
   const allowedOrigins = process.env.CLIENT_URL
     ? process.env.CLIENT_URL.split(',').map((s) => s.trim())

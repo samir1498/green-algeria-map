@@ -32,8 +32,7 @@ export class ZonesController {
   @Get()
   @Public()
   async findAll() {
-    const zones = await this.queryBus.execute(new GetAllZonesQuery());
-    return zones.map((z) => ZoneResponseDto.fromDomain(z));
+    return this.queryBus.execute(new GetAllZonesQuery());
   }
 
   @Get(':id')

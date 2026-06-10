@@ -1,25 +1,10 @@
 import { Zone } from '../domain/zone';
 import { Coordinates } from '../domain/coordinates.value-object';
 import { ZoneOrmEntity } from './zone.orm-entity';
-import {
-  ZONE_TYPES,
-  ZONE_STATUSES,
-  type ZoneType,
-  type ZoneStatus,
-} from '../domain/zone.types';
-import {
-  InvalidZoneTypeError,
-  InvalidZoneStatusError,
-} from '../domain/zone-errors';
+import type { ZoneType, ZoneStatus } from '../domain/zone.types';
 
 export class ZoneMapper {
   static toDomain(orm: ZoneOrmEntity): Zone {
-    if (!ZONE_TYPES.includes(orm.type as ZoneType)) {
-      throw new InvalidZoneTypeError(orm.type);
-    }
-    if (!ZONE_STATUSES.includes(orm.status as ZoneStatus)) {
-      throw new InvalidZoneStatusError(orm.status);
-    }
     return Zone.create({
       id: orm.id,
       name: orm.name,
