@@ -4,7 +4,6 @@ import { ApiTags } from '@nestjs/swagger';
 import { Public } from '../auth/infrastructure/public.decorator';
 import { GetAllZonesQuery } from '../zones/application/queries/get-all-zones.query';
 import { GetAllDamageReportsQuery } from '../damage-reports/application/queries/get-all-damage-reports.query';
-import { ZoneResponseDto } from '../zones/dto/zone-response.dto';
 import { DamageReportResponseDto } from '../damage-reports/dto/damage-report-response.dto';
 
 @ApiTags('Public')
@@ -21,7 +20,7 @@ export class PublicController {
     ]);
 
     return {
-      zones: zones.map((z) => ZoneResponseDto.fromDomain(z)),
+      zones,
       damageReports: damageReports.map((d) =>
         DamageReportResponseDto.fromDomain(d),
       ),

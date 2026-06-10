@@ -1,4 +1,4 @@
 import { Query } from '@nestjs/cqrs';
-import { Zone } from '../../domain/zone';
+import { ZoneResponseDto } from '../../dto/zone-response.dto';
 
-export class GetAllZonesQuery extends Query<Zone[]> {}
+export class GetAllZonesQuery extends Query<ZoneResponseDto[]> {}
