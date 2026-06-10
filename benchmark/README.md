@@ -39,14 +39,6 @@ bun run bench run -w 100                           # warmup iterations
 bun run bench run --dry-run                        # generate report without running
 ```
 
-### `bun run bench single <backend>` — Single backend (infra must be running)
-
-```bash
-bun run bench single go                            # benchmark go only
-bun run bench single go -s auth                    # benchmark go, auth scenario only
-bun run bench single go -P full                    # with full profile
-```
-
 ### `bun run bench compare <dir>` — Compare results
 
 ```bash

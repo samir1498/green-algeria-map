@@ -3,7 +3,6 @@ import { defineCommand, runMain } from "citty";
 import { cleanCommand } from "./commands/clean";
 import { compareCommand } from "./commands/compare";
 import { runCommand } from "./commands/run";
-import { singleCommand } from "./commands/single";
 
 const main = defineCommand({
   meta: {
@@ -13,7 +12,6 @@ const main = defineCommand({
   },
   subCommands: {
     run: runCommand,
-    single: singleCommand,
     compare: compareCommand,
     clean: cleanCommand,
   },
