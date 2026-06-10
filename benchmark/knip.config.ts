@@ -1,4 +1,6 @@
 export default {
-  project: ['src/**/*.ts'],
+  entry: ['scripts/auth.js', 'scripts/zones.js', 'scripts/mix.js'],
+  project: ['src/**/*.ts', 'scripts/**/*.js'],
   ignoreExportsUsedInFile: true,
+  ignoreDependencies: ['k6'],
 }

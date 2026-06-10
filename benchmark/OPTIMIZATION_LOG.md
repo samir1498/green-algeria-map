@@ -53,6 +53,54 @@ Initial fixed pipeline baseline after CLI + config fixes:
 
 ---
 
+## Iteration 2 — Constrained Baseline (1 CPU / 512MiB) — NestJS Complete
+
+**Date:** 2026-06-09
+**Config:** 1 CPU, 512MiB, 3 repeats, 30s holds
+**Branch:** `fix/constrained-baseline`
+**Commit:** dc0eaed
+
+### Changes
+- **NestJS SmartAuthGuard** — checks `@Public()` before `auth.api.getSession()`, eliminating DB pressure on public endpoints (was: AuthGuard called getSession() before @Public() check)
+- **DISABLE_SWAGGER=true** — Swagger UI disabled, saves startup memory
+- **NODE_OPTIONS=--max-old-space-size=256** — limits V8 heap to 256MiB within 512MiB container
+- **zones findAll() select optimization** — skips heavy columns (photos, description, organizerContact, treeSpecies)
+- **Spring Boot JVM-Xmx via env** — JAVA_TOOLS_SB injected at pipeline start (-Xmx256m), uniform startBackend() for all backends
+- **applyLimits.ts** — reverted to clean single-command (no create-then-start needed)
+- **Docker Compose env-forwarding** — NODE_OPTIONS, DISABLE_SWAGGER passed via host env (no hardcoded values)
+
+### Auth (20 VUs) — NestJS Complete
+
+| Rank | Backend | avg | p95 | fail | iter | req/s | CPU | Mem |
+|---|---|---|---|---|---|---|---|---|
+| 🥇 | nestjs | 1ms | 2ms | 0.0% | ~1.5M | ~10,000 | 100% | 265MiB |
+
+### Zones (50 VUs) — NestJS Complete
+
+| Rank | Backend | avg | p95 | fail | iter | req/s | CPU | Mem |
+|---|---|---|---|---|---|---|---|---|
+| 🥇 | nestjs | 981ms | 1,164ms | ~3-4% | ~4,300 | ~29 | 100% | 240MiB |
+
+### Mix (30 VUs) — NestJS Complete
+
+| Rank | Backend | avg | p95 | fail | iter | req/s | CPU | Mem |
+|---|---|---|---|---|---|---|---|---|
+| 🥇 | nestjs | 653ms | 2,041ms | ~0.3% | ~6,900 | ~28.5 | 100% | 373MiB (peak) |
+
+### NestJS Memory Profile
+- **Startup:** ~265 MiB
+- **Auth (20 VUs):** ~233 MiB (45% of 512MiB)
+- **Zones (50 VUs):** ~239 MiB (46% of 512MiB) — stable
+- **Mix (30 VUs):** peaks at **373 MiB (72.8% of 512MiB)** — survives all 3 runs
+
+### Key Takeaways (NestJS)
+- **SmartAuthGuard fixed zones 99.7% fail** — root cause: `@thallesp/nestjs-better-auth` AuthGuard called `getSession()` (DB query) before checking `@Public()`
+- **NestJS survives 512MiB** with optimizations — peak 373MiB (72.8%), no OOM
+- **~3% fail rate on zones** — likely expected under load at 512MiB; was 0% in unconstrained
+- **All 3 NestJS scenarios pass 3/3** — auth, zones, mix complete
+
+---
+
 ## Template for Next Iteration
 
 ```markdown

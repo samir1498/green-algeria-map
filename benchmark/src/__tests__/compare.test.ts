@@ -1,30 +1,88 @@
 import { describe, expect, it } from "bun:test";
-import { determineWinner } from "../report/compare";
+import { formatTable } from "../report/compare";
+import type { AggregatedMetric, AggregatedSummary } from "../types";
 
-describe("determineWinner", () => {
-  it("returns null for less than 2 rows", () => {
-    expect(determineWinner([])).toBeNull();
-    expect(
-      determineWinner([
-        { backend: "go", avg: 100, med: 90, p90: 180, p95: 200, failRate: 0, iterations: 100, rps: 50 },
-      ]),
-    ).toBeNull();
+function am(overrides: Partial<AggregatedMetric>): AggregatedMetric {
+  return {
+    avgMedian: 0,
+    p95Median: 0,
+    p90Median: 0,
+    medMedian: 0,
+    failRateAvg: 0,
+    rateMedian: 0,
+    countTotal: 0,
+    runs: 1,
+    ...overrides,
+  };
+}
+
+describe("formatTable", () => {
+  it("handles empty backends map", () => {
+    const output = formatTable(new Map());
+    expect(output).toContain("Benchmark Comparison");
   });
 
-  it("picks lowest avg+p95 when failure rates are low", () => {
-    const rows = [
-      { backend: "nestjs", avg: 743, med: 500, p90: 1200, p95: 1708, failRate: 0, iterations: 824, rps: 19 },
-      { backend: "go", avg: 274, med: 200, p90: 500, p95: 680, failRate: 0, iterations: 2215, rps: 55 },
-      { backend: "springboot", avg: 318, med: 250, p90: 700, p95: 1005, failRate: 0, iterations: 1907, rps: 48 },
-    ];
-    expect(determineWinner(rows)).toBe("go");
+  it("includes winner with multiple backends", () => {
+    const go: AggregatedSummary = {
+      backend: "go",
+      scenario: "auth",
+      runs: 1,
+      metrics: {
+        http_req_duration: am({ avgMedian: 1, medMedian: 1, p95Median: 2, rateMedian: 100, countTotal: 100 }),
+        http_req_failed: am({ failRateAvg: 0 }),
+        http_reqs: am({ rateMedian: 100, countTotal: 100 }),
+        iterations: am({ countTotal: 100 }),
+      },
+    };
+    const nestjs: AggregatedSummary = {
+      backend: "nestjs",
+      scenario: "auth",
+      runs: 1,
+      metrics: {
+        http_req_duration: am({ avgMedian: 100, medMedian: 90, p95Median: 200, rateMedian: 10, countTotal: 10 }),
+        http_req_failed: am({ failRateAvg: 0 }),
+        http_reqs: am({ rateMedian: 10, countTotal: 10 }),
+        iterations: am({ countTotal: 10 }),
+      },
+    };
+    const output = formatTable(
+      new Map([
+        ["go", [go]],
+        ["nestjs", [nestjs]],
+      ]),
+    );
+    expect(output).toContain("🥇 Winner: go");
   });
 
   it("penalizes backends with high failure rate", () => {
-    const rows = [
-      { backend: "nestjs", avg: 743, med: 500, p90: 1200, p95: 1708, failRate: 0, iterations: 824, rps: 19 },
-      { backend: "go", avg: 109, med: 80, p90: 300, p95: 441, failRate: 0.6, iterations: 522, rps: 80 },
-    ];
-    expect(determineWinner(rows)).toBe("nestjs");
+    const go: AggregatedSummary = {
+      backend: "go",
+      scenario: "auth",
+      runs: 1,
+      metrics: {
+        http_req_duration: am({ avgMedian: 1, medMedian: 1, p95Median: 2, rateMedian: 100, countTotal: 100 }),
+        http_req_failed: am({ failRateAvg: 0.6 }),
+        http_reqs: am({ rateMedian: 100, countTotal: 100 }),
+        iterations: am({ countTotal: 100 }),
+      },
+    };
+    const nestjs: AggregatedSummary = {
+      backend: "nestjs",
+      scenario: "auth",
+      runs: 1,
+      metrics: {
+        http_req_duration: am({ avgMedian: 100, medMedian: 90, p95Median: 200, rateMedian: 10, countTotal: 10 }),
+        http_req_failed: am({ failRateAvg: 0 }),
+        http_reqs: am({ rateMedian: 10, countTotal: 10 }),
+        iterations: am({ countTotal: 10 }),
+      },
+    };
+    const output = formatTable(
+      new Map([
+        ["go", [go]],
+        ["nestjs", [nestjs]],
+      ]),
+    );
+    expect(output).toContain("🥇 Winner: nestjs");
   });
 });

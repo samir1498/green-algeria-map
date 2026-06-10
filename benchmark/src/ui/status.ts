@@ -13,7 +13,7 @@ export interface LiveMetrics {
   elapsedSec: number;
 }
 
-type StatusMode = "phase" | "subprocess" | "metrics" | "warning" | "done" | "idle";
+type StatusMode = "phase" | "metrics" | "warning" | "done" | "idle";
 
 interface StatusState {
   mode: StatusMode;
@@ -60,10 +60,6 @@ export class StatusBar {
       totalRuns: 0,
       verbose: false,
     };
-  }
-
-  setVerbose(v: boolean): void {
-    this.state.verbose = v;
   }
 
   setPhase(phase: string): void {
@@ -152,8 +148,7 @@ export class StatusBar {
     let line = "";
 
     switch (this.state.mode) {
-      case "phase":
-      case "subprocess": {
+      case "phase": {
         const elapsed = this.state.startedAt > 0 ? this.fmtElapsed((Date.now() - this.state.startedAt) / 1000) : "0s";
         const spinner = this.spinner();
         const sub = this.state.subPhase ? ` ${this.state.subPhase}` : "";
@@ -189,9 +184,7 @@ export class StatusBar {
 
   private spinIndex = 0;
   private spinner(): string {
-    const frames = ["🔄", "🔄", "🔄", "🔄"];
-    this.spinIndex = (this.spinIndex + 1) % frames.length;
-    return frames[this.spinIndex];
+    return "🔄";
   }
 
   private fmtElapsed(sec: number): string {

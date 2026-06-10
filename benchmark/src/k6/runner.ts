@@ -1,14 +1,14 @@
 import { mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import { step } from "../logger";
-import { run } from "../shell";
+import { readStream, run } from "../shell";
 import type { BackendConfig, ScenarioConfig } from "../types";
+import type { LiveMetrics } from "../ui/status";
 import { status } from "../ui/status";
 
 const BENCHMARK_DIR = resolve(import.meta.dir, "../..");
 
 export async function runWarmup(backend: string, config: BackendConfig, iterations: number): Promise<void> {
-  step(backend, `Warmup (${iterations} iterations)...`);
+  status.setSubtask(`[${backend}] Warmup (${iterations} iterations)...`);
   const result = await run(
     "k6",
     [
@@ -32,7 +32,7 @@ export async function runWarmup(backend: string, config: BackendConfig, iteratio
   if (result.exitCode !== 0) {
     throw new Error(`Warmup failed for ${backend}: ${result.stderr || result.stdout || "no output"}`);
   }
-  step(backend, "Warmup complete");
+  status.setSubtask(`[${backend}] Warmup complete`);
 }
 
 export async function runScenario(
@@ -61,74 +61,7 @@ export async function runScenario(
     `HOLD_DURATION=${holdOverride ?? scenarioConfig.holdDuration}`,
   ];
 
-  if (totalRuns && totalRuns > 0) {
-    await runWithLiveOutput(backend, scenario, outdir, runIndex, totalRuns, env);
-  } else {
-    await runQuiet(backend, scenario, outdir, runIndex, env);
-  }
-}
-
-async function runQuiet(
-  backend: string,
-  scenario: string,
-  outdir: string,
-  runIndex: number,
-  env: string[],
-): Promise<void> {
-  step(backend, `Running ${scenario} (run ${runIndex})...`);
-  const proc = Bun.spawn({
-    cmd: [
-      "k6",
-      "run",
-      "--no-thresholds",
-      "--out",
-      `json=${outdir}/run-${runIndex}.json`,
-      "--summary-export",
-      `${outdir}/run-${runIndex}-summary.json`,
-      ...env,
-      `scripts/${scenario}.js`,
-    ],
-    cwd: BENCHMARK_DIR,
-    stdout: "inherit",
-    stderr: "pipe",
-  });
-  const stderrReader = proc.stderr?.getReader();
-  const decoder = new TextDecoder();
-  let stderr = "";
-  if (stderrReader) {
-    while (true) {
-      const { value, done } = await stderrReader.read();
-      if (done) break;
-      stderr += decoder.decode(value, { stream: true });
-    }
-    stderr += decoder.decode();
-  }
-  const exitCode = await proc.exited;
-  if (exitCode !== 0 && exitCode !== 99) {
-    throw new Error(`[${backend}] ${scenario} run ${runIndex} failed: ${stderr.trim() || "no output"}`);
-  }
-}
-
-async function readStream(stream: ReadableStream<Uint8Array>): Promise<string> {
-  const reader = stream.getReader();
-  const decoder = new TextDecoder();
-  let result = "";
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    result += decoder.decode(value, { stream: true });
-  }
-  result += decoder.decode();
-  return result;
-}
-
-interface LiveMetrics {
-  requests: number;
-  failures: number;
-  totalDuration: number;
-  durationCount: number;
-  currentVUs: number;
-  elapsedSec: number;
+  await runWithLiveOutput(backend, scenario, outdir, runIndex, totalRuns ?? 1, env);
 }
 
 async function parseJsonStream(

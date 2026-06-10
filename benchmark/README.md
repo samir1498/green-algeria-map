@@ -107,7 +107,7 @@ All configuration is in `bench.config.json`:
 - `bun run bench run --profile full` — original defaults (3 repeats, longer holds)
 - `bun run bench run -P full -r 5` — full profile, but 5 repeats wins (CLI > profile)
 
-Legacy shell scripts (pipeline.sh, run.sh, compare.sh) are archived in `benchmark/legacy/`.
+Legacy shell scripts were removed in v0.3.0 — replaced by the TS CLI (`pipeline/orchestrator.ts`).
 
 ## Environment Variables
 
@@ -155,7 +155,7 @@ Test files in `benchmark/src/__tests__/`:
 - `integrity.test.ts` — k6 failures, missing summaries, raw+aggregated format loading
 - `hardening.test.ts` — Infra timeouts, NestJS bootstrap failures, compare edge cases
 - `stats.test.ts` — Docker stats lifecycle (awaitable stop)
-- `compare.test.ts` — determineWinner logic
+- `compare.test.ts` — formatTable ranking logic
 - `loader.test.ts` — Config loading
 - `logger.test.ts` — Duration formatting
 - `shell.test.ts` — Streamed stdout/stderr capture

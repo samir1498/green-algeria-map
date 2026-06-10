@@ -64,7 +64,7 @@ describe("benchmark integrity", () => {
         {
           port: 8080,
           apiPrefix: "",
-          healthUrl: "http://localhost:8080/health",
+          healthUrl: "http://localhost:8080/api/health/live",
           profile: "nestjs",
           dbName: "greenalgeria_nestjs",
           containerName: "green-algeria-nestjs",
