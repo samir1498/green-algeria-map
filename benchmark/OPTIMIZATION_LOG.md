@@ -58,7 +58,7 @@ Initial fixed pipeline baseline after CLI + config fixes:
 **Date:** 2026-06-09
 **Config:** 1 CPU, 512MiB, 3 repeats, 30s holds
 **Branch:** `fix/constrained-baseline`
-**Commit:** (in progress)
+**Commit:** dc0eaed
 
 ### Changes
 - **NestJS SmartAuthGuard** — checks `@Public()` before `auth.api.getSession()`, eliminating DB pressure on public endpoints (was: AuthGuard called getSession() before @Public() check)

@@ -18,7 +18,7 @@ export function pick(
   fallback: string | number,
 ): string | number {
   const cli = cliArgs[key];
-  if (cli !== undefined && cli !== "") return cli as string;
+  if (typeof cli === "string" && cli !== "") return cli;
   const pv = profile?.[key as keyof ProfileConfig];
   return pv !== undefined ? (pv as string | number) : fallback;
 }
@@ -28,5 +28,3 @@ export function parseDuration(d: string): number {
   if (!match) return 30;
   return Number.parseInt(match[1]) * (match[2] === "m" ? 60 : 1);
 }
-
-

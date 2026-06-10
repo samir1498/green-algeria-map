@@ -153,7 +153,6 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
   if (migrationResult.exitCode !== 0) {
     throw new Error(`NestJS migration failed: ${migrationResult.stderr || migrationResult.stdout || "no output"}`);
   }
-
 }
 
 async function runSpringbootPreStart(config: BenchConfig): Promise<void> {
@@ -388,9 +387,12 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
           // Quick health check — abort if server OOM'd mid-run
           let alive = false;
           for (let h = 0; h < 3 && !alive; h++) {
-            alive = await fetch(backend.healthUrl)
+            const ac = new AbortController();
+            const timer = setTimeout(() => ac.abort(), 5000);
+            alive = await fetch(backend.healthUrl, { signal: ac.signal })
               .then((r) => r.ok)
               .catch(() => false);
+            clearTimeout(timer);
             if (!alive) await Bun.sleep(2000);
           }
           if (!alive) throw new Error(`[${backendName}] Backend down after ${scenario} (run ${i})`);

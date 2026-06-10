@@ -5,6 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import type { Request } from 'express';
 import { fromNodeHeaders } from 'better-auth/node';
 import { auth } from './better-auth.config';
 
