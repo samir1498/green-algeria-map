@@ -1,4 +1,4 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import pkg from "../../package.json";
 import { fullCleanup, getRoot, startBackend, startInfra, stopBackend, verifyInfra } from "../docker/compose";
@@ -186,30 +186,40 @@ async function runSpringbootPreStart(config: BenchConfig): Promise<void> {
 
 async function runGoMigrations(config: BenchConfig): Promise<void> {
   const root = getRoot();
-  const migrationFile = resolve(root, "backend-go/migrations/001_init.sql");
-  if (!(await Bun.file(migrationFile).exists())) return;
-  const sql = await Bun.file(migrationFile).text();
-  const upSection = sql.match(/\+goose Up([\s\S]*?)\+goose Down/)?.[1]?.trim();
-  if (!upSection) {
-    status.setWarning("No Go migration section found (non-fatal)");
+  const migrationsDir = resolve(root, "backend-go/migrations");
+  let files: string[];
+  try {
+    files = (await readdir(migrationsDir)).filter((f) => f.endsWith(".sql")).sort();
+  } catch {
     return;
   }
-  status.setSubtask("Running Go migrations...");
+  if (files.length === 0) return;
+
   const { database, infrastructure } = config;
-  const result = await run("docker", [
-    "exec",
-    "-i",
-    infrastructure.dbContainerName,
-    "psql",
-    "-U",
-    database.username,
-    "-d",
-    config.backends.go.dbName,
-    "-c",
-    upSection,
-  ]);
-  if (result.exitCode !== 0) {
-    throw new Error(`Go migrations failed: ${result.stderr || result.stdout || "no output"}`);
+
+  status.setSubtask(`Running Go migrations (${files.length} files)...`);
+  for (const file of files) {
+    const sql = await Bun.file(resolve(migrationsDir, file)).text();
+    const upSection = sql.match(/\+goose Up([\s\S]*?)\+goose Down/)?.[1]?.trim();
+    if (!upSection) {
+      status.setWarning(`No migration section found in ${file} (skipping)`);
+      continue;
+    }
+    const result = await run("docker", [
+      "exec",
+      "-i",
+      infrastructure.dbContainerName,
+      "psql",
+      "-U",
+      database.username,
+      "-d",
+      config.backends.go.dbName,
+      "-c",
+      upSection,
+    ]);
+    if (result.exitCode !== 0) {
+      throw new Error(`Go migration ${file} failed: ${result.stderr || result.stdout || "no output"}`);
+    }
   }
 }
 
