@@ -31,6 +31,9 @@ clean:
 dev:
 	$(MAVEN) spring-boot:run
 
+migrate:
+	$(MAVEN) flyway:migrate
+
 depgraph:
 	$(MAVEN) compile -q
 	jdeps -dotoutput target/deps target/classes

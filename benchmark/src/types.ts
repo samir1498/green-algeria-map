@@ -5,6 +5,7 @@ export interface BackendConfig {
   profile: string;
   dbName: string;
   containerName: string;
+  heapRatio?: number;
 }
 
 export interface ScenarioConfig {

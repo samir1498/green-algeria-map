@@ -161,6 +161,29 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
   }
 }
 
+async function runSpringbootPreStart(config: BenchConfig): Promise<void> {
+  const root = getRoot();
+  const sb = config.backends.springboot;
+  if (!sb) throw new Error("Spring Boot backend config missing");
+  const dbName = sb.dbName;
+  const { database } = config;
+
+  status.setSubtask("Running Flyway migrations...");
+  const dbEnv = {
+    SPRING_DATASOURCE_URL: `jdbc:postgresql://${database.host}:${database.port}/${dbName}`,
+    SPRING_DATASOURCE_USERNAME: database.username,
+    SPRING_DATASOURCE_PASSWORD: database.password,
+  };
+  const result = await run("./mvnw", ["flyway:migrate"], {
+    cwd: resolve(root, "backend-springboot"),
+    env: dbEnv,
+  });
+  if (result.exitCode !== 0) {
+    throw new Error(`Flyway migration failed: ${result.stderr || result.stdout || "no output"}`);
+  }
+  status.setDone("Flyway migrations complete");
+}
+
 async function runGoMigrations(config: BenchConfig): Promise<void> {
   const root = getRoot();
   const migrationFile = resolve(root, "backend-go/migrations/001_init.sql");
@@ -209,7 +232,8 @@ async function createBucket(config: BenchConfig): Promise<void> {
 }
 
 function setBenchEnv(backendName: string, opts: RunOptions, config: BenchConfig): void {
-  const heapRatio = config.defaults.heapRatio ?? 0.5;
+  const backend = config.backends[backendName];
+  const heapRatio = backend?.heapRatio ?? config.defaults.heapRatio ?? 0.5;
   if (backendName === "nestjs") {
     const heapMb = Math.round(Number.parseInt(opts.memory) * heapRatio);
     process.env.NODE_OPTIONS = `--max-old-space-size=${heapMb}`;
@@ -217,7 +241,7 @@ function setBenchEnv(backendName: string, opts: RunOptions, config: BenchConfig)
   }
   if (backendName === "springboot") {
     const heapMb = Math.round(Number.parseInt(opts.memory) * heapRatio);
-    process.env.JAVA_TOOL_OPTIONS = `-Xmx${heapMb}m -Xms${heapMb}m -Xlog:gc*:file=/tmp/gc.log:time,level,tags`;
+    process.env.JAVA_TOOL_OPTIONS = `-Xmx${heapMb}m -Xlog:gc*:file=/tmp/gc.log:time,level,tags`;
   }
 }
 
@@ -299,11 +323,17 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
       // Pre-start: migrations and seeding
       if (backendName === "nestjs") await runNestjsPreStart(config);
       if (backendName === "go") await runGoMigrations(config);
+      if (backendName === "springboot") await runSpringbootPreStart(config);
 
       // Start backend
       setBenchEnv(backendName, opts, config);
       await startBackend(backend.profile);
       await applyLimits(backend.containerName, opts.cpus, opts.memory);
+
+      // Restart Spring Boot so JVM re-reads cgroup memory limit
+      if (backendName === "springboot") {
+        await run("docker", ["restart", backend.containerName]);
+      }
 
       // Health check + startup time
       const startTimer = timer();
@@ -342,6 +372,14 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
             opts.holdDuration ?? so?.holdDuration,
             opts.repeats,
           );
+          // Capture container logs BEFORE health check (server might be dead)
+          if (backendName === "springboot") {
+            const logsResult = await run("docker", ["logs", backend.containerName], { suppressStderr: true });
+            await Bun.write(resolve(scenarioOutdir, "springboot-container.log"), logsResult.stdout);
+            if (logsResult.stderr) {
+              await Bun.write(resolve(scenarioOutdir, "springboot-container-err.log"), logsResult.stderr);
+            }
+          }
           // Quick health check — abort if server OOM'd mid-run
           let alive = false;
           for (let h = 0; h < 3 && !alive; h++) {

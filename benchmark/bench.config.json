@@ -47,7 +47,8 @@
       "healthUrl": "http://localhost:8081/readyz",
       "profile": "springboot",
       "dbName": "greenalgeria_springboot",
-      "containerName": "green-algeria-springboot"
+      "containerName": "green-algeria-springboot",
+      "heapRatio": 0.3
     },
     "go": {
       "port": 8082,
