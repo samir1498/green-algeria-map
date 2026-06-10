@@ -29,16 +29,4 @@ export function parseDuration(d: string): number {
   return Number.parseInt(match[1]) * (match[2] === "m" ? 60 : 1);
 }
 
-export async function retry<T>(
-  fn: () => Promise<T>,
-  isSuccess: (result: T) => boolean,
-  maxAttempts: number,
-  delayMs: number,
-): Promise<T> {
-  for (let i = 0; i < maxAttempts; i++) {
-    const result = await fn();
-    if (isSuccess(result)) return result;
-    if (i < maxAttempts - 1) await Bun.sleep(delayMs);
-  }
-  return fn();
-}
+
