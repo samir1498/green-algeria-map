@@ -4,20 +4,9 @@ import { defineCommand } from "citty";
 import { waitForHealth } from "../health";
 import { runScenario, runWarmup } from "../k6/runner";
 import { loadConfig } from "../loader";
-import { banner, formatDuration, timer } from "../logger";
-import type { ProfileConfig } from "../types";
+import { formatDuration, timer } from "../logger";
 import { status } from "../ui/status";
-
-function resolveProfile(
-  config: { profiles?: Record<string, ProfileConfig> },
-  profileName?: string,
-): ProfileConfig | undefined {
-  if (!profileName) return undefined;
-  const profile = config.profiles?.[profileName];
-  if (!profile)
-    throw new Error(`Unknown profile: "${profileName}". Available: ${Object.keys(config.profiles ?? {}).join(", ")}`);
-  return profile;
-}
+import { pick, resolveProfile } from "../utils";
 
 export const singleCommand = defineCommand({
   meta: { name: "single", description: "Benchmark a single backend (infra must be running)" },
@@ -38,25 +27,18 @@ export const singleCommand = defineCommand({
     const a = args as Record<string, string | boolean | undefined>;
     const profile = resolveProfile(config, a.profile as string | undefined);
 
-    const pick = (key: string, fallback: string | number): string | number => {
-      const cli = a[key];
-      if (cli !== undefined && cli !== "") return cli as string;
-      const pv = profile?.[key as keyof ProfileConfig];
-      return pv !== undefined ? (pv as string | number) : fallback;
-    };
-
     const backendName = a.backend as string;
     const backend = config.backends[backendName];
     if (!backend) throw new Error(`Unknown backend: ${backendName}`);
 
     const scenarios = (a.scenarios as string)?.split(",") ?? Object.keys(config.scenarios);
-    const repeats = Number(pick("repeats", config.defaults.repeats));
-    const warmup = Number(pick("warmup", config.defaults.warmup));
+    const repeats = Number(pick(a, "repeats", profile, config.defaults.repeats));
+    const warmup = Number(pick(a, "warmup", profile, config.defaults.warmup));
     const outdir = (a.output as string) ?? resolve(import.meta.dir, `../../results/${Date.now()}-${backendName}`);
     await mkdir(outdir, { recursive: true });
 
     const profileLabel = a.profile ? ` | Profile: ${a.profile}` : "";
-    banner(
+    status.setPhase(
       `Benchmark: ${backendName} | Port: ${backend.port} | Scenarios: ${scenarios.join(", ")} | Repeats: ${repeats}${profileLabel}`,
     );
 

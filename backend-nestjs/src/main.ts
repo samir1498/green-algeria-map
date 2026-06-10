@@ -28,32 +28,36 @@ async function bootstrap() {
       ? (JSON.parse(pkgRaw) as { version: string }).version
       : '0.0.0';
 
-  const config = new DocumentBuilder()
-    .setTitle('Green Algeria Map API')
-    .setDescription(
-      'API for tracking reforestation and cleanup efforts across Algeria',
-    )
-    .setVersion(version)
-    .addBearerAuth()
-    .build();
+  if (process.env.DISABLE_SWAGGER !== 'true') {
+    const config = new DocumentBuilder()
+      .setTitle('Green Algeria Map API')
+      .setDescription(
+        'API for tracking reforestation and cleanup efforts across Algeria',
+      )
+      .setVersion(version)
+      .addBearerAuth()
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+    const document = SwaggerModule.createDocument(app, config);
 
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerUiEnabled: false,
-  });
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerUiEnabled: false,
+    });
 
-  app.use(
-    '/api/docs',
-    apiReference({
-      spec: { content: document },
-      theme: 'moon',
-    }),
-  );
+    app.use(
+      '/api/docs',
+      apiReference({
+        spec: { content: document },
+        theme: 'moon',
+      }),
+    );
+  }
 
   const port = process.env.PORT ?? 8080;
   await app.listen(port);
   logger.log(`Running on http://localhost:${port}`);
-  logger.log(`API docs at http://localhost:${port}/api/docs`);
+  if (process.env.DISABLE_SWAGGER !== 'true') {
+    logger.log(`API docs at http://localhost:${port}/api/docs`);
+  }
 }
 void bootstrap();

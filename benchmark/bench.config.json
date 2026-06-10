@@ -3,7 +3,8 @@
     "cpus": 1,
     "memory": "512m",
     "repeats": 1,
-    "warmup": 10
+    "warmup": 10,
+    "heapRatio": 0.5
   },
   "profiles": {
     "full": {
@@ -28,7 +29,8 @@
     "objectStorageEndpoint": "http://localhost:9000",
     "objectStorageBucket": "green-algeria",
     "objectStorageAccessKey": "greenalgeria-access",
-    "objectStorageSecretKey": "greenalgeria-secret-change-me"
+    "objectStorageSecretKey": "greenalgeria-secret-change-me",
+    "objectStorageRegion": "us-east-1"
   },
   "backends": {
     "nestjs": {
@@ -45,7 +47,8 @@
       "healthUrl": "http://localhost:8081/readyz",
       "profile": "springboot",
       "dbName": "greenalgeria_springboot",
-      "containerName": "green-algeria-springboot"
+      "containerName": "green-algeria-springboot",
+      "heapRatio": 0.3
     },
     "go": {
       "port": 8082,
@@ -63,7 +66,7 @@
       "holdDuration": "30s"
     },
     "zones": {
-      "vus": 50,
+      "vus": 40,
       "rampDuration": "30s",
       "holdDuration": "30s"
     },

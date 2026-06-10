@@ -9,6 +9,7 @@ describe("loadConfig", () => {
     expect(config.defaults.memory).toBe("512m");
     expect(config.defaults.repeats).toBe(1);
     expect(config.defaults.warmup).toBe(10);
+    expect(config.defaults.heapRatio).toBe(0.5);
   });
 
   it("has profiles", async () => {
@@ -30,7 +31,7 @@ describe("loadConfig", () => {
     const config = await loadConfig();
     expect(Object.keys(config.scenarios)).toEqual(["auth", "zones", "mix"]);
     expect(config.scenarios.auth.vus).toBe(20);
-    expect(config.scenarios.zones.vus).toBe(50);
+    expect(config.scenarios.zones.vus).toBe(40);
     expect(config.scenarios.mix.vus).toBe(30);
   });
 });

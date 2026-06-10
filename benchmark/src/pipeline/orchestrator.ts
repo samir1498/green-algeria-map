@@ -1,14 +1,7 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import {
-  createBackend,
-  fullCleanup,
-  getRoot,
-  startBackend,
-  startInfra,
-  stopBackend,
-  verifyInfra,
-} from "../docker/compose";
+import pkg from "../../package.json";
+import { fullCleanup, getRoot, startBackend, startInfra, stopBackend, verifyInfra } from "../docker/compose";
 import { applyLimits } from "../docker/limits";
 import { startStatsCollection } from "../docker/stats";
 import { waitForHealth, waitForPortFree } from "../health";
@@ -19,12 +12,7 @@ import { aggregateResults } from "../report/aggregate";
 import { run } from "../shell";
 import type { BenchConfig, RunOptions } from "../types";
 import { status } from "../ui/status";
-
-function parseDuration(d: string): number {
-  const match = d.match(/^(\d+)(s|m)$/);
-  if (!match) return 30;
-  return Number.parseInt(match[1]) * (match[2] === "m" ? 60 : 1);
-}
+import { parseDuration } from "../utils";
 
 function estimateDuration(opts: RunOptions, config: BenchConfig): string {
   let totalMinutes = 0;
@@ -46,7 +34,7 @@ export async function generateDryRunReport(config: BenchConfig, opts: RunOptions
   await mkdir(outdir, { recursive: true });
   const report = {
     generatedAt: new Date().toISOString(),
-    cliVersion: "0.1.0",
+    cliVersion: pkg.version,
     config: {
       backends: opts.backends,
       scenarios: opts.scenarios,
@@ -147,6 +135,9 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
   }
 
   status.setSubtask("Creating object storage bucket...");
+  await createBucket(config);
+
+  status.setSubtask("Running TypeORM migrations...");
   const dbEnv = {
     DB_HOST: database.host,
     DB_PORT: String(database.port),
@@ -155,21 +146,6 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
     DB_NAME: dbName,
     DATABASE_URL: `postgresql://${database.username}:${database.password}@${database.host}:${database.port}/${dbName}`,
   };
-  const bucketResult = await run("node", ["scripts/create-bucket.mjs"], {
-    cwd: nestDir,
-    env: {
-      ...dbEnv,
-      OO_OBJECT_STORAGE_ENDPOINT: infrastructure.objectStorageEndpoint,
-      OO_OBJECT_STORAGE_BUCKET: infrastructure.objectStorageBucket,
-      OO_OBJECT_STORAGE_ACCESS_KEY: infrastructure.objectStorageAccessKey,
-      OO_OBJECT_STORAGE_SECRET_KEY: infrastructure.objectStorageSecretKey,
-    },
-  });
-  if (bucketResult.exitCode !== 0) {
-    throw new Error(`NestJS bucket creation failed: ${bucketResult.stderr || bucketResult.stdout || "no output"}`);
-  }
-
-  status.setSubtask("Running TypeORM migrations...");
   const migrationResult = await run("npx", ["typeorm-ts-node-commonjs", "migration:run", "-d", "src/data-source.ts"], {
     cwd: nestDir,
     env: dbEnv,
@@ -177,37 +153,67 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
   if (migrationResult.exitCode !== 0) {
     throw new Error(`NestJS migration failed: ${migrationResult.stderr || migrationResult.stdout || "no output"}`);
   }
+}
 
-  status.setSubtask("Seeding demo data...");
-  const seedResult = await run("pnpm", ["seed"], { cwd: nestDir, env: dbEnv });
-  if (seedResult.exitCode !== 0) {
-    throw new Error(`NestJS seed failed: ${seedResult.stderr || seedResult.stdout || "no output"}`);
+async function runSpringbootPreStart(config: BenchConfig): Promise<void> {
+  const root = getRoot();
+  const sb = config.backends.springboot;
+  if (!sb) throw new Error("Spring Boot backend config missing");
+  const dbName = sb.dbName;
+  const { database } = config;
+
+  status.setSubtask("Running Flyway migrations...");
+  const dbEnv = {
+    SPRING_DATASOURCE_URL: `jdbc:postgresql://${database.host}:${database.port}/${dbName}`,
+    SPRING_DATASOURCE_USERNAME: database.username,
+    SPRING_DATASOURCE_PASSWORD: database.password,
+  };
+  const result = await run("./mvnw", ["flyway:migrate"], {
+    cwd: resolve(root, "backend-springboot"),
+    env: dbEnv,
+  });
+  if (result.exitCode !== 0) {
+    throw new Error(`Flyway migration failed: ${result.stderr || result.stdout || "no output"}`);
   }
+  status.setDone("Flyway migrations complete");
 }
 
 async function runGoMigrations(config: BenchConfig): Promise<void> {
   const root = getRoot();
-  const migrationFile = resolve(root, "backend-go/migrations/001_init.sql");
-  if (!(await Bun.file(migrationFile).exists())) return;
-  const sql = await Bun.file(migrationFile).text();
-  const upSection = sql.match(/goose Up([\s\S]*?)goose Down/)?.[1]?.trim();
-  if (!upSection) return;
-  status.setSubtask("Running Go migrations...");
+  const migrationsDir = resolve(root, "backend-go/migrations");
+  let files: string[];
+  try {
+    files = (await readdir(migrationsDir)).filter((f) => f.endsWith(".sql")).sort();
+  } catch {
+    return;
+  }
+  if (files.length === 0) return;
+
   const { database, infrastructure } = config;
-  const result = await run("docker", [
-    "exec",
-    "-i",
-    infrastructure.dbContainerName,
-    "psql",
-    "-U",
-    database.username,
-    "-d",
-    "greenalgeria_go",
-    "-c",
-    upSection,
-  ]);
-  if (result.exitCode !== 0) {
-    throw new Error(`Go migrations failed: ${result.stderr || result.stdout || "no output"}`);
+
+  status.setSubtask(`Running Go migrations (${files.length} files)...`);
+  for (const file of files) {
+    const sql = await Bun.file(resolve(migrationsDir, file)).text();
+    const upSection = sql.match(/\+goose Up([\s\S]*?)\+goose Down/)?.[1]?.trim();
+    if (!upSection) {
+      status.setWarning(`No migration section found in ${file} (skipping)`);
+      continue;
+    }
+    const result = await run("docker", [
+      "exec",
+      "-i",
+      infrastructure.dbContainerName,
+      "psql",
+      "-U",
+      database.username,
+      "-d",
+      config.backends.go.dbName,
+      "-c",
+      upSection,
+    ]);
+    if (result.exitCode !== 0) {
+      throw new Error(`Go migration ${file} failed: ${result.stderr || result.stdout || "no output"}`);
+    }
   }
 }
 
@@ -219,13 +225,27 @@ async function createBucket(config: BenchConfig): Promise<void> {
     OO_OBJECT_STORAGE_BUCKET: infrastructure.objectStorageBucket,
     OO_OBJECT_STORAGE_ACCESS_KEY: infrastructure.objectStorageAccessKey,
     OO_OBJECT_STORAGE_SECRET_KEY: infrastructure.objectStorageSecretKey,
-    OO_OBJECT_STORAGE_REGION: "us-east-1",
+    OO_OBJECT_STORAGE_REGION: infrastructure.objectStorageRegion,
   };
   const bucketResult = await run("node", [resolve(root, "backend-nestjs/scripts/create-bucket.mjs")], {
     env: bucketEnv,
   });
   if (bucketResult.exitCode !== 0) {
     throw new Error(`S3 bucket creation failed: ${bucketResult.stderr || bucketResult.stdout}`);
+  }
+}
+
+function setBenchEnv(backendName: string, opts: RunOptions, config: BenchConfig): void {
+  const backend = config.backends[backendName];
+  const heapRatio = backend?.heapRatio ?? config.defaults.heapRatio ?? 0.5;
+  if (backendName === "nestjs") {
+    const heapMb = Math.round(Number.parseInt(opts.memory) * heapRatio);
+    process.env.NODE_OPTIONS = `--max-old-space-size=${heapMb}`;
+    process.env.DISABLE_SWAGGER = "true";
+  }
+  if (backendName === "springboot") {
+    const heapMb = Math.round(Number.parseInt(opts.memory) * heapRatio);
+    process.env.JAVA_TOOL_OPTIONS = `-Xmx${heapMb}m -Xlog:gc*:file=/tmp/gc.log:time,level,tags`;
   }
 }
 
@@ -262,10 +282,6 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
     await verifyInfra();
     status.setDone("Infrastructure verified");
 
-    status.setPhase("Creating S3 bucket...");
-    await createBucket(config);
-    status.setDone("S3 bucket ready");
-
     await Bun.write(
       resolve(outdir, "config.json"),
       JSON.stringify(
@@ -282,16 +298,13 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
       ),
     );
 
-    process.on("SIGINT", async () => {
+    const onSignal = async () => {
       status.stop();
       await fullCleanup(true);
       process.exit(1);
-    });
-    process.on("SIGTERM", async () => {
-      status.stop();
-      await fullCleanup(true);
-      process.exit(1);
-    });
+    };
+    process.on("SIGINT", onSignal);
+    process.on("SIGTERM", onSignal);
 
     for (const backendName of opts.backends) {
       const backend = config.backends[backendName];
@@ -307,21 +320,23 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
       status.setSubtask("Setting up database...");
       await ensureDatabaseExists(config, backend.dbName);
 
+      // Recreate S3 bucket (fullCleanup wipes RustFS volume)
+      status.setSubtask("Creating S3 bucket...");
+      await createBucket(config);
+
       // Pre-start: migrations and seeding
       if (backendName === "nestjs") await runNestjsPreStart(config);
       if (backendName === "go") await runGoMigrations(config);
+      if (backendName === "springboot") await runSpringbootPreStart(config);
 
       // Start backend
-      // Spring Boot: create container first, apply limits, then start.
-      // This lets the JVM see correct cgroup memory limits at startup,
-      // avoiding the need for a restart that doubles boot time.
+      setBenchEnv(backendName, opts, config);
+      await startBackend(backend.profile);
+      await applyLimits(backend.containerName, opts.cpus, opts.memory);
+
+      // Restart Spring Boot so JVM re-reads cgroup memory limit
       if (backendName === "springboot") {
-        await createBackend(backend.profile);
-        await applyLimits(backend.containerName, opts.cpus, opts.memory);
-        await run("docker", ["start", backend.containerName]);
-      } else {
-        await startBackend(backend.profile);
-        await applyLimits(backend.containerName, opts.cpus, opts.memory);
+        await run("docker", ["restart", backend.containerName]);
       }
 
       // Health check + startup time
@@ -361,6 +376,26 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
             opts.holdDuration ?? so?.holdDuration,
             opts.repeats,
           );
+          // Capture container logs BEFORE health check (server might be dead)
+          if (backendName === "springboot") {
+            const logsResult = await run("docker", ["logs", backend.containerName], { suppressStderr: true });
+            await Bun.write(resolve(scenarioOutdir, "springboot-container.log"), logsResult.stdout);
+            if (logsResult.stderr) {
+              await Bun.write(resolve(scenarioOutdir, "springboot-container-err.log"), logsResult.stderr);
+            }
+          }
+          // Quick health check — abort if server OOM'd mid-run
+          let alive = false;
+          for (let h = 0; h < 3 && !alive; h++) {
+            const ac = new AbortController();
+            const timer = setTimeout(() => ac.abort(), 5000);
+            alive = await fetch(backend.healthUrl, { signal: ac.signal })
+              .then((r) => r.ok)
+              .catch(() => false);
+            clearTimeout(timer);
+            if (!alive) await Bun.sleep(2000);
+          }
+          if (!alive) throw new Error(`[${backendName}] Backend down after ${scenario} (run ${i})`);
         }
       }
 
@@ -395,7 +430,7 @@ export async function runPipeline(opts: RunOptions): Promise<void> {
 
       status.setSubtask("Aggregating results...");
       await aggregateResults(backendName, resolve(outdir, backendName), opts.scenarios, opts.repeats);
-      await stopBackend(backend.profile, backend.containerName, backend.port);
+      await stopBackend(backend.profile, backend.containerName);
       await waitForPortFree(backend.port);
     }
 

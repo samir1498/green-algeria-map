@@ -3,14 +3,11 @@
   "version": "0.3.0",
   "private": true,
   "type": "module",
-  "bin": {
-    "bench": "./src/index.ts"
-  },
   "scripts": {
     "bench": "bun run src/index.ts",
     "typecheck": "tsc --noEmit",
-    "lint": "biome check src/",
-    "format": "biome format src/ --write",
+    "lint": "biome check src/ scripts/",
+    "format": "biome format src/ scripts/ --write",
     "check": "bun run typecheck && bun run lint",
     "knip": "knip --config knip.config.ts",
     "test": "bun test",
