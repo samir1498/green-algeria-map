@@ -154,11 +154,6 @@ async function runNestjsPreStart(config: BenchConfig): Promise<void> {
     throw new Error(`NestJS migration failed: ${migrationResult.stderr || migrationResult.stdout || "no output"}`);
   }
 
-  status.setSubtask("Seeding demo data...");
-  const seedResult = await run("pnpm", ["seed"], { cwd: nestDir, env: dbEnv });
-  if (seedResult.exitCode !== 0) {
-    throw new Error(`NestJS seed failed: ${seedResult.stderr || seedResult.stdout || "no output"}`);
-  }
 }
 
 async function runSpringbootPreStart(config: BenchConfig): Promise<void> {
