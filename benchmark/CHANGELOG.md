@@ -1,6 +1,9 @@
 # Changelog — Benchmark (CLI + pipeline)
 
-## [benchmark-v0.4.0] - 2026-06-10
+## [benchmark-v1.0.0] - 2026-06-10
+
+### Changed
+- Breaking: MAJOR bump from v0.x to v1.0 (removed `single` subcommand)
 
 ### Removed
 - `single` subcommand — use `bun run bench run -b <backend>` instead
