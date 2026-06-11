@@ -1,4 +1,8 @@
 import { NestFactory } from '@nestjs/core';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
@@ -6,22 +10,35 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './lib/filters/all-exceptions.filter';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import Fastify from 'fastify';
+import multipart from '@fastify/multipart';
+import cors from '@fastify/cors';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule, { bodyParser: false });
 
-  const enableTransform = process.env.DISABLE_TRANSFORM !== 'true';
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: enableTransform }));
-  app.useGlobalFilters(new AllExceptionsFilter());
+  const fastifyInstance = Fastify();
+  await fastifyInstance.register(multipart);
+
   const allowedOrigins = process.env.CLIENT_URL
     ? process.env.CLIENT_URL.split(',').map((s) => s.trim())
     : ['http://localhost:3000'];
 
-  app.enableCors({
+  await fastifyInstance.register(cors, {
     origin: allowedOrigins,
     credentials: true,
   });
+
+  const adapter = new FastifyAdapter(fastifyInstance);
+
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    adapter,
+  );
+
+  const enableTransform = process.env.DISABLE_TRANSFORM !== 'true';
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: enableTransform }));
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   const pkgRaw = readFileSync(join(__dirname, '..', 'package.json'), 'utf-8');
   const version: string =
