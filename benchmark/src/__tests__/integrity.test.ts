@@ -18,6 +18,8 @@ afterEach(() => {
   Bun.spawn = originalSpawn;
 });
 
+const DEFAULT_HEALTH_URL = "http://localhost:8080/api/health/live";
+
 async function createTempDir(prefix: string): Promise<string> {
   return mkdtemp(join(tmpdir(), prefix));
 }
@@ -64,7 +66,7 @@ describe("benchmark integrity", () => {
         {
           port: 8080,
           apiPrefix: "",
-          healthUrl: "http://localhost:8080/api/health/live",
+          healthUrl: DEFAULT_HEALTH_URL,
           profile: "nestjs",
           dbName: "greenalgeria_nestjs",
           containerName: "green-algeria-nestjs",

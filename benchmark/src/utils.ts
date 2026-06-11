@@ -1,4 +1,23 @@
+import { resolve } from "node:path";
 import type { ProfileConfig } from "./types";
+
+export function getRoot(benchRoot?: string): string {
+  return resolve(import.meta.dir, benchRoot ?? "../..");
+}
+
+export async function retry<T>(fn: () => Promise<T>, options?: { attempts?: number; delay?: number }): Promise<T> {
+  const { attempts = 3, delay = 1000 } = options ?? {};
+  let last: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      last = e;
+      if (i < attempts - 1) await Bun.sleep(delay);
+    }
+  }
+  throw last;
+}
 
 export function resolveProfile(
   config: { profiles?: Record<string, ProfileConfig> },

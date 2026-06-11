@@ -4,28 +4,20 @@ import { loadConfig } from "../loader";
 import { run } from "../shell";
 
 describe("E2E: Shell & Config", () => {
-  it("resolves pnpm from PATH", async () => {
-    const result = await run("pnpm", ["--version"]);
+  it.each([
+    ["pnpm", "--version", "."],
+    ["npm", "--version", "."],
+    ["node", "--version", "v"],
+  ] as const)("resolves %s from PATH", async (cmd, flag, pattern) => {
+    const result = await run(cmd, [flag]);
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain(".");
+    expect(result.stdout).toContain(pattern);
   });
 
   it("resolves pnpm with different cwd", async () => {
     const result = await run("pnpm", ["--version"], { cwd: "/tmp" });
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain(".");
-  });
-
-  it("resolves npm from PATH", async () => {
-    const result = await run("npm", ["--version"]);
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain(".");
-  });
-
-  it("resolves node from PATH", async () => {
-    const result = await run("node", ["--version"]);
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain("v");
   });
 
   it("handles command not found gracefully", async () => {
