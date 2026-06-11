@@ -1,25 +1,23 @@
 import {
   Controller,
   Post,
-  UploadedFile,
-  UseInterceptors,
   Param,
   ParseUUIDPipe,
   BadRequestException,
   InternalServerErrorException,
   Inject,
   HttpException,
+  Req,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import type { StorageService } from './domain/storage.service';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { AddPhotoToZoneCommand } from '../zones/application/commands/add-photo-to-zone.command';
 import { GetZoneByIdQuery } from '../zones/application/queries/get-zone-by-id.query';
 import { UploadFileDto } from './dto/upload-file.dto';
-import type { Express } from 'express';
 import { STORAGE_SERVICE } from './tokens';
 import { UploadFileError } from './domain/storage.errors';
+import type { FastifyRequest } from 'fastify';
 
 @ApiTags('Storage')
 @Controller('storage')
@@ -31,7 +29,6 @@ export class StorageController {
   ) {}
 
   @Post('zones/:id/photo')
-  @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'Photo file to upload for a zone',
@@ -39,20 +36,27 @@ export class StorageController {
   })
   async uploadZonePhoto(
     @Param('id', ParseUUIDPipe) zoneId: string,
-    @UploadedFile() file: Express.Multer.File,
+    @Req() req: FastifyRequest,
   ) {
+    let file;
+    try {
+      file = await req.file();
+    } catch {
+      throw new BadRequestException('No file uploaded');
+    }
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
 
     await this.queryBus.execute(new GetZoneByIdQuery(zoneId));
 
-    const { buffer, originalname, mimetype } = file;
+    const buffer = await file.toBuffer();
+    const { filename, mimetype } = file;
 
     try {
       const { url: photoUrl } = await this.storageService.uploadFile(
         buffer,
-        originalname,
+        filename,
         mimetype,
       );
 

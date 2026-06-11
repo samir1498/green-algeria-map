@@ -3,12 +3,19 @@ import { Test } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CqrsModule } from '@nestjs/cqrs';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
+import Fastify from 'fastify';
+import multipart from '@fastify/multipart';
 import supertest from 'supertest';
 import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
 import { GenericContainer, Wait } from 'testcontainers';
+import type { StartedTestContainer } from 'testcontainers';
 import axios from 'axios';
 import { signS3CreateBucket, signS3Get } from '../setup/s3-signing';
 import { ZoneOrmEntity } from '../../src/modules/zones/infrastructure/zone.orm-entity';
@@ -20,35 +27,8 @@ const RUSTFS_SECRET_KEY = 'test-secret-key';
 const RUSTFS_BUCKET = 'test-bucket';
 const RUSTFS_REGION = 'us-east-1';
 
-async function createBucket(
-  endpoint: string,
-  bucket: string,
-  accessKey: string,
-  secretKey: string,
-  region: string,
-  retries = 10,
-): Promise<void> {
-  const baseUrl = endpoint.replace(/\/+$/, '');
-  for (let i = 0; i < retries; i++) {
-    try {
-      const headers = signS3CreateBucket(
-        endpoint,
-        bucket,
-        accessKey,
-        secretKey,
-        region,
-      );
-      await axios.put(`${baseUrl}/${bucket}`, Buffer.alloc(0), { headers });
-      return;
-    } catch (err) {
-      if (i === retries - 1) throw err;
-      await new Promise((r) => setTimeout(r, 2000));
-    }
-  }
-}
-
 describe('Storage upload (integration)', () => {
-  let app: INestApplication;
+  let app: NestFastifyApplication;
   let postgresContainer: StartedPostgreSqlContainer;
   let rustfsContainer: StartedTestContainer;
   let rustfsEndpoint: string;
@@ -74,13 +54,26 @@ describe('Storage upload (integration)', () => {
 
     rustfsEndpoint = `http://${rustfsContainer.getHost()}:${rustfsContainer.getMappedPort(9000)}`;
 
-    await createBucket(
-      rustfsEndpoint,
-      RUSTFS_BUCKET,
-      RUSTFS_ACCESS_KEY,
-      RUSTFS_SECRET_KEY,
-      RUSTFS_REGION,
-    );
+    const baseUrl = rustfsEndpoint.replace(/\/+$/, '');
+    for (let i = 0; i < 10; i++) {
+      try {
+        const headers = signS3CreateBucket(
+          rustfsEndpoint,
+          RUSTFS_BUCKET,
+          RUSTFS_ACCESS_KEY,
+          RUSTFS_SECRET_KEY,
+          RUSTFS_REGION,
+        );
+        await axios.put(`${baseUrl}/${RUSTFS_BUCKET}`, Buffer.alloc(0), {
+          headers,
+          validateStatus: (s) => s < 500,
+        });
+        break;
+      } catch (err) {
+        if (i === 9) throw err;
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    }
 
     process.env.OO_OBJECT_STORAGE_ENDPOINT = rustfsEndpoint;
     process.env.OO_OBJECT_STORAGE_REGION = RUSTFS_REGION;
@@ -110,11 +103,15 @@ describe('Storage upload (integration)', () => {
       ],
     }).compile();
 
-    app = module.createNestApplication();
+    const fastifyInstance = Fastify();
+    await fastifyInstance.register(multipart);
+    const adapter = new FastifyAdapter(fastifyInstance);
+    app = module.createNestApplication<NestFastifyApplication>(adapter);
     app.useGlobalPipes(
       new ValidationPipe({ whitelist: true, transform: true }),
     );
     await app.init();
+    await app.listen(0);
   });
 
   afterAll(async () => {
@@ -155,7 +152,6 @@ describe('Storage upload (integration)', () => {
 
       expect(getRes.body.photos).toContain(uploadRes.body.photoUrl);
 
-      // Verify file is stored in RustFS with correct content
       const objectKey = uploadRes.body.photoUrl.replace(
         `${rustfsEndpoint}/${RUSTFS_BUCKET}/`,
         '',

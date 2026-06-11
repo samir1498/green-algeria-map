@@ -6,7 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { DomainError } from '../domain-error';
 
 @Catch()
@@ -15,8 +15,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
+    const response = ctx.getResponse<FastifyReply>();
+    const request = ctx.getRequest<FastifyRequest>();
 
     if (exception instanceof DomainError) {
       const status =
@@ -24,7 +24,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
           ? HttpStatus.BAD_REQUEST
           : HttpStatus.INTERNAL_SERVER_ERROR;
 
-      response.status(status).json({
+      response.status(status).send({
         statusCode: status,
         error: exception.name,
         message: exception.message,
@@ -39,7 +39,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
 
-      response.status(status).json({
+      response.status(status).send({
         statusCode: status,
         error: exception.name,
         message:
@@ -60,7 +60,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         'Unhandled error:',
         exception instanceof Error ? exception.stack : exception,
       );
-      response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      response.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         error: 'InternalServerError',
         message: 'An unexpected error occurred',
@@ -71,7 +71,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       return;
     }
 
-    response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+    response.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       error: 'InternalServerError',
       message: 'An unexpected error occurred',
