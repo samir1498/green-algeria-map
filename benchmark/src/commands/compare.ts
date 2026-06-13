@@ -27,15 +27,13 @@ export const compareCommand = defineCommand({
   async run({ args }) {
     const dirArg = args.dir || (await findLatestResultDir());
     if (!dirArg) {
-      console.error("No results directory specified and no pipeline results found in results/");
-      process.exit(1);
+      throw new Error("No results directory specified and no pipeline results found in results/");
     }
     const dir = resolve(dirArg);
     const [backends, stats] = await Promise.all([loadComparisonData(dir), loadDockerStats(dir)]);
 
     if (backends.size === 0) {
-      console.error("No results found in", dir);
-      process.exit(1);
+      throw new Error(`No results found in ${dir}`);
     }
 
     switch (args.format) {

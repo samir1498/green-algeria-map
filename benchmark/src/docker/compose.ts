@@ -13,12 +13,12 @@ export function getRoot(): string {
 }
 
 export async function startInfra(): Promise<void> {
-  const result = await run("docker", ["compose", "up", "-d", "postgres", "rustfs", "--wait"], { cwd: ROOT });
-  if (result.exitCode !== 0) {
+  const waitResult = await run("docker", ["compose", "up", "-d", "postgres", "rustfs", "--wait"], { cwd: ROOT });
+  if (waitResult.exitCode !== 0) {
     status.setSubtask("Waiting for services (--wait flag failed, polling manually)...");
-    const retry = await run("docker", ["compose", "up", "-d", "postgres", "rustfs"], { cwd: ROOT });
-    if (retry.exitCode !== 0) {
-      throw new Error(failureMessage(retry, "docker compose up -d postgres rustfs"));
+    const fallbackResult = await run("docker", ["compose", "up", "-d", "postgres", "rustfs"], { cwd: ROOT });
+    if (fallbackResult.exitCode !== 0) {
+      throw new Error(failureMessage(fallbackResult, "docker compose up -d postgres rustfs"));
     }
   }
 }
@@ -58,11 +58,11 @@ export async function verifyInfra(): Promise<void> {
 
 export async function startBackend(profile: string): Promise<void> {
   status.setSubtask(`Starting ${profile}...`);
-  const result = await run("docker", ["compose", "--profile", profile, "up", "-d", "--wait"], { cwd: ROOT });
-  if (result.exitCode !== 0) {
-    const retry = await run("docker", ["compose", "--profile", profile, "up", "-d"], { cwd: ROOT });
-    if (retry.exitCode !== 0) {
-      throw new Error(failureMessage(retry, `docker compose --profile ${profile} up -d`));
+  const waitResult = await run("docker", ["compose", "--profile", profile, "up", "-d", "--wait"], { cwd: ROOT });
+  if (waitResult.exitCode !== 0) {
+    const fallbackResult = await run("docker", ["compose", "--profile", profile, "up", "-d"], { cwd: ROOT });
+    if (fallbackResult.exitCode !== 0) {
+      throw new Error(failureMessage(fallbackResult, `docker compose --profile ${profile} up -d`));
     }
   }
 }

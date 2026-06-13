@@ -1,10 +1,12 @@
 package com.greenalgeria.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 @Configuration
+@ConditionalOnProperty(name = "app.request-logging.enabled", havingValue = "true")
 public class RequestLoggingConfig {
 
     @Bean
