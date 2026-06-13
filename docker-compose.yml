@@ -110,6 +110,7 @@ services:
       APP_CORS_ALLOWED_ORIGINS: http://localhost:4173
       APP_RATE_LIMIT_ENABLED: 'false'
       JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xlog:gc*:file=/tmp/gc.log:time,level,tags}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
 
   # ── Go ────────────────────────────────────────────────────────
   go-app:
