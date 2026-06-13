@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-import pkg from "../package.json" with { type: "json" };
 import { defineCommand, runMain } from "citty";
+import pkg from "../package.json" with { type: "json" };
 
 import { cleanCommand } from "./commands/clean";
 import { compareCommand } from "./commands/compare";

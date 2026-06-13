@@ -246,6 +246,7 @@ function setBenchEnv(backendName: string, opts: RunOptions, config: BenchConfig)
   if (backendName === "springboot") {
     const heapMb = Math.round(Number.parseInt(opts.memory) * heapRatio);
     process.env.JAVA_TOOL_OPTIONS = `-Xmx${heapMb}m -Xlog:gc*:file=/tmp/gc.log:time,level,tags`;
+    process.env.SPRING_PROFILES_ACTIVE = "bench";
   }
 }
 
