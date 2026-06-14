@@ -96,7 +96,10 @@ test.describe('Photo upload after zone creation', () => {
     await expect(page.getByTestId('done-photos')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('upload-dropzone')).toBeVisible()
 
-    await page.getByTestId('file-input').setInputFiles({
+    const fileChooserPromise = page.waitForEvent('filechooser')
+    await page.getByTestId('photo-upload-label').click()
+    const fileChooser = await fileChooserPromise
+    await fileChooser.setFiles({
       name: 'e2e-test.png',
       mimeType: 'image/png',
       buffer: Buffer.from(
