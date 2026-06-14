@@ -4,21 +4,23 @@ import "time"
 
 // --- Zones ---
 type CreateZoneRequest struct {
-	Name        string  `json:"name"        validate:"required"`
-	Type        string  `json:"type"        validate:"required"`
-	Status      string  `json:"status"      validate:"required"`
-	Lat         float64 `json:"lat"         validate:"required"`
-	Lng         float64 `json:"lng"         validate:"required"`
-	Description string  `json:"description" validate:"max=2000"`
+	Name        string   `json:"name"        validate:"required"`
+	Type        string   `json:"type"        validate:"required"`
+	Status      string   `json:"status"      validate:"required"`
+	Lat         float64  `json:"lat"         validate:"required"`
+	Lng         float64  `json:"lng"         validate:"required"`
+	Description string   `json:"description" validate:"max=2000"`
+	Photos      []string `json:"photos"`
 }
 
 type UpdateZoneRequest struct {
-	Name        string  `json:"name"        validate:"required"`
-	Type        string  `json:"type"        validate:"required"`
-	Status      string  `json:"status"      validate:"required"`
-	Lat         float64 `json:"lat"         validate:"required"`
-	Lng         float64 `json:"lng"         validate:"required"`
-	Description string  `json:"description" validate:"max=2000"`
+	Name        string   `json:"name"        validate:"required"`
+	Type        string   `json:"type"        validate:"required"`
+	Status      string   `json:"status"      validate:"required"`
+	Lat         float64  `json:"lat"         validate:"required"`
+	Lng         float64  `json:"lng"         validate:"required"`
+	Description string   `json:"description" validate:"max=2000"`
+	Photos      []string `json:"photos"`
 }
 
 type ZoneResponse struct {
@@ -29,6 +31,7 @@ type ZoneResponse struct {
 	Lat         float64   `json:"lat"`
 	Lng         float64   `json:"lng"`
 	Description string    `json:"description"`
+	Photos      []string  `json:"photos"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }

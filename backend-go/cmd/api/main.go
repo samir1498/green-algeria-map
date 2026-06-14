@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/green-algeria-map/backend-go/internal/server"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -17,7 +18,17 @@ func main() {
 	cfg := server.Config{StoreType: storeType}
 
 	if storeType == "postgres" && dsn != "" {
-		pool, err := pgxpool.New(context.Background(), dsn)
+		poolCfg, err := pgxpool.ParseConfig(dsn)
+		if err != nil {
+			log.Fatalf("failed to parse postgres config: %v", err)
+		}
+		if maxConns := os.Getenv("DB_POOL_MAX"); maxConns != "" {
+			if n, err := strconv.Atoi(maxConns); err == nil && n > 0 {
+				poolCfg.MaxConns = int32(n)
+				log.Printf("db pool: MaxConns set to %d", n)
+			}
+		}
+		pool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
 		if err != nil {
 			log.Fatalf("failed to connect to postgres: %v", err)
 		}
