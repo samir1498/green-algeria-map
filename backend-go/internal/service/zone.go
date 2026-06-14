@@ -9,10 +9,10 @@ import (
 )
 
 type ZoneRepository interface {
-	CreateZone(ctx context.Context, name, zoneType, status string, lat, lng float64, description string) (*repository.ZoneEntity, error)
+	CreateZone(ctx context.Context, name, zoneType, status string, lat, lng float64, description string, photos []string) (*repository.ZoneEntity, error)
 	GetZone(ctx context.Context, id string) (*repository.ZoneEntity, error)
 	ListZones(ctx context.Context) ([]*repository.ZoneEntity, error)
-	UpdateZone(ctx context.Context, id, name, zoneType, status string, lat, lng float64, description string) (*repository.ZoneEntity, error)
+	UpdateZone(ctx context.Context, id, name, zoneType, status string, lat, lng float64, description string, photos []string) (*repository.ZoneEntity, error)
 	DeleteZone(ctx context.Context, id string) error
 }
 
@@ -27,7 +27,7 @@ func NewZoneService(repo ZoneRepository) *ZoneService {
 }
 
 func (s *ZoneService) Create(ctx context.Context, req model.CreateZoneRequest) (*model.ZoneResponse, error) {
-	z, err := s.repo.CreateZone(ctx, req.Name, req.Type, req.Status, req.Lat, req.Lng, req.Description)
+	z, err := s.repo.CreateZone(ctx, req.Name, req.Type, req.Status, req.Lat, req.Lng, req.Description, req.Photos)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (s *ZoneService) List(ctx context.Context) (*model.ListZonesResponse, error
 }
 
 func (s *ZoneService) Update(ctx context.Context, id string, req model.UpdateZoneRequest) (*model.ZoneResponse, error) {
-	z, err := s.repo.UpdateZone(ctx, id, req.Name, req.Type, req.Status, req.Lat, req.Lng, req.Description)
+	z, err := s.repo.UpdateZone(ctx, id, req.Name, req.Type, req.Status, req.Lat, req.Lng, req.Description, req.Photos)
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +73,10 @@ func (s *ZoneService) Delete(ctx context.Context, id string) error {
 }
 
 func toZoneResponse(z *repository.ZoneEntity) *model.ZoneResponse {
+	photos := z.Photos
+	if photos == nil {
+		photos = []string{}
+	}
 	return &model.ZoneResponse{
 		ID:          z.ID,
 		Name:        z.Name,
@@ -81,6 +85,7 @@ func toZoneResponse(z *repository.ZoneEntity) *model.ZoneResponse {
 		Lat:         z.Lat,
 		Lng:         z.Lng,
 		Description: z.Description,
+		Photos:      photos,
 		CreatedAt:   z.CreatedAt,
 		UpdatedAt:   z.UpdatedAt,
 	}

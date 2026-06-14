@@ -204,10 +204,13 @@ func (s *InMemoryStore) DeleteItem(_ context.Context, id string) error {
 }
 
 // --- Zones ---
-func (s *InMemoryStore) CreateZone(_ context.Context, name, zoneType, status string, lat, lng float64, description string) (*ZoneEntity, error) {
+func (s *InMemoryStore) CreateZone(_ context.Context, name, zoneType, status string, lat, lng float64, description string, photos []string) (*ZoneEntity, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	now := time.Now().UTC()
+	if photos == nil {
+		photos = []string{}
+	}
 	z := &ZoneEntity{
 		ID:          uuid.New().String(),
 		Name:        name,
@@ -216,6 +219,7 @@ func (s *InMemoryStore) CreateZone(_ context.Context, name, zoneType, status str
 		Lat:         lat,
 		Lng:         lng,
 		Description: description,
+		Photos:      photos,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
@@ -243,7 +247,7 @@ func (s *InMemoryStore) ListZones(_ context.Context) ([]*ZoneEntity, error) {
 	return zones, nil
 }
 
-func (s *InMemoryStore) UpdateZone(_ context.Context, id, name, zoneType, status string, lat, lng float64, description string) (*ZoneEntity, error) {
+func (s *InMemoryStore) UpdateZone(_ context.Context, id, name, zoneType, status string, lat, lng float64, description string, photos []string) (*ZoneEntity, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	z, ok := s.zones[id]
@@ -256,6 +260,10 @@ func (s *InMemoryStore) UpdateZone(_ context.Context, id, name, zoneType, status
 	z.Lat = lat
 	z.Lng = lng
 	z.Description = description
+	if photos == nil {
+		photos = []string{}
+	}
+	z.Photos = photos
 	z.UpdatedAt = time.Now().UTC()
 	return z, nil
 }

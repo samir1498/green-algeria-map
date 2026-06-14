@@ -30,6 +30,7 @@ func New(cfg Config) *Server {
 	r.Use(chimw.RealIP)
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.NoCache)
+	r.Use(chimw.Compress(5, "application/json"))
 	r.Use(middleware.RateLimit)
 
 	store := repository.NewInMemoryStore()
@@ -118,7 +119,7 @@ func New(cfg Config) *Server {
 
 type zoneSeeder interface {
 	ListZones(ctx context.Context) ([]*repository.ZoneEntity, error)
-	CreateZone(ctx context.Context, name, zoneType, status string, lat, lng float64, description string) (*repository.ZoneEntity, error)
+	CreateZone(ctx context.Context, name, zoneType, status string, lat, lng float64, description string, photos []string) (*repository.ZoneEntity, error)
 }
 
 func seedZones(ctx context.Context, repo zoneSeeder) {
@@ -156,7 +157,7 @@ func seedZones(ctx context.Context, repo zoneSeeder) {
 
 	log.Printf("seed: inserting %d demo zones...", len(zones))
 	for _, z := range zones {
-		_, err := repo.CreateZone(ctx, z.name, z.zoneType, z.status, z.lat, z.lng, z.description)
+		_, err := repo.CreateZone(ctx, z.name, z.zoneType, z.status, z.lat, z.lng, z.description, nil)
 		if err != nil {
 			log.Printf("seed: failed to create zone %q: %v", z.name, err)
 		}
