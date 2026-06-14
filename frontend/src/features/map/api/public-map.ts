@@ -8,6 +8,6 @@ interface PublicMapResponse {
 }
 
 export async function getPublicMapData(): Promise<PublicMapResponse> {
-  const { data } = await api.get<PublicMapResponse>('/public/map')
+  const { data } = await api.get<PublicMapResponse>('/api/public/map')
   return data
 }
