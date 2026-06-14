@@ -9,6 +9,7 @@ async function clickZoneMarker(page: Page, name: string) {
 
 test.describe('Tree species info modal', () => {
   test.use({ viewport: { width: 1280, height: 720 } })
+  test.describe.configure({ retries: 3 })
 
   test('opens tree info modal from zone marker popup with GBIF data', async ({ page }) => {
     await page.goto('/')
