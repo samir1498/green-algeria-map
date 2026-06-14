@@ -109,12 +109,22 @@ if (!endpoint || !bucket || !accessKey || !secretKey) {
   process.exit(1)
 }
 
-createBucket(endpoint, bucket, accessKey, secretKey, region)
-  .then(() => {
-    console.log(`Bucket "${bucket}" ready`)
-    process.exit(0)
-  })
-  .catch((err) => {
-    console.error(err.message)
-    process.exit(1)
-  })
+async function createBucketWithRetry(maxRetries = 5, delay = 2000) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      await createBucket(endpoint, bucket, accessKey, secretKey, region)
+      console.log(`Bucket "${bucket}" ready`)
+      process.exit(0)
+    } catch (err) {
+      if (i < maxRetries - 1 && err.message.includes('503')) {
+        console.log(`RustFS not ready (attempt ${i + 1}/${maxRetries}), retrying in ${delay}ms...`)
+        await new Promise(r => setTimeout(r, delay))
+        continue
+      }
+      console.error(err.message)
+      process.exit(1)
+    }
+  }
+}
+
+createBucketWithRetry()
