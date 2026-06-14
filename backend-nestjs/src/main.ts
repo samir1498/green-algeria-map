@@ -13,6 +13,7 @@ import { join } from 'node:path';
 import Fastify from 'fastify';
 import multipart from '@fastify/multipart';
 import cors from '@fastify/cors';
+import compress from '@fastify/compress';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -28,6 +29,7 @@ async function bootstrap() {
     origin: allowedOrigins,
     credentials: true,
   });
+  await fastifyInstance.register(compress, { global: true });
 
   const adapter = new FastifyAdapter(fastifyInstance);
 

@@ -28,6 +28,7 @@
     "test:debug": "vitest --config config/vitest.unit.config.ts --inspect-brk"
   },
   "dependencies": {
+    "@fastify/compress": "^9.0.0",
     "@fastify/cors": "^11.2.0",
     "@fastify/multipart": "^10.0.0",
     "@nestjs/axios": "^4.0.1",
