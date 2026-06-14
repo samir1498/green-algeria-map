@@ -39,7 +39,9 @@ async function bootstrap() {
   );
 
   const enableTransform = process.env.DISABLE_TRANSFORM !== 'true';
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: enableTransform }));
+  app.useGlobalPipes(
+    new ValidationPipe({ whitelist: true, transform: enableTransform }),
+  );
   app.useGlobalFilters(new AllExceptionsFilter());
 
   const pkgRaw = readFileSync(join(__dirname, '..', 'package.json'), 'utf-8');
