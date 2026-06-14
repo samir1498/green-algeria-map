@@ -13,6 +13,7 @@ import { join } from 'node:path';
 import Fastify from 'fastify';
 import multipart from '@fastify/multipart';
 import cors from '@fastify/cors';
+import compress from '@fastify/compress';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -28,6 +29,7 @@ async function bootstrap() {
     origin: allowedOrigins,
     credentials: true,
   });
+  await fastifyInstance.register(compress, { global: true });
 
   const adapter = new FastifyAdapter(fastifyInstance);
 
@@ -37,7 +39,9 @@ async function bootstrap() {
   );
 
   const enableTransform = process.env.DISABLE_TRANSFORM !== 'true';
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: enableTransform }));
+  app.useGlobalPipes(
+    new ValidationPipe({ whitelist: true, transform: enableTransform }),
+  );
   app.useGlobalFilters(new AllExceptionsFilter());
 
   const pkgRaw = readFileSync(join(__dirname, '..', 'package.json'), 'utf-8');
