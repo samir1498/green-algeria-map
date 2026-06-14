@@ -9,10 +9,12 @@ import (
 )
 
 type ZoneRepository interface {
-	CreateZone(ctx context.Context, name, zoneType, status string, lat, lng float64, description string, photos []string) (*repository.ZoneEntity, error)
+	CreateZone(ctx context.Context, name, zoneType, status string, lat, lng float64, targetCount, currentCount *int, description, treeSpecies, organizerContact string, volunteerCount int, photos []string) (*repository.ZoneEntity, error)
 	GetZone(ctx context.Context, id string) (*repository.ZoneEntity, error)
 	ListZones(ctx context.Context) ([]*repository.ZoneEntity, error)
-	UpdateZone(ctx context.Context, id, name, zoneType, status string, lat, lng float64, description string, photos []string) (*repository.ZoneEntity, error)
+	UpdateZone(ctx context.Context, id, name, zoneType, status string, lat, lng float64, targetCount, currentCount *int, description, treeSpecies, organizerContact string, volunteerCount int, photos []string) (*repository.ZoneEntity, error)
+	UpdateZoneVolunteer(ctx context.Context, id string) error
+	AddZonePhoto(ctx context.Context, id, photoURL string) error
 	DeleteZone(ctx context.Context, id string) error
 }
 
@@ -27,7 +29,7 @@ func NewZoneService(repo ZoneRepository) *ZoneService {
 }
 
 func (s *ZoneService) Create(ctx context.Context, req model.CreateZoneRequest) (*model.ZoneResponse, error) {
-	z, err := s.repo.CreateZone(ctx, req.Name, req.Type, req.Status, req.Lat, req.Lng, req.Description, req.Photos)
+	z, err := s.repo.CreateZone(ctx, req.Name, req.Type, req.Status, req.Lat, req.Lng, req.TargetCount, req.CurrentCount, req.Description, req.TreeSpecies, req.OrganizerContact, req.VolunteerCount, req.Photos)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +60,7 @@ func (s *ZoneService) List(ctx context.Context) (*model.ListZonesResponse, error
 }
 
 func (s *ZoneService) Update(ctx context.Context, id string, req model.UpdateZoneRequest) (*model.ZoneResponse, error) {
-	z, err := s.repo.UpdateZone(ctx, id, req.Name, req.Type, req.Status, req.Lat, req.Lng, req.Description, req.Photos)
+	z, err := s.repo.UpdateZone(ctx, id, req.Name, req.Type, req.Status, req.Lat, req.Lng, req.TargetCount, req.CurrentCount, req.Description, req.TreeSpecies, req.OrganizerContact, req.VolunteerCount, req.Photos)
 	if err != nil {
 		return nil, err
 	}
@@ -66,6 +68,20 @@ func (s *ZoneService) Update(ctx context.Context, id string, req model.UpdateZon
 		return nil, ErrZoneNotFound
 	}
 	return toZoneResponse(z), nil
+}
+
+func (s *ZoneService) RegisterVolunteer(ctx context.Context, id string) (*model.ZoneResponse, error) {
+	if err := s.repo.UpdateZoneVolunteer(ctx, id); err != nil {
+		return nil, err
+	}
+	return s.Get(ctx, id)
+}
+
+func (s *ZoneService) AddPhoto(ctx context.Context, id, photoURL string) (*model.ZoneResponse, error) {
+	if err := s.repo.AddZonePhoto(ctx, id, photoURL); err != nil {
+		return nil, err
+	}
+	return s.Get(ctx, id)
 }
 
 func (s *ZoneService) Delete(ctx context.Context, id string) error {
@@ -78,15 +94,20 @@ func toZoneResponse(z *repository.ZoneEntity) *model.ZoneResponse {
 		photos = []string{}
 	}
 	return &model.ZoneResponse{
-		ID:          z.ID,
-		Name:        z.Name,
-		Type:        z.Type,
-		Status:      z.Status,
-		Lat:         z.Lat,
-		Lng:         z.Lng,
-		Description: z.Description,
-		Photos:      photos,
-		CreatedAt:   z.CreatedAt,
-		UpdatedAt:   z.UpdatedAt,
+		ID:               z.ID,
+		Name:             z.Name,
+		Type:             z.Type,
+		Status:           z.Status,
+		Lat:              z.Lat,
+		Lng:              z.Lng,
+		TargetCount:      z.TargetCount,
+		CurrentCount:     z.CurrentCount,
+		Description:      z.Description,
+		TreeSpecies:      z.TreeSpecies,
+		OrganizerContact: z.OrganizerContact,
+		VolunteerCount:   z.VolunteerCount,
+		Photos:           photos,
+		CreatedAt:        z.CreatedAt,
+		UpdatedAt:        z.UpdatedAt,
 	}
 }

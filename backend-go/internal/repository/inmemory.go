@@ -204,7 +204,7 @@ func (s *InMemoryStore) DeleteItem(_ context.Context, id string) error {
 }
 
 // --- Zones ---
-func (s *InMemoryStore) CreateZone(_ context.Context, name, zoneType, status string, lat, lng float64, description string, photos []string) (*ZoneEntity, error) {
+func (s *InMemoryStore) CreateZone(_ context.Context, name, zoneType, status string, lat, lng float64, targetCount, currentCount *int, description, treeSpecies, organizerContact string, volunteerCount int, photos []string) (*ZoneEntity, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	now := time.Now().UTC()
@@ -212,16 +212,21 @@ func (s *InMemoryStore) CreateZone(_ context.Context, name, zoneType, status str
 		photos = []string{}
 	}
 	z := &ZoneEntity{
-		ID:          uuid.New().String(),
-		Name:        name,
-		Type:        zoneType,
-		Status:      status,
-		Lat:         lat,
-		Lng:         lng,
-		Description: description,
-		Photos:      photos,
-		CreatedAt:   now,
-		UpdatedAt:   now,
+		ID:               uuid.New().String(),
+		Name:             name,
+		Type:             zoneType,
+		Status:           status,
+		Lat:              lat,
+		Lng:              lng,
+		TargetCount:      targetCount,
+		CurrentCount:     currentCount,
+		Description:      description,
+		TreeSpecies:      treeSpecies,
+		OrganizerContact: organizerContact,
+		VolunteerCount:   volunteerCount,
+		Photos:           photos,
+		CreatedAt:        now,
+		UpdatedAt:        now,
 	}
 	s.zones[z.ID] = z
 	return z, nil
@@ -247,7 +252,7 @@ func (s *InMemoryStore) ListZones(_ context.Context) ([]*ZoneEntity, error) {
 	return zones, nil
 }
 
-func (s *InMemoryStore) UpdateZone(_ context.Context, id, name, zoneType, status string, lat, lng float64, description string, photos []string) (*ZoneEntity, error) {
+func (s *InMemoryStore) UpdateZone(_ context.Context, id, name, zoneType, status string, lat, lng float64, targetCount, currentCount *int, description, treeSpecies, organizerContact string, volunteerCount int, photos []string) (*ZoneEntity, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	z, ok := s.zones[id]
@@ -259,13 +264,42 @@ func (s *InMemoryStore) UpdateZone(_ context.Context, id, name, zoneType, status
 	z.Status = status
 	z.Lat = lat
 	z.Lng = lng
+	z.TargetCount = targetCount
+	z.CurrentCount = currentCount
 	z.Description = description
+	z.TreeSpecies = treeSpecies
+	z.OrganizerContact = organizerContact
+	z.VolunteerCount = volunteerCount
 	if photos == nil {
 		photos = []string{}
 	}
 	z.Photos = photos
 	z.UpdatedAt = time.Now().UTC()
 	return z, nil
+}
+
+func (s *InMemoryStore) UpdateZoneVolunteer(_ context.Context, id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	z, ok := s.zones[id]
+	if !ok {
+		return nil
+	}
+	z.VolunteerCount++
+	z.UpdatedAt = time.Now().UTC()
+	return nil
+}
+
+func (s *InMemoryStore) AddZonePhoto(_ context.Context, id, photoURL string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	z, ok := s.zones[id]
+	if !ok {
+		return nil
+	}
+	z.Photos = append(z.Photos, photoURL)
+	z.UpdatedAt = time.Now().UTC()
+	return nil
 }
 
 func (s *InMemoryStore) DeleteZone(_ context.Context, id string) error {
