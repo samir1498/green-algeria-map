@@ -80,6 +80,20 @@ func (h *ZoneHandler) Update(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, zone)
 }
 
+func (h *ZoneHandler) RegisterVolunteer(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	zone, err := h.svc.RegisterVolunteer(r.Context(), id)
+	if err != nil {
+		if err == service.ErrZoneNotFound {
+			writeError(w, http.StatusNotFound, "zone not found")
+			return
+		}
+		writeError(w, http.StatusInternalServerError, "internal error")
+		return
+	}
+	writeJSON(w, http.StatusOK, zone)
+}
+
 func (h *ZoneHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if err := h.svc.Delete(r.Context(), id); err != nil {
