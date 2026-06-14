@@ -65,17 +65,19 @@ export const ZonePhotoUploader: React.FC<ZonePhotoUploaderProps> = ({
   return (
     <div className="space-y-4">
       <div
-        className="cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-gray-400"
+        className="relative cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-gray-400"
         data-testid="upload-dropzone"
       >
         <input
           type="file"
           accept="image/*"
-          className="hidden"
+          id="zone-photo-input"
+          key="zone-photo-input"
+          className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
           onChange={handleFileChange}
           data-testid="file-input"
         />
-        <label className="flex flex-col items-center gap-3 text-gray-600 hover:text-gray-800">
+        <label htmlFor="zone-photo-input" data-testid="photo-upload-label" className="w-full flex cursor-pointer flex-col items-center gap-3 text-gray-600 hover:text-gray-800">
           {previewUrl ? (
             <img
               src={previewUrl}
