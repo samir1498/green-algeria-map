@@ -21,16 +21,19 @@ func TestZoneService_CreateAndGet(t *testing.T) {
 	created, err := svc.Create(context.Background(), model.CreateZoneRequest{
 		Name: "Zone A", Type: "planting", Status: "planned",
 		Lat: 36.75, Lng: 3.05, Description: "test zone",
+		Photos: []string{"https://example.com/photo1.jpg"},
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "Zone A", created.Name)
 	assert.Equal(t, "planting", created.Type)
 	assert.Equal(t, 36.75, created.Lat)
+	assert.Equal(t, []string{"https://example.com/photo1.jpg"}, created.Photos)
 	assert.NotEmpty(t, created.ID)
 
 	got, err := svc.Get(context.Background(), created.ID)
 	require.NoError(t, err)
 	assert.Equal(t, "Zone A", got.Name)
+	assert.Equal(t, []string{"https://example.com/photo1.jpg"}, got.Photos)
 }
 
 func TestZoneService_Get_NotFound(t *testing.T) {

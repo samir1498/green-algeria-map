@@ -34,6 +34,7 @@ func TestZoneHandler_CreateAndList(t *testing.T) {
 	json.NewDecoder(w.Body).Decode(&created)
 	assert.Equal(t, "Park", created.Name)
 	assert.NotEmpty(t, created.ID)
+	assert.Empty(t, created.Photos)
 
 	r = httptest.NewRequest("GET", "/api/zones", nil)
 	w = httptest.NewRecorder()
