@@ -1,4 +1,10 @@
 import { test, expect } from '@playwright/test'
+import { uploadTo } from './helpers/upload'
+
+const TEST_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+  'base64',
+)
 
 const ZONE_NAME = `E2E Test Zone ${Date.now()}`
 
@@ -78,9 +84,10 @@ test.describe('Desktop create zone form', () => {
 
 test.describe('Photo upload after zone creation', () => {
   test.use({ viewport: { width: 1280, height: 720 } })
-  // TODO: flaky — see personal-research/playwright-react19-file-input-flakiness.md
-  // Search: "Playwright setInputFiles flaky React 19 CDP"
-  test.describe.configure({ mode: 'serial', retries: 5 })
+  // Serial prevents CDP node ID contention from parallel workers.
+  // The input is opacity-0 so we strip styles via evaluate before setInputFiles.
+  // https://webcrawlerapi.com/glossary/playwright/how-to-fix-playwright-file-upload-setinputfiles
+  test.describe.configure({ mode: 'serial', retries: 2 })
 
   const PHOTO_ZONE_NAME = `E2E Photo Test ${Date.now()}`
 
@@ -98,14 +105,9 @@ test.describe('Photo upload after zone creation', () => {
     await expect(page.getByTestId('done-photos')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('upload-dropzone')).toBeVisible()
 
-    await page.getByTestId('file-input').setInputFiles({
-      name: 'e2e-test.png',
-      mimeType: 'image/png',
-      buffer: Buffer.from(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-        'base64',
-      ),
-    })
+    // Make input visible before setInputFiles (CDP can fail on opacity-0 elements)
+    const fileInput = page.getByTestId('file-input')
+    await uploadTo(fileInput, TEST_PNG, 'e2e-test.png', 'image/png')
 
     await expect(page.getByTestId('preview-image')).toBeVisible({ timeout: 5000 })
     await expect(page.getByText('Photo successfully uploaded')).toBeVisible({ timeout: 15000 })
