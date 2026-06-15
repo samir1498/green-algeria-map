@@ -42,6 +42,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, transform: enableTransform }),
   );
+  app.setGlobalPrefix('api');
   app.useGlobalFilters(new AllExceptionsFilter());
 
   const pkgRaw = readFileSync(join(__dirname, '..', 'package.json'), 'utf-8');

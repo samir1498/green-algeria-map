@@ -78,7 +78,7 @@ test.describe('Desktop create zone form', () => {
 
 test.describe('Photo upload after zone creation', () => {
   test.use({ viewport: { width: 1280, height: 720 } })
-  test.describe.configure({ retries: 5 })
+  test.describe.configure({ retries: 2 })
 
   const PHOTO_ZONE_NAME = `E2E Photo Test ${Date.now()}`
 
@@ -96,10 +96,7 @@ test.describe('Photo upload after zone creation', () => {
     await expect(page.getByTestId('done-photos')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('upload-dropzone')).toBeVisible()
 
-    const fileChooserPromise = page.waitForEvent('filechooser')
-    await page.getByTestId('photo-upload-label').click()
-    const fileChooser = await fileChooserPromise
-    await fileChooser.setFiles({
+    await page.getByTestId('file-input').setInputFiles({
       name: 'e2e-test.png',
       mimeType: 'image/png',
       buffer: Buffer.from(

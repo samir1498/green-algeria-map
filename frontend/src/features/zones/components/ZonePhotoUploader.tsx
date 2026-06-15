@@ -38,7 +38,7 @@ export const ZonePhotoUploader: React.FC<ZonePhotoUploaderProps> = ({
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await api.post(`/storage/zones/${zoneId}/photo`, formData, {
+      const response = await api.post(`/api/storage/zones/${zoneId}/photo`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
