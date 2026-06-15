@@ -70,7 +70,6 @@ func New(cfg Config) *Server {
 	r.Get("/healthz", handler.Live)
 	r.Get("/readyz", handler.Ready)
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
-	r.Post("/storage/zones/{id}/photo", storageH.UploadZonePhoto)
 
 	r.Route("/api", func(r chi.Router) {
 		r.Use(middleware.WithSession)
@@ -82,6 +81,9 @@ func New(cfg Config) *Server {
 		r.Route("/public", func(r chi.Router) {
 			r.Get("/map", publicH.MapData)
 		})
+
+		// Storage (matching NestJS/Spring Boot routes)
+		r.Post("/storage/zones/{id}/photo", storageH.UploadZonePhoto)
 
 		// Auth (matching NestJS/Spring Boot routes exactly)
 		r.Post("/auth/sign-up/email", authH.SignUp)
