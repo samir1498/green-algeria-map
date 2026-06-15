@@ -60,7 +60,7 @@ class ZoneControllerTest extends IntegrationTest {
                         .with(user(userId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Updated","status":"in_progress","targetCount":10,"currentCount":5}
+                                {"name":"Updated","status":"in-progress","targetCount":10,"currentCount":5}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Updated"));
