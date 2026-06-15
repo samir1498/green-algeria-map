@@ -44,7 +44,7 @@ export default defineConfig({
   webServer: [
     {
       command: 'scripts/e2e-start.sh',
-      url: 'http://localhost:8080/api/health/live',
+      url: 'http://localhost:8080/api/live',
       reuseExistingServer: !process.env.CI,
       cwd: '../../backend-nestjs',
       timeout: 120_000,

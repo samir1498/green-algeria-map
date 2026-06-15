@@ -19,13 +19,13 @@ export class HealthController {
     private storage: StorageHealthIndicator,
   ) {}
 
-  @Get(['live', 'healthz', 'api/health/live'])
+  @Get(['live', 'healthz'])
   @Public()
   live() {
     return { status: 'ok' };
   }
 
-  @Get(['ready', 'readyz', 'api/health/ready', 'api/health'])
+  @Get(['ready', 'readyz'])
   @HealthCheck()
   @Public()
   ready() {
