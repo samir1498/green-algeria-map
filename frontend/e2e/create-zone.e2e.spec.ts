@@ -78,7 +78,9 @@ test.describe('Desktop create zone form', () => {
 
 test.describe('Photo upload after zone creation', () => {
   test.use({ viewport: { width: 1280, height: 720 } })
-  test.describe.configure({ retries: 2 })
+  // TODO: flaky — see personal-research/playwright-react19-file-input-flakiness.md
+  // Search: "Playwright setInputFiles flaky React 19 CDP"
+  test.describe.configure({ mode: 'serial', retries: 5 })
 
   const PHOTO_ZONE_NAME = `E2E Photo Test ${Date.now()}`
 
