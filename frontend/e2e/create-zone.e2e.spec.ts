@@ -1,10 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { uploadTo } from './helpers/upload'
-
-const TEST_PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-  'base64',
-)
+import { uploadPhoto, createPngBuffer } from './helpers/upload'
 
 const ZONE_NAME = `E2E Test Zone ${Date.now()}`
 
@@ -105,9 +100,10 @@ test.describe('Photo upload after zone creation', () => {
     await expect(page.getByTestId('done-photos')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('upload-dropzone')).toBeVisible()
 
-    // Make input visible before setInputFiles (CDP can fail on opacity-0 elements)
-    const fileInput = page.getByTestId('file-input')
-    await uploadTo(fileInput, TEST_PNG, 'e2e-test.png', 'image/png')
+    // Make input visible first, then use setInputFiles.
+    // Fixes CDP node ID staleness on opacity-0 elements under parallel workers.
+    // https://webcrawlerapi.com/glossary/playwright/how-to-fix-playwright-file-upload-setinputfiles
+    await uploadPhoto(page, createPngBuffer())
 
     await expect(page.getByTestId('preview-image')).toBeVisible({ timeout: 5000 })
     await expect(page.getByText('Photo successfully uploaded')).toBeVisible({ timeout: 15000 })
