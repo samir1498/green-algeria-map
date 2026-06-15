@@ -27,13 +27,12 @@ public class BenchSeedRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (zoneRepo.count() > 0) {
-            log.info("Zones already seeded (count={}), skipping", zoneRepo.count());
-            return;
-        }
-
-        log.info("Seeding 10 demo zones...");
+        var existing = zoneRepo.findAll();
+        int created = 0;
         for (var entry : SEED_ZONES) {
+            if (existing.stream().anyMatch(z -> z.getName().equals(entry.name))) {
+                continue;
+            }
             Zone zone = new Zone(entry.name, entry.type, new Coordinates(entry.lat, entry.lng));
             zone.setTargetCount(entry.targetCount);
             zone.setCurrentCount(entry.currentCount);
@@ -42,8 +41,11 @@ public class BenchSeedRunner implements ApplicationRunner {
             zone.setTreeSpecies(entry.treeSpecies);
             applyStatus(zone, entry.status, entry.currentCount, entry.targetCount);
             zoneRepo.save(zone);
+            created++;
         }
-        log.info("Seeded {} demo zones", SEED_ZONES.size());
+        if (created > 0) {
+            log.info("Seeded {} demo zones", created);
+        }
     }
 
     private static void applyStatus(Zone zone, ZoneStatus desired, Integer currentCount, Integer targetCount) {
