@@ -37,21 +37,21 @@ describe('damage-reports API', () => {
   it('getAll calls GET /damage-reports', async () => {
     mockGet.mockResolvedValueOnce({ data: [mockReport] })
     const result = await getAll()
-    expect(mockGet).toHaveBeenCalledWith('/damage-reports')
+    expect(mockGet).toHaveBeenCalledWith('/api/damage-reports')
     expect(result).toEqual([mockReport])
   })
 
   it('getById calls GET /damage-reports/:id', async () => {
     mockGet.mockResolvedValueOnce({ data: mockReport })
     const result = await getById('1')
-    expect(mockGet).toHaveBeenCalledWith('/damage-reports/1')
+    expect(mockGet).toHaveBeenCalledWith('/api/damage-reports/1')
     expect(result).toEqual(mockReport)
   })
 
   it('getByZoneId calls GET /zones/:zoneId/damage-reports', async () => {
     mockGet.mockResolvedValueOnce({ data: [mockReport] })
     const result = await getByZoneId('zone-1')
-    expect(mockGet).toHaveBeenCalledWith('/zones/zone-1/damage-reports')
+    expect(mockGet).toHaveBeenCalledWith('/api/zones/zone-1/damage-reports')
     expect(result).toEqual([mockReport])
   })
 
@@ -68,20 +68,20 @@ describe('damage-reports API', () => {
     }
     mockPost.mockResolvedValueOnce({ data: mockReport })
     const result = await create(input)
-    expect(mockPost).toHaveBeenCalledWith('/damage-reports', input)
+    expect(mockPost).toHaveBeenCalledWith('/api/damage-reports', input)
     expect(result).toEqual(mockReport)
   })
 
   it('updateStatus calls PATCH /damage-reports/:id/status', async () => {
     mockPatch.mockResolvedValueOnce({ data: { ...mockReport, status: 'verified' } })
     const result = await updateStatus('1', 'verified')
-    expect(mockPatch).toHaveBeenCalledWith('/damage-reports/1/status', { status: 'verified' })
+    expect(mockPatch).toHaveBeenCalledWith('/api/damage-reports/1/status', { status: 'verified' })
     expect(result.status).toBe('verified')
   })
 
   it('remove calls DELETE /damage-reports/:id', async () => {
     mockDelete.mockResolvedValueOnce({})
     await remove('1')
-    expect(mockDelete).toHaveBeenCalledWith('/damage-reports/1')
+    expect(mockDelete).toHaveBeenCalledWith('/api/damage-reports/1')
   })
 })

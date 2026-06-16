@@ -47,14 +47,14 @@ describe('zones API', () => {
   it('getAll calls GET /zones and returns zones', async () => {
     mockGet.mockResolvedValueOnce({ data: mockZones })
     const result = await getAll()
-    expect(mockGet).toHaveBeenCalledWith('/zones')
+    expect(mockGet).toHaveBeenCalledWith('/api/zones')
     expect(result).toEqual(mockZones)
   })
 
   it('getById calls GET /zones/:id', async () => {
     mockGet.mockResolvedValueOnce({ data: mockZones[0] })
     const result = await getById('1')
-    expect(mockGet).toHaveBeenCalledWith('/zones/1')
+    expect(mockGet).toHaveBeenCalledWith('/api/zones/1')
     expect(result).toEqual(mockZones[0])
   })
 
@@ -70,20 +70,20 @@ describe('zones API', () => {
     }
     mockPost.mockResolvedValueOnce({ data: { id: '3', ...input } })
     const result = await create(input)
-    expect(mockPost).toHaveBeenCalledWith('/zones', input)
+    expect(mockPost).toHaveBeenCalledWith('/api/zones', input)
     expect(result).toEqual({ id: '3', ...input })
   })
 
   it('update calls PATCH /zones/:id with partial input', async () => {
     mockPatch.mockResolvedValueOnce({ data: { ...mockZones[0], name: 'Updated' } })
     const result = await update('1', { name: 'Updated' })
-    expect(mockPatch).toHaveBeenCalledWith('/zones/1', { name: 'Updated' })
+    expect(mockPatch).toHaveBeenCalledWith('/api/zones/1', { name: 'Updated' })
     expect(result.name).toBe('Updated')
   })
 
   it('remove calls DELETE /zones/:id', async () => {
     mockDelete.mockResolvedValueOnce({})
     await remove('1')
-    expect(mockDelete).toHaveBeenCalledWith('/zones/1')
+    expect(mockDelete).toHaveBeenCalledWith('/api/zones/1')
   })
 })
