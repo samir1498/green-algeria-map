@@ -20,9 +20,8 @@ type Server struct {
 }
 
 type Config struct {
-	StoreType   string
-	Pool        *pgxpool.Pool
-	DatabaseURL string
+	StoreType string
+	Pool      *pgxpool.Pool
 }
 
 func New(cfg Config) *Server {
@@ -65,7 +64,7 @@ func New(cfg Config) *Server {
 
 	// go-better-auth for email/password auth
 	if cfg.Pool != nil {
-		authHandler := auth.New(cfg.DatabaseURL)
+		authHandler := auth.New(cfg.Pool)
 		r.Handle("/api/auth/*", authHandler.Handler())
 	}
 

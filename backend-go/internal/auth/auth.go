@@ -1,23 +1,15 @@
 package auth
 
 import (
-	"database/sql"
 	"os"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/green-algeria-map/backend-go/internal/auth/pgadapter"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jeromesth/go-better-auth"
-	"github.com/jeromesth/go-better-auth/adapter/sqlx"
-	"github.com/jmoiron/sqlx"
 )
 
-func New(databaseURL string) *betterauth.Auth {
-	conn, err := sql.Open("pgx", databaseURL)
-	if err != nil {
-		panic("auth: failed to open database: " + err.Error())
-	}
-	db := sqlx.NewDb(conn, "postgres")
-
-	adapter := sqlxadapter.New(db)
+func New(pool *pgxpool.Pool) *betterauth.Auth {
+	adapter := pgadapter.New(pool)
 
 	secret := os.Getenv("AUTH_SECRET")
 	if secret == "" {

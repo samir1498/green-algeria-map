@@ -1,10 +1,14 @@
 import { test, expect } from '@playwright/test'
 import { uploadPhoto, createPngBuffer } from './helpers/upload'
+import { setupTreeApiMocks } from './helpers/mock-tree-api'
 
 const ZONE_NAME = `E2E Test Zone ${Date.now()}`
 
 test.describe('Desktop create zone form', () => {
   test.use({ viewport: { width: 1280, height: 720 } })
+  test.beforeEach(async ({ page }) => {
+    await setupTreeApiMocks(page)
+  })
 
   test('navigates to /zones/new via nav link', async ({ page }) => {
     await page.goto('/')
@@ -100,9 +104,6 @@ test.describe('Photo upload after zone creation', () => {
     await expect(page.getByTestId('done-photos')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('upload-dropzone')).toBeVisible()
 
-    // Make input visible first, then use setInputFiles.
-    // Fixes CDP node ID staleness on opacity-0 elements under parallel workers.
-    // https://webcrawlerapi.com/glossary/playwright/how-to-fix-playwright-file-upload-setinputfiles
     await uploadPhoto(page, createPngBuffer())
 
     await expect(page.getByTestId('preview-image')).toBeVisible({ timeout: 5000 })
