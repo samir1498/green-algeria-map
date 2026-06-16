@@ -5,6 +5,7 @@ import com.greenalgeria.damagereport.domain.DamageReport;
 import com.greenalgeria.damagereport.domain.DamageReportRepository;
 import com.greenalgeria.damagereport.domain.event.DamageReportCreatedEvent;
 import com.greenalgeria.shared.cqrs.CommandHandler;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ public class CreateDamageReportHandler implements CommandHandler<CreateDamageRep
         this.eventPublisher = eventPublisher;
     }
 
+    @CacheEvict("damageReports")
     public DamageReportResponse handle(CreateDamageReportCommand command) {
         var request = command.request();
         var report = new DamageReport(

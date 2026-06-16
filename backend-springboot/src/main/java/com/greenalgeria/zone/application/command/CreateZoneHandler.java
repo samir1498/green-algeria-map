@@ -6,6 +6,7 @@ import com.greenalgeria.zone.domain.Coordinates;
 import com.greenalgeria.zone.domain.Zone;
 import com.greenalgeria.zone.domain.ZoneRepository;
 import com.greenalgeria.zone.domain.event.ZoneCreatedEvent;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ public class CreateZoneHandler implements CommandHandler<CreateZoneCommand, Zone
         this.eventPublisher = eventPublisher;
     }
 
+    @CacheEvict("zones")
     public ZoneResponse handle(CreateZoneCommand command) {
         var request = command.request();
         var zone = new Zone(request.name(), request.type(), new Coordinates(request.lat(), request.lng()));
