@@ -24,10 +24,29 @@ async function waitForPort(port, host, timeout = 60000) {
 
 async function main() {
   const cwd = path.resolve(__dirname, '..')
-  console.log('Starting dependencies (PostgreSQL)...')
+  console.log('Starting dependencies (PostgreSQL + RustFS)...')
   execSync(`docker compose -f "${COMPOSE_FILE}" up -d`, { stdio: 'inherit' })
   console.log('Waiting for PostgreSQL...')
   await waitForPort(5432, 'localhost')
+  console.log('Waiting for RustFS...')
+  await waitForPort(9000, 'localhost')
+
+  console.log('Creating bucket...')
+  const bucketScript = path.resolve(cwd, '..', 'backend-nestjs', 'scripts', 'create-bucket.mjs')
+  const bucket = spawn(process.execPath, [bucketScript], {
+    stdio: 'inherit',
+    shell: true,
+    env: {
+      OO_OBJECT_STORAGE_ENDPOINT: 'http://localhost:9000',
+      OO_OBJECT_STORAGE_BUCKET: 'green-algeria',
+      OO_OBJECT_STORAGE_ACCESS_KEY: 'greenalgeria-access',
+      OO_OBJECT_STORAGE_SECRET_KEY: 'greenalgeria-secret-change-me',
+    },
+  })
+  await new Promise((resolve, reject) => {
+    bucket.on('exit', code => code === 0 ? resolve() : reject(new Error(`Bucket creation failed with code ${code}`)))
+    bucket.on('error', err => reject(err))
+  })
 
   console.log('Starting Spring Boot backend...')
   const fs = require('fs')
