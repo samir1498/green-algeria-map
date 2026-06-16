@@ -2,103 +2,72 @@ package com.greenalgeria.config;
 
 import com.greenalgeria.shared.exception.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import java.time.OffsetDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+@Slf4j
 @ControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        ProblemDetail body = ProblemDetail.forStatusAndDetail(status, "Validation failed");
+        body.setTitle("Bad Request");
+        List<ValidationError> errors = ex.getBindingResult().getFieldErrors().stream()
+                .map(fe -> new ValidationError(
+                        fe.getField(), fe.getDefaultMessage() != null ? fe.getDefaultMessage() : "Invalid value"))
+                .toList();
+        body.setProperty("errors", errors);
+        return handleExceptionInternal(ex, body, headers, status, request);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        ProblemDetail body = ProblemDetail.forStatusAndDetail(status, "Malformed request body");
+        return handleExceptionInternal(ex, body, headers, status, request);
+    }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNotFound(NotFoundException ex, HttpServletRequest request) {
-        var body = new LinkedHashMap<String, Object>();
-        body.put("statusCode", 404);
-        body.put("error", ex.getMessage());
-        body.put("timestamp", OffsetDateTime.now().toString());
-        body.put("path", request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    public ProblemDetail handleNotFound(NotFoundException ex) {
+        ProblemDetail body = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        body.setTitle("Not Found");
+        return body;
     }
 
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Map<String, Object>> handleResponseStatus(
-            ResponseStatusException ex, HttpServletRequest request) {
-        var body = new LinkedHashMap<String, Object>();
-        body.put("statusCode", ex.getStatusCode().value());
-        body.put(
-                "error",
+    public ProblemDetail handleResponseStatus(ResponseStatusException ex) {
+        return ProblemDetail.forStatusAndDetail(
+                ex.getStatusCode(),
                 ex.getReason() != null ? ex.getReason() : ex.getStatusCode().toString());
-        body.put("timestamp", OffsetDateTime.now().toString());
-        body.put("path", request.getRequestURI());
-        return ResponseEntity.status(ex.getStatusCode()).body(body);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidation(
-            MethodArgumentNotValidException ex, HttpServletRequest request) {
-        var errors = ex.getBindingResult().getFieldErrors().stream()
-                .map(fe -> Map.of("field", fe.getField(), "message", fe.getDefaultMessage()))
-                .toList();
-        var body = new LinkedHashMap<String, Object>();
-        body.put("statusCode", 400);
-        body.put("error", "Validation failed");
-        body.put("errors", errors);
-        body.put("timestamp", OffsetDateTime.now().toString());
-        body.put("path", request.getRequestURI());
-        return ResponseEntity.badRequest().body(body);
-    }
-
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalState(
-            IllegalStateException ex, HttpServletRequest request) {
-        var body = new LinkedHashMap<String, Object>();
-        body.put("statusCode", 400);
-        body.put("error", ex.getMessage());
-        body.put("timestamp", OffsetDateTime.now().toString());
-        body.put("path", request.getRequestURI());
-        return ResponseEntity.badRequest().body(body);
-    }
-
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(
-            IllegalArgumentException ex, HttpServletRequest request) {
-        var body = new LinkedHashMap<String, Object>();
-        body.put("statusCode", 400);
-        body.put("error", ex.getMessage());
-        body.put("timestamp", OffsetDateTime.now().toString());
-        body.put("path", request.getRequestURI());
-        return ResponseEntity.badRequest().body(body);
-    }
-
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<Map<String, Object>> handleMessageNotReadable(
-            HttpMessageNotReadableException ex, HttpServletRequest request) {
-        var body = new LinkedHashMap<String, Object>();
-        body.put("statusCode", 400);
-        body.put("error", "Malformed request body");
-        body.put("timestamp", OffsetDateTime.now().toString());
-        body.put("path", request.getRequestURI());
-        return ResponseEntity.badRequest().body(body);
+    @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
+    public ProblemDetail handleBadRequest(RuntimeException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex, HttpServletRequest request) {
+    public ProblemDetail handleGeneric(Exception ex, HttpServletRequest request) {
         log.error("Unhandled {} at {}", ex.getClass().getSimpleName(), request.getRequestURI(), ex);
-        var body = new LinkedHashMap<String, Object>();
-        body.put("statusCode", 500);
-        body.put("error", "An unexpected error occurred");
-        body.put("timestamp", OffsetDateTime.now().toString());
-        body.put("path", request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+        ProblemDetail body =
+                ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+        body.setTitle("Internal Server Error");
+        return body;
     }
+
+    private record ValidationError(String field, String message) {}
 }

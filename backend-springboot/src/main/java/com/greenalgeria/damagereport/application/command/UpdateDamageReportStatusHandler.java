@@ -4,6 +4,7 @@ import com.greenalgeria.damagereport.application.*;
 import com.greenalgeria.damagereport.domain.DamageReportRepository;
 import com.greenalgeria.shared.cqrs.CommandHandler;
 import com.greenalgeria.shared.exception.NotFoundException;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ public class UpdateDamageReportStatusHandler
         this.damageReportRepository = damageReportRepository;
     }
 
+    @CacheEvict("damageReports")
     public DamageReportResponse handle(UpdateDamageReportStatusCommand command) {
         var report = damageReportRepository
                 .findById(command.id())

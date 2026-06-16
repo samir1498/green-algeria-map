@@ -5,6 +5,7 @@ import com.greenalgeria.shared.exception.NotFoundException;
 import com.greenalgeria.zone.application.*;
 import com.greenalgeria.zone.domain.Coordinates;
 import com.greenalgeria.zone.domain.ZoneRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ public class UpdateZoneHandler implements CommandHandler<UpdateZoneCommand, Zone
         this.zoneRepository = zoneRepository;
     }
 
+    @CacheEvict("zones")
     public ZoneResponse handle(UpdateZoneCommand command) {
         var zone = zoneRepository.findById(command.id()).orElseThrow(() -> new NotFoundException("Zone not found"));
         var request = command.request();

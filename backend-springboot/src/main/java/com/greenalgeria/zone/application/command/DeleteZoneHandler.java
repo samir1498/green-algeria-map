@@ -4,6 +4,7 @@ import com.greenalgeria.shared.cqrs.CommandHandler;
 import com.greenalgeria.shared.exception.NotFoundException;
 import com.greenalgeria.zone.application.*;
 import com.greenalgeria.zone.domain.ZoneRepository;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ public class DeleteZoneHandler implements CommandHandler<DeleteZoneCommand, Void
         this.zoneRepository = zoneRepository;
     }
 
+    @CacheEvict("zones")
     public Void handle(DeleteZoneCommand command) {
         if (!zoneRepository.existsById(command.id())) {
             throw new NotFoundException("Zone not found");
