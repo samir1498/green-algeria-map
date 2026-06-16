@@ -90,7 +90,7 @@ describe('ZonePhotoUploader', () => {
       expect(mockPost).toHaveBeenCalledOnce()
     })
 
-    expect(mockPost).toHaveBeenCalledWith(`/storage/zones/${zoneId}/photo`, expect.any(FormData), {
+    expect(mockPost).toHaveBeenCalledWith(`/api/storage/zones/${zoneId}/photo`, expect.any(FormData), {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
 
