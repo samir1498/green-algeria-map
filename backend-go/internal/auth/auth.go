@@ -32,7 +32,10 @@ func New(databaseURL string) *betterauth.Auth {
 		Secret:   secret,
 		Database: &betterauth.DatabaseConfig{Adapter: adapter},
 		EmailAndPassword: &betterauth.EmailPassConfig{
-			Enabled: true,
+			Enabled:           true,
+			MinPasswordLength: 8,
+			MaxPasswordLength: 128,
+			AutoSignIn:        true,
 		},
 		TrustedOrigins: []string{"http://localhost:3000", "http://localhost:4173"},
 		User: &betterauth.UserConfig{

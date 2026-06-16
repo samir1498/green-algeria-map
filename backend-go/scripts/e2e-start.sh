@@ -53,10 +53,15 @@ async function main() {
     bucket.on('error', err => reject(err))
   })
 
-  const databaseURL = 'postgresql://greenalgeria:greenalgeria@localhost:5432/greenalgeria'
+  const DATABASE_NAME = 'greenalgeria_go'
+  const PG_ENV = { ...process.env, PGPASSWORD: 'greenalgeria' }
+  const databaseURL = `postgresql://greenalgeria:greenalgeria@localhost:5432/${DATABASE_NAME}`
 
-  console.log('Running migrations...')
-  execSync(`goose -dir migrations postgres "${databaseURL}" up`, { cwd, stdio: 'inherit' })
+  console.log('Creating database...')
+  execSync(`psql -h localhost -U greenalgeria -d postgres -c "CREATE DATABASE ${DATABASE_NAME}" 2>/dev/null; true`, { env: PG_ENV })
+
+  console.log('Running schema...')
+  execSync(`psql -h localhost -U greenalgeria -d ${DATABASE_NAME} -f scripts/schema.go.sql`, { cwd, stdio: 'inherit', env: PG_ENV })
 
   console.log('Building Go backend...')
   execSync('go build -ldflags="-s -w" -o backend-go ./cmd/api', { cwd, stdio: 'inherit' })
