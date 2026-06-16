@@ -1,5 +1,4 @@
 import { type Page } from '@playwright/test'
-
 export async function uploadPhoto(
   page: Page,
   buffer: Buffer,
