@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { screen, waitFor, cleanup } from '@testing-library/react'
 import { renderAuthRoute } from '@/shared/test/render-with-router'
 import { sanitizeRedirect } from '@/shared/utils/sanitize-redirect'
-import { LoginPage } from './login'
+import { LoginPage } from './LoginPage'
 
 const mockSignIn = vi.fn().mockResolvedValue({ data: { user: {} }, error: null })
 
