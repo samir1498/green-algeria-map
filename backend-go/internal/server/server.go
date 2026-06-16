@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
+	"github.com/green-algeria-map/backend-go/internal/auth"
 	"github.com/green-algeria-map/backend-go/internal/handler"
 	"github.com/green-algeria-map/backend-go/internal/middleware"
 	"github.com/green-algeria-map/backend-go/internal/repository"
@@ -36,35 +37,36 @@ func New(cfg Config) *Server {
 	store := repository.NewInMemoryStore()
 
 	var itemRepo service.ItemRepository
-	var authRepo service.AuthRepository
 	var zoneRepo service.ZoneRepository
 	var damageRepo service.DamageReportRepository
 
 	if cfg.StoreType == "postgres" && cfg.Pool != nil {
 		pg := repository.NewPostgresStore(cfg.Pool)
 		itemRepo = pg
-		authRepo = pg
 		zoneRepo = pg
 		damageRepo = pg
 	} else {
 		itemRepo = store
-		authRepo = store
 		zoneRepo = store
 		damageRepo = store
 	}
 
-	authSvc := service.NewAuthService(authRepo)
 	crudSvc := service.NewCRUDService(itemRepo)
 	zoneSvc := service.NewZoneService(zoneRepo)
 	seedZones(context.Background(), zoneRepo)
 	damageSvc := service.NewDamageReportService(damageRepo)
 
-	authH := handler.NewAuthHandler(authSvc)
 	crudH := handler.NewCRUDHandler(crudSvc)
 	zoneH := handler.NewZoneHandler(zoneSvc)
 	damageH := handler.NewDamageReportHandler(damageSvc)
 	publicH := handler.NewPublicHandler(zoneSvc, damageSvc)
 	storageH := handler.NewStorageHandler(zoneSvc)
+
+	// go-better-auth for email/password auth
+	if cfg.Pool != nil {
+		authHandler := auth.New(cfg.Pool)
+		r.Handle("/api/auth/*", authHandler.Handler())
+	}
 
 	// Match Spring Boot: health at root
 	r.Get("/healthz", handler.Live)
@@ -72,8 +74,6 @@ func New(cfg Config) *Server {
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 
 	r.Route("/api", func(r chi.Router) {
-		r.Use(middleware.WithSession)
-
 		r.Get("/ping", handler.Ping)
 		r.Post("/echo", handler.Echo)
 		r.Post("/validate", handler.Validate)
@@ -84,12 +84,6 @@ func New(cfg Config) *Server {
 
 		// Storage (matching NestJS/Spring Boot routes)
 		r.Post("/storage/zones/{id}/photo", storageH.UploadZonePhoto)
-
-		// Auth (matching NestJS/Spring Boot routes exactly)
-		r.Post("/auth/sign-up/email", authH.SignUp)
-		r.Post("/auth/sign-in/email", authH.SignIn)
-		r.Get("/auth/get-session", authH.GetSession)
-		r.Post("/auth/sign-out", authH.SignOut)
 
 		// Zones
 		r.Route("/zones", func(r chi.Router) {
