@@ -15,7 +15,7 @@ func main() {
 	storeType := os.Getenv("STORE_TYPE")
 	dsn := os.Getenv("DATABASE_URL")
 
-	cfg := server.Config{StoreType: storeType}
+	cfg := server.Config{StoreType: storeType, DatabaseURL: dsn}
 
 	if storeType == "postgres" && dsn != "" {
 		poolCfg, err := pgxpool.ParseConfig(dsn)
