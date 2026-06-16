@@ -1,4 +1,9 @@
 import { test, expect, type Page } from '@playwright/test'
+import { setupTreeApiMocks } from './helpers/mock-tree-api'
+
+test.beforeEach(async ({ page }) => {
+  await setupTreeApiMocks(page)
+})
 
 async function clickZoneMarker(page: Page, name: string) {
   await page.getByTestId('map-container').waitFor({ state: 'visible', timeout: 30000 })
