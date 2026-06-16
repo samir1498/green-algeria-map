@@ -4,6 +4,7 @@ import com.greenalgeria.damagereport.application.*;
 import com.greenalgeria.damagereport.domain.DamageReportRepository;
 import com.greenalgeria.shared.cqrs.QueryHandler;
 import java.util.List;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,6 +16,7 @@ public class GetAllDamageReportsHandler implements QueryHandler<GetDamageReports
         this.damageReportRepository = damageReportRepository;
     }
 
+    @Cacheable("damageReports")
     public List<DamageReportResponse> handle(GetDamageReportsQuery query) {
         var reports = query.zoneId() != null
                 ? damageReportRepository.findByZoneIdOrderByReportedAtDesc(query.zoneId())

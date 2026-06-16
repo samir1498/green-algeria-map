@@ -4,6 +4,7 @@ import com.greenalgeria.storage.domain.StorageProperties;
 import com.greenalgeria.storage.domain.StorageService;
 import java.net.URI;
 import java.util.UUID;
+import org.springframework.resilience.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -12,6 +13,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @Service
 public class RustFsStorageService implements StorageService {
@@ -34,6 +36,12 @@ public class RustFsStorageService implements StorageService {
     }
 
     @Override
+    @Retryable(
+            includes = {S3Exception.class},
+            maxRetries = 3,
+            delay = 1000,
+            multiplier = 2.0,
+            maxDelay = 5000)
     public UploadResult uploadFile(byte[] file, String filename, String mimetype) {
         var fileId = UUID.randomUUID() + "-" + filename;
         var putRequest = PutObjectRequest.builder()

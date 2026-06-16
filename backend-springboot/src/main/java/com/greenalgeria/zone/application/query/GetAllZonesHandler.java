@@ -4,6 +4,7 @@ import com.greenalgeria.shared.cqrs.QueryHandler;
 import com.greenalgeria.zone.application.*;
 import com.greenalgeria.zone.domain.ZoneRepository;
 import java.util.List;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ public class GetAllZonesHandler implements QueryHandler<GetAllZonesQuery, List<Z
         this.zoneRepository = zoneRepository;
     }
 
+    @Cacheable("zones")
     @Transactional(readOnly = true)
     public List<ZoneResponse> handle(GetAllZonesQuery query) {
         return zoneRepository.findAllByOrderByNameAsc().stream()
