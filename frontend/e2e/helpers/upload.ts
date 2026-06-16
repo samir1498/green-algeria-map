@@ -7,7 +7,9 @@ export async function uploadPhoto(
 ) {
   const input = page.getByTestId('file-input')
   await input.scrollIntoViewIfNeeded()
-  await input.evaluate((el) => { (el as HTMLElement).style.opacity = '1' })
+  await input.evaluate((el) => {
+    ;(el as HTMLElement).style.opacity = '1'
+  })
   await input.setInputFiles({ name: fileName, mimeType, buffer })
 }
 
