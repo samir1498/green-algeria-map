@@ -15,8 +15,9 @@ const mockRepo = {
   remove: mockRemove,
 };
 
-const getAll = new GetAllZonesHandler(mockRepo as any);
-const getById = new GetZoneByIdHandler(mockRepo as any);
+const mockCache = { get: vi.fn(), set: vi.fn(), del: vi.fn() };
+const getAll = new GetAllZonesHandler(mockRepo as any, mockCache as any);
+const getById = new GetZoneByIdHandler(mockRepo as any, mockCache as any);
 
 beforeEach(() => vi.resetAllMocks());
 
