@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'node:crypto';
 import axios from 'axios';
+import pRetry from 'p-retry';
 import { StorageService } from '../domain/storage.service';
 import { UploadFileError } from '../domain/storage.errors';
 import { signS3Put } from './s3-signing.util';
@@ -64,11 +65,19 @@ export class RustFsStorageService implements StorageService {
       );
 
       const url = `${this.endpoint}/${this.bucket}/${uniqueKey}`;
-      const response = await axios.put(url, file, {
-        headers: signedHeaders,
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-      });
+      const response = await pRetry(
+        () =>
+          axios.put(url, file, {
+            headers: signedHeaders,
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
+          }),
+        {
+          retries: 3,
+          minTimeout: 1_000,
+          maxTimeout: 5_000,
+        },
+      );
 
       if (response.status !== 200) {
         throw new UploadFileError(
@@ -79,10 +88,9 @@ export class RustFsStorageService implements StorageService {
       const downloadUrl = `${this.endpoint}/${this.bucket}/${uniqueKey}`;
       return { fileId: uniqueKey, url: downloadUrl };
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new UploadFileError(`Failed to upload file: ${error.message}`);
-      }
-      throw error;
+      throw new UploadFileError(
+        `Failed to upload file: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
