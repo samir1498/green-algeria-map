@@ -77,7 +77,7 @@ async function bootstrap() {
   }
 
   const port = process.env.PORT ?? 8080;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   logger.log(`Running on http://localhost:${port}`);
   if (process.env.DISABLE_SWAGGER !== 'true') {
     logger.log(`API docs at http://localhost:${port}/api/docs`);
