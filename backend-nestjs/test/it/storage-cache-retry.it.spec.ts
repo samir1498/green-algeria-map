@@ -14,7 +14,19 @@ describe('Storage retry (integration)', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         CacheModule.register({ isGlobal: true, ttl: 300_000, max: 500 }),
-        ConfigModule.forRoot({ ignoreEnvFile: true, isGlobal: true }),
+        ConfigModule.forRoot({
+          ignoreEnvFile: true,
+          isGlobal: true,
+          load: [
+            () => ({
+              OO_OBJECT_STORAGE_ENDPOINT: 'http://localhost:9000',
+              OO_OBJECT_STORAGE_REGION: 'us-east-1',
+              OO_OBJECT_STORAGE_BUCKET: 'test-bucket',
+              OO_OBJECT_STORAGE_ACCESS_KEY: 'test-access-key',
+              OO_OBJECT_STORAGE_SECRET_KEY: 'test-secret-key',
+            }),
+          ],
+        }),
       ],
       providers: [RustFsStorageService],
     }).compile();
@@ -36,6 +48,7 @@ describe('Storage retry (integration)', () => {
     it('should retry on transient axios failure and succeed', async () => {
       const file = Buffer.from('test-content');
       const fileName = 'test.jpg';
+      const mimeType = 'image/jpeg';
 
       const mockPut = vi
         .spyOn(axios, 'put')
@@ -54,7 +67,7 @@ describe('Storage retry (integration)', () => {
         },
       );
 
-      const result = await service.uploadFile(file, fileName);
+      const result = await service.uploadFile(file, fileName, mimeType);
 
       expect(result).toHaveProperty('fileId');
       expect(result).toHaveProperty('url');
@@ -63,10 +76,11 @@ describe('Storage retry (integration)', () => {
     it('should throw UploadFileError after exhausting retries', async () => {
       const file = Buffer.from('test-content');
       const fileName = 'test.jpg';
+      const mimeType = 'image/jpeg';
 
       vi.spyOn(axios, 'put').mockRejectedValue(new Error('Persistent error'));
 
-      await expect(service.uploadFile(file, fileName)).rejects.toThrow(
+      await expect(service.uploadFile(file, fileName, mimeType)).rejects.toThrow(
         UploadFileError,
       );
     }, 30_000);
@@ -74,10 +88,11 @@ describe('Storage retry (integration)', () => {
     it('should wrap non-Axios errors in UploadFileError', async () => {
       const file = Buffer.from('test-content');
       const fileName = 'test.jpg';
+      const mimeType = 'image/jpeg';
 
       vi.spyOn(axios, 'put').mockRejectedValue(new Error('Non-axios error'));
 
-      await expect(service.uploadFile(file, fileName)).rejects.toThrow(
+      await expect(service.uploadFile(file, fileName, mimeType)).rejects.toThrow(
         UploadFileError,
       );
     }, 30_000);
