@@ -7,9 +7,11 @@ import { ZoneCreatedEvent } from '../events/zone-created.event';
 
 const mockRepository = { save: vi.fn() };
 const mockEventBus = { publish: vi.fn() };
+const mockCache = { get: vi.fn(), set: vi.fn(), del: vi.fn() };
 const handler = new CreateZoneHandler(
   mockRepository as any,
   mockEventBus as any,
+  mockCache as any,
 );
 
 beforeEach(() => vi.resetAllMocks());
@@ -45,6 +47,7 @@ describe('CreateZoneHandler', () => {
     const result = await handler.execute(command);
 
     expect(result).toMatchObject({ id: 'z-1', name: 'Park' });
+    expect(mockCache.del).toHaveBeenCalledWith('zones:all');
 
     const saved = mockRepository.save.mock.calls[0][0] as Zone;
     expect(saved).toMatchObject({

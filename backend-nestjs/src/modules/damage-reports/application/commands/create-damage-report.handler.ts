@@ -1,4 +1,7 @@
 import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
+import { Inject } from '@nestjs/common';
+import type { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CreateDamageReportCommand } from './create-damage-report.command';
 import { DamageReportRepository } from '../../infrastructure/damage-report.repository';
 import { DamageReport } from '../../domain/damage-report';
@@ -12,6 +15,7 @@ export class CreateDamageReportHandler implements ICommandHandler<
   constructor(
     private readonly repository: DamageReportRepository,
     private readonly eventBus: EventBus,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {}
 
   async execute(command: CreateDamageReportCommand): Promise<DamageReport> {
@@ -26,6 +30,11 @@ export class CreateDamageReportHandler implements ICommandHandler<
     });
 
     const saved = await this.repository.save(report);
+
+    await this.cache.del('damage-reports:all');
+    if (saved.zoneId) {
+      await this.cache.del(`damage-reports:zone:${saved.zoneId}`);
+    }
 
     this.eventBus.publish(
       new DamageReportCreatedEvent(

@@ -1,12 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CacheModule } from '@nestjs/cache-manager';
 import { INestApplication } from '@nestjs/common';
 import { vi } from 'vitest';
 import { EventBus } from '@nestjs/cqrs';
+import supertest from 'supertest';
 import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
+import { createTestingModule } from '../setup/create-testing-module';
 import { ZoneOrmEntity } from '../../src/modules/zones/infrastructure/zone.orm-entity';
 import { ZonesModule } from '../../src/modules/zones/zones.module';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -36,6 +39,7 @@ describe('Zones CQRS (integration)', () => {
 
     moduleRef = await Test.createTestingModule({
       imports: [
+        CacheModule.register({ isGlobal: true, ttl: 300_000, max: 500 }),
         TypeOrmModule.forRoot({
           type: 'postgres',
           host: container.getHost(),

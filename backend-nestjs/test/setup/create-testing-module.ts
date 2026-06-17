@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { CacheModule } from '@nestjs/cache-manager';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ZoneOrmEntity } from '../../src/modules/zones/infrastructure/zone.orm-entity';
@@ -26,6 +27,7 @@ export async function createTestingModule({
 }> {
   const module: TestingModule = await Test.createTestingModule({
     imports: [
+      CacheModule.register({ isGlobal: true, ttl: 300_000, max: 500 }),
       TypeOrmModule.forRoot({
         type: 'postgres',
         host,
