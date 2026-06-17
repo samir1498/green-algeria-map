@@ -1,5 +1,16 @@
 # Changelog — Frontend (React SPA)
 
+## [frontend-v0.10.0] - 2026-06-17
+
+### Changed
+- Extract LoginPage and RegisterPage into separate components (PR #162)
+- Fix API imports and align types with backend /api prefix (PR #153)
+
+### Fixed
+- E2E photo upload flakiness: stable input key + direct setInputFiles
+- E2E wait for RustFS and create bucket in Spring Boot startup
+- Bump photo upload retries 2→5 with serial mode
+
 ## [frontend-v0.9.0] - 2026-06-04
 
 ### Changed
