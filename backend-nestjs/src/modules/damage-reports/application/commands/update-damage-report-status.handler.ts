@@ -1,5 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { NotFoundException } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
+import type { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { UpdateDamageReportStatusCommand } from './update-damage-report-status.command';
 import { DamageReportRepository } from '../../infrastructure/damage-report.repository';
 import { DamageReport } from '../../domain/damage-report';
@@ -9,7 +11,10 @@ export class UpdateDamageReportStatusHandler implements ICommandHandler<
   UpdateDamageReportStatusCommand,
   DamageReport
 > {
-  constructor(private readonly repository: DamageReportRepository) {}
+  constructor(
+    private readonly repository: DamageReportRepository,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {}
 
   async execute(
     command: UpdateDamageReportStatusCommand,
@@ -22,6 +27,12 @@ export class UpdateDamageReportStatusHandler implements ICommandHandler<
     }
 
     const updated = existing.changeStatus(command.status);
-    return this.repository.save(updated);
+    const saved = await this.repository.save(updated);
+    await this.cache.del('damage-reports:all');
+    await this.cache.del(`damage-report:${command.id}`);
+    if (saved.zoneId) {
+      await this.cache.del(`damage-reports:zone:${saved.zoneId}`);
+    }
+    return saved;
   }
 }

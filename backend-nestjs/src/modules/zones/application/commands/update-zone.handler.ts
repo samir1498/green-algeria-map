@@ -1,5 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { NotFoundException } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
+import type { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { UpdateZoneCommand } from './update-zone.command';
 import { ZoneRepository } from '../../infrastructure/zone.repository';
 import { Zone } from '../../domain/zone';
@@ -9,7 +11,10 @@ export class UpdateZoneHandler implements ICommandHandler<
   UpdateZoneCommand,
   Zone
 > {
-  constructor(private readonly repository: ZoneRepository) {}
+  constructor(
+    private readonly repository: ZoneRepository,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {}
 
   async execute(command: UpdateZoneCommand): Promise<Zone> {
     const zone = await this.repository.findById(command.id);
@@ -35,6 +40,9 @@ export class UpdateZoneHandler implements ICommandHandler<
     if (command.treeSpecies !== undefined)
       zone.updateTreeSpecies(command.treeSpecies);
 
-    return this.repository.save(zone);
+    const saved = await this.repository.save(zone);
+    await this.cache.del('zones:all');
+    await this.cache.del(`zone:${command.id}`);
+    return saved;
   }
 }

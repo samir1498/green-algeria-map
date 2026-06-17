@@ -1,5 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CqrsModule } from '@nestjs/cqrs';
@@ -83,6 +84,7 @@ describe('Storage upload (integration)', () => {
 
     const module = await Test.createTestingModule({
       imports: [
+        CacheModule.register({ isGlobal: true, ttl: 300_000, max: 500 }),
         ConfigModule.forRoot({
           ignoreEnvFile: true,
           isGlobal: true,
