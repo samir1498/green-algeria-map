@@ -3,9 +3,11 @@ module github.com/green-algeria-map/backend-go
 go 1.26.0
 
 require (
+	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-playground/validator/v10 v10.30.3
 	github.com/google/uuid v1.6.0
+	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/jeromesth/go-better-auth v0.0.0-20260417162630-9ee9717289cd
 	github.com/stretchr/testify v1.11.1
