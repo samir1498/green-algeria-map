@@ -1,4 +1,7 @@
 import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
+import { Inject } from '@nestjs/common';
+import type { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CreateZoneCommand } from './create-zone.command';
 import { ZoneRepository } from '../../infrastructure/zone.repository';
 import { Zone } from '../../domain/zone';
@@ -13,6 +16,7 @@ export class CreateZoneHandler implements ICommandHandler<
   constructor(
     private readonly repository: ZoneRepository,
     private readonly eventBus: EventBus,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {}
 
   async execute(command: CreateZoneCommand): Promise<Zone> {
@@ -29,6 +33,7 @@ export class CreateZoneHandler implements ICommandHandler<
       treeSpecies: command.treeSpecies,
     });
     const saved = await this.repository.save(zone);
+    await this.cache.del('zones:all');
     if (process.env.DISABLE_EVENTS !== 'true') {
       this.eventBus.publish(
         new ZoneCreatedEvent(saved.id!, saved.name, saved.type),

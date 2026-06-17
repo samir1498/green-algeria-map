@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 
+	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/green-algeria-map/backend-go/internal/model"
 	"github.com/green-algeria-map/backend-go/internal/repository"
 )
@@ -15,13 +17,15 @@ type DamageReportRepository interface {
 }
 
 type DamageReportService struct {
-	repo DamageReportRepository
+	repo  DamageReportRepository
+	cache *lru.Cache[string, any]
 }
 
 var ErrDamageReportNotFound = errors.New("damage report not found")
 
 func NewDamageReportService(repo DamageReportRepository) *DamageReportService {
-	return &DamageReportService{repo: repo}
+	c, _ := lru.New[string, any](500)
+	return &DamageReportService{repo: repo, cache: c}
 }
 
 func (s *DamageReportService) Create(ctx context.Context, req model.CreateDamageReportRequest) (*model.DamageReportResponse, error) {
@@ -29,10 +33,15 @@ func (s *DamageReportService) Create(ctx context.Context, req model.CreateDamage
 	if err != nil {
 		return nil, err
 	}
+	s.cache.Remove("damage-reports:all")
 	return toDamageReportResponse(dr), nil
 }
 
 func (s *DamageReportService) Get(ctx context.Context, id string) (*model.DamageReportResponse, error) {
+	key := fmt.Sprintf("damage-report:%s", id)
+	if v, ok := s.cache.Get(key); ok {
+		return v.(*model.DamageReportResponse), nil
+	}
 	dr, err := s.repo.GetDamageReport(ctx, id)
 	if err != nil {
 		return nil, err
@@ -40,10 +49,15 @@ func (s *DamageReportService) Get(ctx context.Context, id string) (*model.Damage
 	if dr == nil {
 		return nil, ErrDamageReportNotFound
 	}
-	return toDamageReportResponse(dr), nil
+	resp := toDamageReportResponse(dr)
+	s.cache.Add(key, resp)
+	return resp, nil
 }
 
 func (s *DamageReportService) List(ctx context.Context) (*model.ListDamageReportsResponse, error) {
+	if v, ok := s.cache.Get("damage-reports:all"); ok {
+		return v.(*model.ListDamageReportsResponse), nil
+	}
 	reports, err := s.repo.ListDamageReports(ctx)
 	if err != nil {
 		return nil, err
@@ -52,6 +66,7 @@ func (s *DamageReportService) List(ctx context.Context) (*model.ListDamageReport
 	for _, dr := range reports {
 		resp.Reports = append(resp.Reports, *toDamageReportResponse(dr))
 	}
+	s.cache.Add("damage-reports:all", resp)
 	return resp, nil
 }
 
