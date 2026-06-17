@@ -1,5 +1,18 @@
 # Changelog — Spring Boot Backend
 
+## [backend-springboot-v0.5.0] - 2026-06-17
+
+### Added
+- Caching, resilience, and ProblemDetail error responses
+- Virtual threads support for improved concurrency
+
+### Changed
+- Added `/api` prefix to storage controller
+
+### Fixed
+- ZoneStatus serialization as `in-progress` to match frontend
+- E2E infrastructure: wait for RustFS and create bucket on startup
+
 ## [backend-springboot-v0.4.0] - 2026-06-05
 
 ### Added
