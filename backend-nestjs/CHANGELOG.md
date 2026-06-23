@@ -1,5 +1,22 @@
 # Changelog — NestJS Backend
 
+## [backend-v0.7.0] - 2026-06-17
+
+### Added
+- In-memory caching with per-id eviction (PR #163)
+- S3 retry with exponential backoff (PR #164)
+- Rate limiting interceptor for auth (PR #10.5 req/s)
+- Fastify compression middleware
+
+### Changed
+- Migrated from Express to Fastify
+- Global `/api` prefix on all routes
+- Optimized NestJS read path performance
+
+### Fixed
+- Bind to 0.0.0.0 for Render deployment (PR #167)
+- Updated create-bucket.mjs script
+
 ## [backend-v0.6.0] - 2026-06-04
 
 ### Added
