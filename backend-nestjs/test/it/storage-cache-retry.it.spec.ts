@@ -61,7 +61,8 @@ describe('Storage retry (integration)', () => {
       (axios.put as unknown as ReturnType<typeof vi.fn>).mockImplementation(
         (url: string, _data: Buffer, config?: Record<string, unknown>) => {
           const callCount = mockPut.mock.results.length;
-          if (callCount === 0) return Promise.reject(new Error('Network error'));
+          if (callCount === 0)
+            return Promise.reject(new Error('Network error'));
           if (callCount === 1) return Promise.reject(new Error('Timeout'));
           return Promise.resolve({ status: 200, data: {} });
         },
@@ -80,9 +81,9 @@ describe('Storage retry (integration)', () => {
 
       vi.spyOn(axios, 'put').mockRejectedValue(new Error('Persistent error'));
 
-      await expect(service.uploadFile(file, fileName, mimeType)).rejects.toThrow(
-        UploadFileError,
-      );
+      await expect(
+        service.uploadFile(file, fileName, mimeType),
+      ).rejects.toThrow(UploadFileError);
     }, 30_000);
 
     it('should wrap non-Axios errors in UploadFileError', async () => {
@@ -92,9 +93,9 @@ describe('Storage retry (integration)', () => {
 
       vi.spyOn(axios, 'put').mockRejectedValue(new Error('Non-axios error'));
 
-      await expect(service.uploadFile(file, fileName, mimeType)).rejects.toThrow(
-        UploadFileError,
-      );
+      await expect(
+        service.uploadFile(file, fileName, mimeType),
+      ).rejects.toThrow(UploadFileError);
     }, 30_000);
   });
 });
