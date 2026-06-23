@@ -4,7 +4,15 @@ import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
-import { describe, beforeAll, afterAll, beforeEach, it, expect, vi } from 'vitest';
+import {
+  describe,
+  beforeAll,
+  afterAll,
+  beforeEach,
+  it,
+  expect,
+  vi,
+} from 'vitest';
 import { createTestingModule } from '../setup/create-testing-module';
 import { DamageReportRepository } from '../../src/modules/damage-reports/infrastructure/damage-report.repository';
 
