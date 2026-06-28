@@ -51,7 +51,7 @@ describe('ZonePhotoUploader', () => {
     expect(screen.getByTestId('file-input')).toBeInTheDocument()
   })
 
-  it('shows preview and spinner while uploading, then clears on success', async () => {
+  it('shows preview and spinner while uploading, then keeps preview on success', async () => {
     const file = createFile('photo.jpg', 'image/jpeg')
     let resolveUpload: (value: unknown) => void
     const uploadPromise = new Promise((resolve) => {
@@ -72,7 +72,7 @@ describe('ZonePhotoUploader', () => {
     resolveUpload!({ data: { photoUrl: 'http://example.com/photo.jpg' } })
 
     await waitFor(() => {
-      expect(screen.queryByTestId('preview-image')).not.toBeInTheDocument()
+      expect(screen.getByTestId('preview-image')).toBeInTheDocument()
     })
     await waitFor(() => {
       expect(screen.queryByTestId('uploading-spinner')).not.toBeInTheDocument()

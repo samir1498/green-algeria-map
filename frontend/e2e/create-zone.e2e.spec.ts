@@ -108,8 +108,8 @@ test.describe('Photo upload after zone creation', () => {
 
     await expect(page.getByTestId('preview-image')).toBeVisible({ timeout: 5000 })
     await expect(page.getByText('Photo successfully uploaded')).toBeVisible({ timeout: 15000 })
+    await expect(page.getByTestId('preview-image')).toBeVisible()
     await expect(page.getByTestId('uploading-spinner')).not.toBeVisible({ timeout: 10000 })
-    await expect(page.getByTestId('preview-image')).not.toBeVisible({ timeout: 5000 })
 
     await page.getByTestId('done-photos').click()
     await expect(page).toHaveURL('/')
