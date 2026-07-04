@@ -39,6 +39,14 @@ export default defineConfig({
         storageState: STORAGE_STATE,
       },
     },
+    {
+      name: 'real-api',
+      dependencies: ['setup'],
+      use: {
+        viewport: { width: 1280, height: 720 },
+        storageState: STORAGE_STATE,
+      },
+    },
   ],
 
   webServer: [
