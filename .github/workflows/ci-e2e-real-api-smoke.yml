@@ -1,0 +1,67 @@
+name: CI E2E — Real API Smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  real-api-smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    continue-on-error: true  # Informational — never blocks CI
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache-dependency-path: backend-go/go.sum
+      - name: Build backend (Go)
+        run: go build -ldflags="-s -w" -o backend-go ./cmd/api
+        working-directory: backend-go
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+      - name: Build frontend (Go backend)
+        run: pnpm build
+        env:
+          VITE_API_URL: http://localhost:8082
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium
+      - name: Run real-api smoke tests
+        run: |
+          DISABLE_RATE_LIMIT=true E2E_AUTH_BASE=http://localhost:8082/api/auth \
+          pnpm exec playwright test --config config/playwright.go.config.ts \
+            --project=real-api --reporter=list 2>&1 | tee /tmp/real-api-smoke.log
+        env:
+          CI: 'true'
+      - name: Check for API contract drift
+        if: always()
+        run: |
+          if grep -q "failed" /tmp/real-api-smoke.log; then
+            echo "::warning::Real API smoke tests detected failures — iNaturalist/GBIF may have contract drift"
+            grep -E "(FAIL|Error|failed)" /tmp/real-api-smoke.log || true
+          else
+            echo "All real-api smoke tests passed — no contract drift detected"
+          fi
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-real-api
+          path: frontend/playwright-report/
+          retention-days: 7
