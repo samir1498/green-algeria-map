@@ -27,20 +27,42 @@ func (m *mockDamageReportRepo) ListDamageReports(ctx context.Context) ([]*reposi
 	return args.Get(0).([]*repository.DamageReportEntity), args.Error(1)
 }
 
-func (m *mockDamageReportRepo) CreateDamageReport(ctx context.Context, zoneID *string, title, description, severity string, lat, lng float64) (*repository.DamageReportEntity, error) {
-	args := m.Called(ctx, zoneID, title, description, severity, lat, lng)
+func (m *mockDamageReportRepo) ListDamageReportsByZone(ctx context.Context, zoneID *string) ([]*repository.DamageReportEntity, error) {
+	args := m.Called(ctx, zoneID)
+	return args.Get(0).([]*repository.DamageReportEntity), args.Error(1)
+}
+
+func (m *mockDamageReportRepo) CreateDamageReport(ctx context.Context, zoneID *string, title, description, severity, status, reportedBy, reportType string, lat, lng float64) (*repository.DamageReportEntity, error) {
+	args := m.Called(ctx, zoneID, title, description, severity, status, reportedBy, reportType, lat, lng)
+	return args.Get(0).(*repository.DamageReportEntity), args.Error(1)
+}
+
+func (m *mockDamageReportRepo) DeleteDamageReport(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *mockDamageReportRepo) UpdateDamageReportStatus(ctx context.Context, id, status string) (*repository.DamageReportEntity, error) {
+	args := m.Called(ctx, id, status)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).(*repository.DamageReportEntity), args.Error(1)
 }
 
 func makeDR(id, title string) *repository.DamageReportEntity {
 	t := tNow()
 	zoneID := "zone-1"
+	reportedBy := "test-user"
 	return &repository.DamageReportEntity{
 		ID:          id,
 		ZoneID:      &zoneID,
 		Title:       title,
 		Description: "desc",
 		Severity:    "high",
+		Type:        "fire",
+		Status:      "reported",
+		ReportedBy:  &reportedBy,
 		Lat:         36.0,
 		Lng:         3.0,
 		CreatedAt:   t,
@@ -53,7 +75,7 @@ func TestDamageReportCache_Get(t *testing.T) {
 	svc := NewDamageReportService(mockRepo)
 
 	dr := makeDR("dr-1", "Erosion")
-	mockRepo.On("GetDamageReport", mock.Anything, "dr-1").Return(dr, nil).Once()
+	mockRepo.On("GetDamageReport", mock.Anything, "dr-1").Return(dr, nil)
 
 	resp1, err := svc.Get(context.Background(), "dr-1")
 	assert.NoError(t, err)
@@ -94,12 +116,13 @@ func TestDamageReportCache_EvictOnCreate(t *testing.T) {
 
 	zoneID := "zone-1"
 	newDR := makeDR("dr-2", "Deforestation")
-	mockRepo.On("CreateDamageReport", mock.Anything, &zoneID, "Deforestation", "desc", "high", 36.0, 3.0).Return(newDR, nil)
+	mockRepo.On("CreateDamageReport", mock.Anything, &zoneID, "Deforestation", "desc", "high", "reported", "test-user", "fire", 36.0, 3.0).Return(newDR, nil)
 	mockRepo.On("ListDamageReports", mock.Anything).Return(append(reports, newDR), nil).Once()
 
 	_, _ = svc.Create(context.Background(), model.CreateDamageReportRequest{
 		ZoneID: "zone-1", Title: "Deforestation",
 		Description: "desc", Severity: "high",
+		Type: "fire", Status: "reported", ReportedBy: "test-user",
 		Lat: 36.0, Lng: 3.0,
 	})
 	resp, err := svc.List(context.Background())

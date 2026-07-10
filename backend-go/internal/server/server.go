@@ -7,12 +7,14 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
+	_ "github.com/green-algeria-map/backend-go/docs"
 	"github.com/green-algeria-map/backend-go/internal/auth"
 	"github.com/green-algeria-map/backend-go/internal/handler"
 	"github.com/green-algeria-map/backend-go/internal/middleware"
 	"github.com/green-algeria-map/backend-go/internal/repository"
 	"github.com/green-algeria-map/backend-go/internal/service"
 	"github.com/jackc/pgx/v5/pgxpool"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Server struct {
@@ -73,6 +75,11 @@ func New(cfg Config) *Server {
 	r.Get("/readyz", handler.Ready)
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 
+	// Swagger docs
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+	))
+
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/ping", handler.Ping)
 		r.Post("/echo", handler.Echo)
@@ -90,7 +97,7 @@ func New(cfg Config) *Server {
 			r.Get("/", zoneH.List)
 			r.Post("/", zoneH.Create)
 			r.Get("/{id}", zoneH.GetByID)
-			r.Put("/{id}", zoneH.Update)
+			r.Patch("/{id}", zoneH.Update)
 			r.Post("/{id}/volunteer", zoneH.RegisterVolunteer)
 			r.Delete("/{id}", zoneH.Delete)
 		})
@@ -100,6 +107,13 @@ func New(cfg Config) *Server {
 			r.Get("/", damageH.List)
 			r.Post("/", damageH.Create)
 			r.Get("/{id}", damageH.GetByID)
+			r.Patch("/{id}/status", damageH.UpdateStatus)
+			r.Delete("/{id}", damageH.Delete)
+		})
+
+		// Nested zone damage reports (Spring Boot parity)
+		r.Route("/zones/{zoneId}/damage-reports", func(r chi.Router) {
+			r.Get("/", damageH.ListByZone)
 		})
 
 		// Items CRUD

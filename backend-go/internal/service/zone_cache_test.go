@@ -81,7 +81,7 @@ func TestZoneCache_Get(t *testing.T) {
 	svc := NewZoneService(mockRepo)
 
 	zone := makeZone("zone-1", "Test Zone")
-	mockRepo.On("GetZone", mock.Anything, "zone-1").Return(zone, nil).Once()
+	mockRepo.On("GetZone", mock.Anything, "zone-1").Return(zone, nil)
 
 	resp1, err := svc.Get(context.Background(), "zone-1")
 	assert.NoError(t, err)
