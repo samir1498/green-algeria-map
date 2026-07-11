@@ -10,11 +10,11 @@ export class AddOrganizerContactToZone1779722358103 implements MigrationInterfac
     await queryRunner.query(
       `ALTER TABLE "account" DROP CONSTRAINT "FK_account_user"`,
     );
-    await queryRunner.query(`DROP INDEX "public"."IDX_damage_reports_zoneId"`);
-    await queryRunner.query(`DROP INDEX "public"."session_userId_idx"`);
-    await queryRunner.query(`DROP INDEX "public"."account_userId_idx"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "IDX_damage_reports_zoneId"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "session_userId_idx"`);
+    await queryRunner.query(`DROP INDEX IF EXISTS "account_userId_idx"`);
     await queryRunner.query(
-      `DROP INDEX "public"."verification_identifier_idx"`,
+      `DROP INDEX IF EXISTS "verification_identifier_idx"`,
     );
     await queryRunner.query(
       `ALTER TABLE "zones" ADD COLUMN IF NOT EXISTS "organizerContact" character varying`,
@@ -51,16 +51,16 @@ export class AddOrganizerContactToZone1779722358103 implements MigrationInterfac
       `ALTER TABLE "session" DROP CONSTRAINT "FK_3d2f174ef04fb312fdebd0ddc53"`,
     );
     await queryRunner.query(
-      `DROP INDEX "public"."IDX_896e5902333fa9991d1733e5ee"`,
+      `DROP INDEX IF EXISTS "IDX_896e5902333fa9991d1733e5ee"`,
     );
     await queryRunner.query(
-      `DROP INDEX "public"."IDX_60328bf27019ff5498c4b97742"`,
+      `DROP INDEX IF EXISTS "IDX_60328bf27019ff5498c4b97742"`,
     );
     await queryRunner.query(
-      `DROP INDEX "public"."IDX_3d2f174ef04fb312fdebd0ddc5"`,
+      `DROP INDEX IF EXISTS "IDX_3d2f174ef04fb312fdebd0ddc5"`,
     );
     await queryRunner.query(
-      `DROP INDEX "public"."IDX_7940b0d64329511647f379873f"`,
+      `DROP INDEX IF EXISTS "IDX_7940b0d64329511647f379873f"`,
     );
     await queryRunner.query(`ALTER TABLE "zones" DROP COLUMN "photos"`);
     await queryRunner.query(`ALTER TABLE "zones" ADD "photos" text array`);

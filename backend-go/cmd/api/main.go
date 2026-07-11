@@ -10,46 +10,49 @@ import (
 	_ "github.com/green-algeria-map/backend-go/docs"
 	"github.com/green-algeria-map/backend-go/internal/server"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func main() {
-	storeType := os.Getenv("STORE_TYPE")
-	dsn := os.Getenv("DATABASE_URL")
+	_ = godotenv.Load()
 
-	cfg := server.Config{StoreType: storeType}
-
-	if storeType == "postgres" && dsn != "" {
-		poolCfg, err := pgxpool.ParseConfig(dsn)
-		if err != nil {
-			log.Fatalf("failed to parse postgres config: %v", err)
-		}
-		if maxConns := os.Getenv("DB_POOL_MAX"); maxConns != "" {
-			if n, err := strconv.Atoi(maxConns); err == nil && n > 0 {
-				poolCfg.MaxConns = int32(n)
-				log.Printf("db pool: MaxConns set to %d", n)
-			}
-		}
-		pool, err := pgxpool.NewWithConfig(context.Background(), poolCfg)
-		if err != nil {
-			log.Fatalf("failed to connect to postgres: %v", err)
-		}
-		defer pool.Close()
-		cfg.Pool = pool
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		log.Fatal("DATABASE_URL is required")
 	}
+
+	poolConfig, err := pgxpool.ParseConfig(databaseURL)
+	if err != nil {
+		log.Fatalf("failed to parse postgres config: %v", err)
+	}
+	if maxConns := os.Getenv("DB_POOL_MAX"); maxConns != "" {
+		if n, err := strconv.Atoi(maxConns); err == nil && n > 0 {
+			poolConfig.MaxConns = int32(n)
+			log.Printf("db pool: MaxConns set to %d", n)
+		}
+	}
+	poolConfig.ConnConfig.RuntimeParams["search_path"] = "go_backend,public,extensions"
+	pool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
+	if err != nil {
+		log.Fatalf("failed to connect to postgres: %v", err)
+	}
+	defer pool.Close()
+
+	config := server.Config{StoreType: "postgres", Pool: pool}
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	srv := server.New(cfg)
+	httpServer := server.New(config)
 
 	// Swagger docs
 	http.Handle("/swagger/", httpSwagger.WrapHandler)
 
-	log.Printf("starting server on :%s (store=%s)", port, storeType)
-	if err := http.ListenAndServe(":"+port, srv.Router); err != nil {
+	log.Printf("starting server on :%s", port)
+	if err := http.ListenAndServe(":"+port, httpServer.Router); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
 }

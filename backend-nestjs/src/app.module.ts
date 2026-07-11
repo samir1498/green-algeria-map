@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { CacheModule } from '@nestjs/cache-manager';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { getDbModuleConfig } from './db-config';
 import { ZonesModule } from './modules/zones/zones.module';
 import { DamageReportsModule } from './modules/damage-reports/damage-reports.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -53,24 +54,7 @@ import { PublicModule } from './modules/public/public.module';
             },
           ]),
         ]),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get('DB_HOST', 'localhost'),
-        port: config.get('DB_PORT', 5432),
-        username: config.get('DB_USERNAME', 'greenalgeria'),
-        password: config.get('DB_PASSWORD', 'greenalgeria'),
-        database: config.get('DB_NAME', 'greenalgeria'),
-        ssl:
-          config.get('NODE_ENV') === 'production'
-            ? { rejectUnauthorized: false }
-            : false,
-        autoLoadEntities: true,
-        synchronize: false,
-      }),
-    }),
+    TypeOrmModule.forRoot(getDbModuleConfig()),
     AuthModule,
     ZonesModule,
     DamageReportsModule,
