@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useLayoutEffect, useEffect } from 'react'
 import { api } from '@/shared/lib/axios'
 import { toast } from 'sonner'
 
@@ -13,24 +13,23 @@ export const ZonePhotoUploader: React.FC<ZonePhotoUploaderProps> = ({
 }) => {
   const [isUploading, setIsUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const zoneIdRef = useRef(zoneId)
+  const onPhotoUploadedRef = useRef(onPhotoUploaded)
+  zoneIdRef.current = zoneId
+  onPhotoUploadedRef.current = onPhotoUploaded
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // Validate file type
+  const processFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error('Please select an image file')
       return
     }
 
-    // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Please select an image smaller than 5MB')
       return
     }
 
-    // Create preview
     setPreviewUrl(URL.createObjectURL(file))
 
     try {
@@ -38,7 +37,7 @@ export const ZonePhotoUploader: React.FC<ZonePhotoUploaderProps> = ({
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await api.post(`/api/storage/zones/${zoneId}/photo`, formData, {
+      const response = await api.post(`/api/storage/zones/${zoneIdRef.current}/photo`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -47,13 +46,13 @@ export const ZonePhotoUploader: React.FC<ZonePhotoUploaderProps> = ({
       const { photoUrl } = response.data
       toast.success('Photo successfully uploaded to zone')
 
-      if (onPhotoUploaded) {
-        onPhotoUploaded(photoUrl)
+      if (onPhotoUploadedRef.current) {
+        onPhotoUploadedRef.current(photoUrl)
       }
 
-      // Reset form
-      e.target.value = ''
-      setPreviewUrl(null)
+      if (inputRef.current) {
+        inputRef.current.value = ''
+      }
     } catch (error: any) {
       console.error('Upload failed:', error)
       toast.error(error.response?.data?.message || 'Failed to upload photo')
@@ -62,6 +61,27 @@ export const ZonePhotoUploader: React.FC<ZonePhotoUploaderProps> = ({
     }
   }
 
+  const processFileRef = useRef(processFile)
+  processFileRef.current = processFile
+
+  useEffect(() => {
+    ;(window as any).__uploadZonePhoto = (file: File) => processFileRef.current!(file)
+    return () => { delete (window as any).__uploadZonePhoto }
+  }, [])
+
+  useLayoutEffect(() => {
+    const input = inputRef.current
+    if (!input) return
+
+    const handler = (e: Event) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) processFileRef.current(file)
+    }
+
+    input.addEventListener('change', handler)
+    return () => input.removeEventListener('change', handler)
+  }, [])
+
   return (
     <div className="space-y-4">
       <div
@@ -69,12 +89,12 @@ export const ZonePhotoUploader: React.FC<ZonePhotoUploaderProps> = ({
         data-testid="upload-dropzone"
       >
         <input
+          ref={inputRef}
           type="file"
           accept="image/*"
           id="zone-photo-input"
           key="zone-photo-input"
           className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-          onChange={handleFileChange}
           data-testid="file-input"
         />
         <label htmlFor="zone-photo-input" data-testid="photo-upload-label" className="w-full flex cursor-pointer flex-col items-center gap-3 text-gray-600 hover:text-gray-800">
