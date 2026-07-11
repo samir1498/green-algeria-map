@@ -34,6 +34,22 @@ async function createTestDatabase(
     await adminDs.destroy();
   }
 
+  // Create schema in the new database
+  const setupDs = new DataSource({
+    type: 'postgres',
+    host: container.getHost(),
+    port: container.getPort(),
+    username: container.getUsername(),
+    password: container.getPassword(),
+    database: dbName,
+  });
+  await setupDs.initialize();
+  try {
+    await setupDs.query(`CREATE SCHEMA IF NOT EXISTS nestjs`);
+  } finally {
+    await setupDs.destroy();
+  }
+
   return new DataSource({
     type: 'postgres',
     host: container.getHost(),
