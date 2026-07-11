@@ -127,6 +127,45 @@ func makeRequest(t *testing.T, srv *server.Server, method, path, body string) *h
 	return w
 }
 
+func makeAuthenticatedRequest(t *testing.T, srv *server.Server, method, path, body, token string) *httptest.ResponseRecorder {
+	t.Helper()
+	req := httptest.NewRequest(method, path, strings.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	srv.Router.ServeHTTP(w, req)
+	return w
+}
+
+func signUpAndSignIn(t *testing.T, srv *server.Server) string {
+	t.Helper()
+	signUpBody := `{"email":"auth-test@example.com","password":"password123","name":"Auth Test"}`
+	w := makeRequest(t, srv, "POST", "/api/auth/sign-up/email", signUpBody)
+	if w.Code != http.StatusCreated && w.Code != http.StatusOK {
+		t.Fatalf("sign-up failed: %d - %s", w.Code, w.Body.String())
+	}
+
+	signInBody := `{"email":"auth-test@example.com","password":"password123"}`
+	w = makeRequest(t, srv, "POST", "/api/auth/sign-in/email", signInBody)
+	if w.Code != http.StatusOK {
+		t.Fatalf("sign-in failed: %d - %s", w.Code, w.Body.String())
+	}
+
+	var resp map[string]interface{}
+	json.NewDecoder(w.Body).Decode(&resp)
+	token, ok := resp["token"].(string)
+	if !ok || token == "" {
+		// Fall back: try to get session token from Set-Cookie
+		for _, c := range w.Result().Cookies() {
+			if c.Name == "better-auth.session_token" {
+				return c.Value
+			}
+		}
+		t.Fatal("no token in sign-in response or cookie")
+	}
+	return token
+}
+
 func TestDamageReport_CreateAndList(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
@@ -186,6 +225,7 @@ func TestDamageReport_UpdateStatus(t *testing.T) {
 	defer container.Terminate(context.Background())
 
 	srv := createTestServer(t, connStr)
+	token := signUpAndSignIn(t, srv)
 
 	// Create a zone first
 	zoneBody := `{"name":"Test Zone","type":"planting","status":"planned","lat":36.0,"lng":3.0,"description":"Test zone"}`
@@ -208,7 +248,7 @@ func TestDamageReport_UpdateStatus(t *testing.T) {
 
 	// Update status to verified
 	updateBody := `{"status":"verified"}`
-	w = makeRequest(t, srv, "PATCH", "/api/damage-reports/"+drID+"/status", updateBody)
+	w = makeAuthenticatedRequest(t, srv, "PATCH", "/api/damage-reports/"+drID+"/status", updateBody, token)
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	var updatedDR map[string]interface{}
@@ -225,6 +265,7 @@ func TestDamageReport_Delete(t *testing.T) {
 	defer container.Terminate(context.Background())
 
 	srv := createTestServer(t, connStr)
+	token := signUpAndSignIn(t, srv)
 
 	// Create a zone first
 	zoneBody := `{"name":"Test Zone","type":"planting","status":"planned","lat":36.0,"lng":3.0,"description":"Test zone"}`
@@ -245,7 +286,7 @@ func TestDamageReport_Delete(t *testing.T) {
 	drID := createdDR["id"].(string)
 
 	// Delete damage report
-	w = makeRequest(t, srv, "DELETE", "/api/damage-reports/"+drID, "")
+	w = makeAuthenticatedRequest(t, srv, "DELETE", "/api/damage-reports/"+drID, "", token)
 	assert.Equal(t, http.StatusNoContent, w.Code)
 
 	// Verify it's gone
@@ -350,6 +391,7 @@ func TestZone_PATCHNotPUT(t *testing.T) {
 	defer container.Terminate(context.Background())
 
 	srv := createTestServer(t, connStr)
+	token := signUpAndSignIn(t, srv)
 
 	// Create a zone
 	zoneBody := `{"name":"Test Zone","type":"planting","status":"planned","lat":36.0,"lng":3.0,"description":"Test zone"}`
@@ -362,7 +404,7 @@ func TestZone_PATCHNotPUT(t *testing.T) {
 
 	// Try PATCH (should work)
 	updateBody := `{"name":"Updated Zone","type":"planting","status":"in-progress","lat":36.0,"lng":3.0,"description":"Updated"}`
-	w = makeRequest(t, srv, "PATCH", "/api/zones/"+zoneID, updateBody)
+	w = makeAuthenticatedRequest(t, srv, "PATCH", "/api/zones/"+zoneID, updateBody, token)
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	var updatedZone map[string]interface{}

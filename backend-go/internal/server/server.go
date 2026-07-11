@@ -67,6 +67,7 @@ func New(cfg Config) *Server {
 	// go-better-auth for email/password auth
 	if cfg.Pool != nil {
 		authHandler := auth.New(cfg.Pool)
+		middleware.SetAuth(authHandler)
 		r.Handle("/api/auth/*", authHandler.Handler())
 	}
 
@@ -92,23 +93,23 @@ func New(cfg Config) *Server {
 		// Storage (matching NestJS/Spring Boot routes)
 		r.Post("/storage/zones/{id}/photo", storageH.UploadZonePhoto)
 
-		// Zones
+		// Zones — GET/POST public, PATCH/DELETE require auth (matches NestJS + Spring Boot)
 		r.Route("/zones", func(r chi.Router) {
 			r.Get("/", zoneH.List)
 			r.Post("/", zoneH.Create)
 			r.Get("/{id}", zoneH.GetByID)
-			r.Patch("/{id}", zoneH.Update)
 			r.Post("/{id}/volunteer", zoneH.RegisterVolunteer)
-			r.Delete("/{id}", zoneH.Delete)
+			r.With(middleware.RequireAuth).Patch("/{id}", zoneH.Update)
+			r.With(middleware.RequireAuth).Delete("/{id}", zoneH.Delete)
 		})
 
-		// Damage reports
+		// Damage reports — GET/POST public, PATCH/DELETE require auth (matches NestJS + Spring Boot)
 		r.Route("/damage-reports", func(r chi.Router) {
 			r.Get("/", damageH.List)
 			r.Post("/", damageH.Create)
 			r.Get("/{id}", damageH.GetByID)
-			r.Patch("/{id}/status", damageH.UpdateStatus)
-			r.Delete("/{id}", damageH.Delete)
+			r.With(middleware.RequireAuth).Patch("/{id}/status", damageH.UpdateStatus)
+			r.With(middleware.RequireAuth).Delete("/{id}", damageH.Delete)
 		})
 
 		// Nested zone damage reports (Spring Boot parity)
