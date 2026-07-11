@@ -107,31 +107,34 @@ describe('Migrations (integration)', () => {
     }
   });
 
-  it('creates all expected tables after migration', async () => {
-    const dataSource = await createTestDatabase(
-      container,
-      'test_migrations_tables',
-    );
-    await dataSource.initialize();
-    try {
-      await runMigrationsCli(container, 'test_migrations_tables');
-      const queryRunner = dataSource.createQueryRunner();
+    it('creates all expected tables after migration', async () => {
+      const dataSource = await createTestDatabase(
+        container,
+        'test_migrations_tables',
+      );
+      await dataSource.initialize();
       try {
-        const tables = await queryRunner.getTables();
-        const tableNames = tables.map((t) => t.name);
+        await runMigrationsCli(container, 'test_migrations_tables');
+        const queryRunner = dataSource.createQueryRunner();
+        try {
+          const tables = await queryRunner.getTables();
+          const tableNames = tables.map((t) => t.name);
 
-        expect(tableNames).toContain('zones');
-        expect(tableNames).toContain('user');
-        expect(tableNames).toContain('session');
-        expect(tableNames).toContain('account');
-        expect(tableNames).toContain('verification');
+          // With schema: 'nestjs', TypeORM returns 'nestjs.zones' etc.
+          expect(tableNames).toContain('nestjs.zones');
+          expect(tableNames).toContain('nestjs.user');
+          expect(tableNames).toContain('nestjs.session');
+          expect(tableNames).toContain('nestjs.account');
+          expect(tableNames).toContain('nestjs.verification');
+          expect(tableNames).toContain('nestjs.damage_reports');
+          expect(tableNames).toContain('nestjs.migrations');
+        } finally {
+          await queryRunner.release();
+        }
       } finally {
-        await queryRunner.release();
+        await dataSource.destroy();
       }
-    } finally {
-      await dataSource.destroy();
-    }
-  });
+    });
 
   it('reverts all migrations successfully', async () => {
     const dataSource = await createTestDatabase(
@@ -161,9 +164,9 @@ describe('Migrations (integration)', () => {
         const tables = await queryRunner.getTables();
         const tableNames = tables.map((t) => t.name);
 
-        expect(tableNames).not.toContain('zones');
-        expect(tableNames).not.toContain('user');
-        expect(tableNames).not.toContain('damage_reports');
+        expect(tableNames).not.toContain('nestjs.zones');
+        expect(tableNames).not.toContain('nestjs.user');
+        expect(tableNames).not.toContain('nestjs.damage_reports');
       } finally {
         await queryRunner.release();
       }
