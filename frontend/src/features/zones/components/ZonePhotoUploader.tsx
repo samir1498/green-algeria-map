@@ -75,7 +75,7 @@ export const ZonePhotoUploader: React.FC<ZonePhotoUploaderProps> = ({
 
     const handler = (e: Event) => {
       const file = (e.target as HTMLInputElement).files?.[0]
-      if (file) processFile(file)
+      if (file) processFileRef.current(file)
     }
 
     input.addEventListener('change', handler)

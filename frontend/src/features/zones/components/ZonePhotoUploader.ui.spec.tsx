@@ -72,7 +72,7 @@ describe('ZonePhotoUploader', () => {
     resolveUpload!({ data: { photoUrl: 'http://example.com/photo.jpg' } })
 
     await waitFor(() => {
-      expect(screen.getByTestId('preview-image')).toBeInTheDocument()
+      expect(screen.getByTestId('preview-image')).toBeVisible()
     })
     await waitFor(() => {
       expect(screen.queryByTestId('uploading-spinner')).not.toBeInTheDocument()
