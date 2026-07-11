@@ -1,0 +1,258 @@
+definitions:
+  model.CreateDamageReportRequest:
+    properties:
+      description:
+        maxLength: 2000
+        type: string
+      lat:
+        type: number
+      lng:
+        type: number
+      reportedBy:
+        type: string
+      severity:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      zoneId:
+        type: string
+    required:
+    - lat
+    - lng
+    - reportedBy
+    - severity
+    - status
+    - title
+    - type
+    - zoneId
+    type: object
+  model.DamageReportResponse:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      lat:
+        type: number
+      lng:
+        type: number
+      reportedAt:
+        type: string
+      reportedBy:
+        type: string
+      severity:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      updatedAt:
+        type: string
+      zoneId:
+        type: string
+    type: object
+  model.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  model.ListDamageReportsResponse:
+    properties:
+      reports:
+        items:
+          $ref: '#/definitions/model.DamageReportResponse'
+        type: array
+    type: object
+  model.UpdateDamageReportStatusRequest:
+    properties:
+      status:
+        type: string
+    required:
+    - status
+    type: object
+info:
+  contact: {}
+paths:
+  /damage-reports:
+    get:
+      consumes:
+      - application/json
+      description: Get all damage reports, optionally filtered by zoneId
+      parameters:
+      - description: Filter by zone ID
+        in: query
+        name: zoneId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ListDamageReportsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: List damage reports
+      tags:
+      - damage-reports
+    post:
+      consumes:
+      - application/json
+      description: Create a new damage report
+      parameters:
+      - description: Damage report data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateDamageReportRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.DamageReportResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Create a damage report
+      tags:
+      - damage-reports
+  /damage-reports/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a damage report by ID
+      parameters:
+      - description: Damage report ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Delete a damage report
+      tags:
+      - damage-reports
+    get:
+      consumes:
+      - application/json
+      description: Get a single damage report by its ID
+      parameters:
+      - description: Damage report ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.DamageReportResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Get damage report by ID
+      tags:
+      - damage-reports
+  /damage-reports/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Update the status of a damage report
+      parameters:
+      - description: Damage report ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.UpdateDamageReportStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.DamageReportResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: Update damage report status
+      tags:
+      - damage-reports
+  /zones/{zoneId}/damage-reports:
+    get:
+      consumes:
+      - application/json
+      description: Get all damage reports for a specific zone
+      parameters:
+      - description: Zone ID
+        in: path
+        name: zoneId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ListDamageReportsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ErrorResponse'
+      summary: List damage reports by zone
+      tags:
+      - damage-reports
+swagger: "2.0"

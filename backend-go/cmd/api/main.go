@@ -7,8 +7,10 @@ import (
 	"os"
 	"strconv"
 
+	_ "github.com/green-algeria-map/backend-go/docs"
 	"github.com/green-algeria-map/backend-go/internal/server"
 	"github.com/jackc/pgx/v5/pgxpool"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func main() {
@@ -42,6 +44,10 @@ func main() {
 	}
 
 	srv := server.New(cfg)
+
+	// Swagger docs
+	http.Handle("/swagger/", httpSwagger.WrapHandler)
+
 	log.Printf("starting server on :%s (store=%s)", port, storeType)
 	if err := http.ListenAndServe(":"+port, srv.Router); err != nil {
 		log.Fatalf("server error: %v", err)
