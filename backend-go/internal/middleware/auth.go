@@ -1,17 +1,36 @@
 package middleware
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
 	betterauth "github.com/jeromesth/go-better-auth"
+	"github.com/jeromesth/go-better-auth/models"
 	"github.com/jeromesth/go-better-auth/session"
+)
+
+type ctxKey string
+
+const (
+	ctxSession ctxKey = "auth_session"
+	ctxUser    ctxKey = "auth_user"
 )
 
 var authInstance *betterauth.Auth
 
 func SetAuth(a *betterauth.Auth) {
 	authInstance = a
+}
+
+func GetSession(r *http.Request) *models.Session {
+	v, _ := r.Context().Value(ctxSession).(*models.Session)
+	return v
+}
+
+func GetUser(r *http.Request) *models.User {
+	v, _ := r.Context().Value(ctxUser).(*models.User)
+	return v
 }
 
 func RequireAuth(next http.Handler) http.Handler {
@@ -38,6 +57,16 @@ func RequireAuth(next http.Handler) http.Handler {
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		user, err := authInstance.InternalAdapter().FindUserByID(r.Context(), sess.UserID)
+		if err != nil || user == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{"error": "User not found"})
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), ctxSession, sess)
+		ctx = context.WithValue(ctx, ctxUser, user)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
