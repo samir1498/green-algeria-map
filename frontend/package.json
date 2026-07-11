@@ -28,8 +28,7 @@
     "depcruise:svg": "depcruise --config config/.dependency-cruiser.cjs src --output-type dot | dot -T svg > dependency-graph.svg",
     "depcruise:png": "depcruise --config config/.dependency-cruiser.cjs src --output-type dot | dot -T png > dependency-graph.png",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "prepare": "husky"
+    "format:check": "prettier --check ."
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown"
