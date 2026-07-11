@@ -193,7 +193,7 @@ func (s *InMemoryStore) DeleteZone(_ context.Context, id string) error {
 }
 
 // --- Damage Reports ---
-func (s *InMemoryStore) CreateDamageReport(_ context.Context, zoneID *string, title, description, severity string, lat, lng float64) (*DamageReportEntity, error) {
+func (s *InMemoryStore) CreateDamageReport(_ context.Context, zoneID *string, title, description, severity, status, reportedBy, reportType string, lat, lng float64) (*DamageReportEntity, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	now := time.Now().UTC()
@@ -203,6 +203,9 @@ func (s *InMemoryStore) CreateDamageReport(_ context.Context, zoneID *string, ti
 		Title:       title,
 		Description: description,
 		Severity:    severity,
+		Type:        reportType,
+		Status:      status,
+		ReportedBy:  &reportedBy,
 		Lat:         lat,
 		Lng:         lng,
 		CreatedAt:   now,
@@ -223,11 +226,37 @@ func (s *InMemoryStore) GetDamageReport(_ context.Context, id string) (*DamageRe
 }
 
 func (s *InMemoryStore) ListDamageReports(_ context.Context) ([]*DamageReportEntity, error) {
+	return s.ListDamageReportsByZone(context.Background(), nil)
+}
+
+func (s *InMemoryStore) ListDamageReportsByZone(_ context.Context, zoneID *string) ([]*DamageReportEntity, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	reports := make([]*DamageReportEntity, 0, len(s.damageReports))
 	for _, dr := range s.damageReports {
+		if zoneID != nil && (dr.ZoneID == nil || *dr.ZoneID != *zoneID) {
+			continue
+		}
 		reports = append(reports, dr)
 	}
 	return reports, nil
+}
+
+func (s *InMemoryStore) UpdateDamageReportStatus(_ context.Context, id, status string) (*DamageReportEntity, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	dr, ok := s.damageReports[id]
+	if !ok {
+		return nil, nil
+	}
+	dr.Status = status
+	dr.UpdatedAt = time.Now().UTC()
+	return dr, nil
+}
+
+func (s *InMemoryStore) DeleteDamageReport(_ context.Context, id string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.damageReports, id)
+	return nil
 }

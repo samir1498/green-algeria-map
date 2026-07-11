@@ -61,8 +61,15 @@ type CreateDamageReportRequest struct {
 	Title       string  `json:"title"       validate:"required"`
 	Description string  `json:"description" validate:"max=2000"`
 	Severity    string  `json:"severity"    validate:"required"`
+	Type        string  `json:"type"        validate:"required"`
+	Status      string  `json:"status"      validate:"required"`
 	Lat         float64 `json:"lat"         validate:"required"`
 	Lng         float64 `json:"lng"         validate:"required"`
+	ReportedBy  string  `json:"reportedBy"  validate:"required"`
+}
+
+type UpdateDamageReportStatusRequest struct {
+	Status string `json:"status" validate:"required"`
 }
 
 type DamageReportResponse struct {
@@ -71,9 +78,12 @@ type DamageReportResponse struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Severity    string    `json:"severity"`
+	Type        string    `json:"type"`
+	Status      string    `json:"status"`
 	Lat         float64   `json:"lat"`
 	Lng         float64   `json:"lng"`
-	CreatedAt   time.Time `json:"createdAt"`
+	ReportedBy  string    `json:"reportedBy"`
+	ReportedAt  time.Time `json:"reportedAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 

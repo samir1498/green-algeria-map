@@ -7,12 +7,14 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
+	_ "github.com/green-algeria-map/backend-go/docs"
 	"github.com/green-algeria-map/backend-go/internal/auth"
 	"github.com/green-algeria-map/backend-go/internal/handler"
 	"github.com/green-algeria-map/backend-go/internal/middleware"
 	"github.com/green-algeria-map/backend-go/internal/repository"
 	"github.com/green-algeria-map/backend-go/internal/service"
 	"github.com/jackc/pgx/v5/pgxpool"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Server struct {
@@ -65,6 +67,7 @@ func New(cfg Config) *Server {
 	// go-better-auth for email/password auth
 	if cfg.Pool != nil {
 		authHandler := auth.New(cfg.Pool)
+		middleware.SetAuth(authHandler)
 		r.Handle("/api/auth/*", authHandler.Handler())
 	}
 
@@ -72,6 +75,11 @@ func New(cfg Config) *Server {
 	r.Get("/healthz", handler.Live)
 	r.Get("/readyz", handler.Ready)
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
+
+	// Swagger docs
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+	))
 
 	r.Route("/api", func(r chi.Router) {
 		r.Get("/ping", handler.Ping)
@@ -85,21 +93,28 @@ func New(cfg Config) *Server {
 		// Storage (matching NestJS/Spring Boot routes)
 		r.Post("/storage/zones/{id}/photo", storageH.UploadZonePhoto)
 
-		// Zones
+		// Zones — GET/POST public, PATCH/DELETE require auth (matches NestJS + Spring Boot)
 		r.Route("/zones", func(r chi.Router) {
 			r.Get("/", zoneH.List)
 			r.Post("/", zoneH.Create)
 			r.Get("/{id}", zoneH.GetByID)
-			r.Put("/{id}", zoneH.Update)
 			r.Post("/{id}/volunteer", zoneH.RegisterVolunteer)
-			r.Delete("/{id}", zoneH.Delete)
+			r.With(middleware.RequireAuth).Patch("/{id}", zoneH.Update)
+			r.With(middleware.RequireAuth).Delete("/{id}", zoneH.Delete)
 		})
 
-		// Damage reports
+		// Damage reports — GET/POST public, PATCH/DELETE require auth (matches NestJS + Spring Boot)
 		r.Route("/damage-reports", func(r chi.Router) {
 			r.Get("/", damageH.List)
 			r.Post("/", damageH.Create)
 			r.Get("/{id}", damageH.GetByID)
+			r.With(middleware.RequireAuth).Patch("/{id}/status", damageH.UpdateStatus)
+			r.With(middleware.RequireAuth).Delete("/{id}", damageH.Delete)
+		})
+
+		// Nested zone damage reports (Spring Boot parity)
+		r.Route("/zones/{zoneId}/damage-reports", func(r chi.Router) {
+			r.Get("/", damageH.ListByZone)
 		})
 
 		// Items CRUD

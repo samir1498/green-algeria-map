@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/green-algeria-map/backend-go/internal/model"
@@ -42,10 +41,6 @@ func (s *ZoneService) Create(ctx context.Context, req model.CreateZoneRequest) (
 }
 
 func (s *ZoneService) Get(ctx context.Context, id string) (*model.ZoneResponse, error) {
-	key := fmt.Sprintf("zone:%s", id)
-	if v, ok := s.cache.Get(key); ok {
-		return v.(*model.ZoneResponse), nil
-	}
 	z, err := s.repo.GetZone(ctx, id)
 	if err != nil {
 		return nil, err
@@ -53,9 +48,7 @@ func (s *ZoneService) Get(ctx context.Context, id string) (*model.ZoneResponse, 
 	if z == nil {
 		return nil, ErrZoneNotFound
 	}
-	resp := toZoneResponse(z)
-	s.cache.Add(key, resp)
-	return resp, nil
+	return toZoneResponse(z), nil
 }
 
 func (s *ZoneService) List(ctx context.Context) (*model.ListZonesResponse, error) {
@@ -83,7 +76,6 @@ func (s *ZoneService) Update(ctx context.Context, id string, req model.UpdateZon
 		return nil, ErrZoneNotFound
 	}
 	s.cache.Remove("zones:all")
-	s.cache.Remove(fmt.Sprintf("zone:%s", id))
 	return toZoneResponse(z), nil
 }
 
@@ -92,7 +84,6 @@ func (s *ZoneService) RegisterVolunteer(ctx context.Context, id string) (*model.
 		return nil, err
 	}
 	s.cache.Remove("zones:all")
-	s.cache.Remove(fmt.Sprintf("zone:%s", id))
 	return s.Get(ctx, id)
 }
 
@@ -101,7 +92,6 @@ func (s *ZoneService) AddPhoto(ctx context.Context, id, photoURL string) (*model
 		return nil, err
 	}
 	s.cache.Remove("zones:all")
-	s.cache.Remove(fmt.Sprintf("zone:%s", id))
 	return s.Get(ctx, id)
 }
 
@@ -110,7 +100,6 @@ func (s *ZoneService) Delete(ctx context.Context, id string) error {
 		return err
 	}
 	s.cache.Remove("zones:all")
-	s.cache.Remove(fmt.Sprintf("zone:%s", id))
 	return nil
 }
 
