@@ -1,5 +1,10 @@
 import { Pool } from 'pg';
 import { betterAuth } from 'better-auth';
+import { BrevoClient } from '../../email/brevo.client';
+import {
+  passwordResetTemplate,
+  verificationEmailTemplate,
+} from '../../email/templates';
 
 const pool = new Pool({
   connectionString:
@@ -9,12 +14,35 @@ const pool = new Pool({
 
 pool.on('error', () => {});
 
+const email = new BrevoClient();
+const clientUrl =
+  process.env.CLIENT_URL?.split(',')[0]?.trim() ?? 'http://localhost:3000';
+
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:8080',
   basePath: '/api/auth',
   database: pool,
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      await email.send({
+        to: user.email,
+        subject: 'Reset your password — Green Algeria Map',
+        html: passwordResetTemplate({ name: user.name, url }),
+      });
+    },
+    requireEmailVerification: false,
+  },
+  emailVerification: {
+    sendOnSignUp: true,
+    sendVerificationEmail: async ({ user, url }) => {
+      await email.send({
+        to: user.email,
+        subject: 'Verify your email — Green Algeria Map',
+        html: verificationEmailTemplate({ name: user.name, url }),
+      });
+    },
+    autoSignInAfterVerification: true,
   },
   trustedOrigins: process.env.CLIENT_URL
     ? process.env.CLIENT_URL.split(',').map((s) => s.trim())

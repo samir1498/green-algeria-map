@@ -4,6 +4,7 @@ import com.greenalgeria.auth.application.AuthService;
 import com.greenalgeria.auth.application.LoginRequest;
 import com.greenalgeria.auth.application.SignUpRequest;
 import com.greenalgeria.auth.application.UserResponse;
+import com.greenalgeria.auth.domain.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,10 +35,12 @@ public class AuthController {
 
     private final AuthService authService;
     private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
 
-    public AuthController(AuthService authService, AuthenticationManager authenticationManager) {
+    public AuthController(AuthService authService, AuthenticationManager authenticationManager, UserRepository userRepository) {
         this.authService = authService;
         this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/sign-up/email")
@@ -57,6 +60,43 @@ public class AuthController {
         securityContextRepository.saveContext(context, httpRequest, httpResponse);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new SignUpResponse(user));
+    }
+
+    @PostMapping("/send-verification-email")
+    @Operation(summary = "Send email verification link")
+    public ResponseEntity<?> sendVerificationEmail(@Valid @RequestBody EmailRequest request) {
+        authService.sendVerificationEmail(
+                userRepository.findByEmail(request.email()).orElseThrow(() -> new IllegalArgumentException("User not found")));
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    @PostMapping("/verify-email")
+    @Operation(summary = "Verify email with token")
+    public ResponseEntity<?> verifyEmail(@Valid @RequestBody TokenRequest request) {
+        try {
+            authService.verifyEmail(request.token());
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/request-password-reset")
+    @Operation(summary = "Request password reset link")
+    public ResponseEntity<?> requestPasswordReset(@Valid @RequestBody EmailRequest request) {
+        authService.requestPasswordReset(request.email());
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "Reset password with token")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        try {
+            authService.resetPassword(request.token(), request.password());
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping("/get-session")
@@ -99,4 +139,10 @@ public class AuthController {
     private record SignUpResponse(UserResponse user) {}
 
     private record SessionResponse(UserResponse user) {}
+
+    private record EmailRequest(String email) {}
+
+    private record TokenRequest(String token) {}
+
+    private record ResetPasswordRequest(String token, String password) {}
 }

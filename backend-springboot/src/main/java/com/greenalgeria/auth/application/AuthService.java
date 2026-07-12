@@ -2,9 +2,15 @@ package com.greenalgeria.auth.application;
 
 import com.greenalgeria.auth.domain.Account;
 import com.greenalgeria.auth.domain.AccountRepository;
+import com.greenalgeria.auth.domain.AuthToken;
+import com.greenalgeria.auth.domain.AuthTokenRepository;
 import com.greenalgeria.auth.domain.User;
 import com.greenalgeria.auth.domain.UserRepository;
+import com.greenalgeria.email.application.EmailService;
+import com.greenalgeria.email.application.EmailTemplate;
+import java.time.OffsetDateTime;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,13 +21,28 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
+    private final AuthTokenRepository authTokenRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+
+    private final String clientUrl;
+    private final long tokenTtlMinutes;
 
     public AuthService(
-            UserRepository userRepository, AccountRepository accountRepository, PasswordEncoder passwordEncoder) {
+            UserRepository userRepository,
+            AccountRepository accountRepository,
+            AuthTokenRepository authTokenRepository,
+            PasswordEncoder passwordEncoder,
+            EmailService emailService,
+            @Value("${app.client-url:http://localhost:3000}") String clientUrl,
+            @Value("${app.token-ttl-minutes:60}") long tokenTtlMinutes) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
+        this.authTokenRepository = authTokenRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+        this.clientUrl = clientUrl;
+        this.tokenTtlMinutes = tokenTtlMinutes;
     }
 
     public UserResponse signUp(String email, String password, String name) {
@@ -36,7 +57,60 @@ public class AuthService {
         Account account = new Account(UUID.randomUUID().toString(), userId, email, passwordEncoder.encode(password));
         accountRepository.save(account);
 
+        sendVerificationEmail(user);
+
         return UserResponse.from(user);
+    }
+
+    public void sendVerificationEmail(User user) {
+        String token = UUID.randomUUID().toString();
+        OffsetDateTime expiresAt = OffsetDateTime.now().plusMinutes(tokenTtlMinutes);
+        authTokenRepository.save(new AuthToken(UUID.randomUUID().toString(), user.getId(), AuthToken.Type.EMAIL_VERIFICATION, token, expiresAt));
+
+        String url = clientUrl + "/verify-email?token=" + token;
+        emailService.send(user.getEmail(), "Verify your email — Green Algeria Map", EmailTemplate.verification(user.getName(), url));
+    }
+
+    public void verifyEmail(String token) {
+        AuthToken authToken = authTokenRepository
+                .findByTokenAndType(token, AuthToken.Type.EMAIL_VERIFICATION)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired verification token"));
+        if (authToken.isExpired()) {
+            authTokenRepository.delete(authToken);
+            throw new IllegalArgumentException("Invalid or expired verification token");
+        }
+        User user = userRepository.findById(authToken.getUserId()).orElseThrow();
+        user.setEmailVerified(true);
+        userRepository.save(user);
+        authTokenRepository.delete(authToken);
+    }
+
+    public void requestPasswordReset(String email) {
+        User user = userRepository.findByEmail(email).orElse(null);
+        if (user == null) {
+            return;
+        }
+        String token = UUID.randomUUID().toString();
+        OffsetDateTime expiresAt = OffsetDateTime.now().plusMinutes(tokenTtlMinutes);
+        authTokenRepository.save(new AuthToken(UUID.randomUUID().toString(), user.getId(), AuthToken.Type.PASSWORD_RESET, token, expiresAt));
+
+        String url = clientUrl + "/reset-password?token=" + token;
+        emailService.send(user.getEmail(), "Reset your password — Green Algeria Map", EmailTemplate.passwordReset(user.getName(), url));
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        AuthToken authToken = authTokenRepository
+                .findByTokenAndType(token, AuthToken.Type.PASSWORD_RESET)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired reset token"));
+        if (authToken.isExpired()) {
+            authTokenRepository.delete(authToken);
+            throw new IllegalArgumentException("Invalid or expired reset token");
+        }
+        User user = userRepository.findById(authToken.getUserId()).orElseThrow();
+        Account account = accountRepository.findByUserIdAndProviderId(user.getId(), "email").orElseThrow();
+        account.setPassword(passwordEncoder.encode(newPassword));
+        accountRepository.save(account);
+        authTokenRepository.delete(authToken);
     }
 
     public UserResponse getSession(String userId) {
