@@ -11,6 +11,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { HealthModule } from './health/health.module';
 import { PublicModule } from './modules/public/public.module';
+import { EmailModule } from './modules/email/email.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { PublicModule } from './modules/public/public.module';
     StorageModule,
     HealthModule,
     PublicModule,
+    EmailModule,
   ],
   providers: [
     ...(process.env.DISABLE_RATE_LIMIT === 'true'

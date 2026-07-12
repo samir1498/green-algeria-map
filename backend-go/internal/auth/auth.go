@@ -1,9 +1,11 @@
 package auth
 
 import (
+	"net/http"
 	"os"
 
 	"github.com/green-algeria-map/backend-go/internal/auth/pgadapter"
+	"github.com/green-algeria-map/backend-go/internal/email"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jeromesth/go-better-auth"
 )
@@ -18,6 +20,8 @@ func New(pool *pgxpool.Pool) *betterauth.Auth {
 
 	rateLimitEnabled := os.Getenv("DISABLE_RATE_LIMIT") != "true"
 
+	mail := email.NewClient()
+
 	return betterauth.New(betterauth.BetterAuthOptions{
 		BaseURL:  os.Getenv("BETTER_AUTH_URL"),
 		BasePath: "/api/auth",
@@ -28,6 +32,19 @@ func New(pool *pgxpool.Pool) *betterauth.Auth {
 			MinPasswordLength: 8,
 			MaxPasswordLength: 128,
 			AutoSignIn:        true,
+			SendResetPassword: func(data betterauth.ResetPasswordData, r *http.Request) error {
+				html := email.PasswordResetEmail(data.User.Name, data.URL)
+				return mail.Send(data.User.Email, "Reset your password — Green Algeria Map", html)
+			},
+			RequireEmailVerification: false,
+		},
+		EmailVerification: &betterauth.EmailVerifConfig{
+			SendOnSignUp:                true,
+			AutoSignInAfterVerification: true,
+			SendVerificationEmail: func(data betterauth.EmailVerificationData, r *http.Request) error {
+				html := email.VerificationEmail(data.User.Name, data.URL)
+				return mail.Send(data.User.Email, "Verify your email — Green Algeria Map", html)
+			},
 		},
 		TrustedOrigins: []string{"http://localhost:3000", "http://localhost:4173"},
 		User: &betterauth.UserConfig{
