@@ -42,7 +42,7 @@ public class EmailService {
                 new Object[] {Map.of("email", to)},
                 "subject",
                 subject,
-                "html",
+                "htmlContent",
                 html);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
