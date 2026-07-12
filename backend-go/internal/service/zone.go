@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"strings"
 
 	lru "github.com/hashicorp/golang-lru/v2"
 	"github.com/green-algeria-map/backend-go/internal/model"
@@ -104,9 +105,9 @@ func (s *ZoneService) Delete(ctx context.Context, id string) error {
 }
 
 func toZoneResponse(z *repository.ZoneEntity) *model.ZoneResponse {
-	photos := z.Photos
-	if photos == nil {
-		photos = []string{}
+	var photos []string
+	if z.Photos != nil && *z.Photos != "" {
+		photos = strings.Split(*z.Photos, ",")
 	}
 	return &model.ZoneResponse{
 		ID:               z.ID,
@@ -117,12 +118,19 @@ func toZoneResponse(z *repository.ZoneEntity) *model.ZoneResponse {
 		Lng:              z.Lng,
 		TargetCount:      z.TargetCount,
 		CurrentCount:     z.CurrentCount,
-		Description:      z.Description,
-		TreeSpecies:      z.TreeSpecies,
-		OrganizerContact: z.OrganizerContact,
+		Description:      deref(z.Description),
+		TreeSpecies:      deref(z.TreeSpecies),
+		OrganizerContact: deref(z.OrganizerContact),
 		VolunteerCount:   z.VolunteerCount,
 		Photos:           photos,
 		CreatedAt:        z.CreatedAt,
 		UpdatedAt:        z.UpdatedAt,
 	}
+}
+
+func deref(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
 }

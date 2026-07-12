@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
@@ -94,6 +95,10 @@ func (s *InMemoryStore) CreateZone(_ context.Context, name, zoneType, status str
 	if photos == nil {
 		photos = []string{}
 	}
+	photosStr := ""
+	if len(photos) > 0 {
+		photosStr = strings.Join(photos, ",")
+	}
 	z := &ZoneEntity{
 		ID:               uuid.New().String(),
 		Name:             name,
@@ -103,11 +108,11 @@ func (s *InMemoryStore) CreateZone(_ context.Context, name, zoneType, status str
 		Lng:              lng,
 		TargetCount:      targetCount,
 		CurrentCount:     currentCount,
-		Description:      description,
-		TreeSpecies:      treeSpecies,
-		OrganizerContact: organizerContact,
+		Description:      &description,
+		TreeSpecies:      &treeSpecies,
+		OrganizerContact: &organizerContact,
 		VolunteerCount:   volunteerCount,
-		Photos:           photos,
+		Photos:           &photosStr,
 		CreatedAt:        now,
 		UpdatedAt:        now,
 	}
@@ -149,14 +154,18 @@ func (s *InMemoryStore) UpdateZone(_ context.Context, id, name, zoneType, status
 	z.Lng = lng
 	z.TargetCount = targetCount
 	z.CurrentCount = currentCount
-	z.Description = description
-	z.TreeSpecies = treeSpecies
-	z.OrganizerContact = organizerContact
+	z.Description = &description
+	z.TreeSpecies = &treeSpecies
+	z.OrganizerContact = &organizerContact
 	z.VolunteerCount = volunteerCount
 	if photos == nil {
 		photos = []string{}
 	}
-	z.Photos = photos
+	photosStr := ""
+	if len(photos) > 0 {
+		photosStr = strings.Join(photos, ",")
+	}
+	z.Photos = &photosStr
 	z.UpdatedAt = time.Now().UTC()
 	return z, nil
 }
@@ -180,7 +189,14 @@ func (s *InMemoryStore) AddZonePhoto(_ context.Context, id, photoURL string) err
 	if !ok {
 		return nil
 	}
-	z.Photos = append(z.Photos, photoURL)
+	// Parse existing photos
+	var photos []string
+	if z.Photos != nil && *z.Photos != "" {
+		photos = strings.Split(*z.Photos, ",")
+	}
+	photos = append(photos, photoURL)
+	photosStr := strings.Join(photos, ",")
+	z.Photos = &photosStr
 	z.UpdatedAt = time.Now().UTC()
 	return nil
 }

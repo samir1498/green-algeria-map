@@ -59,6 +59,9 @@ func tNow() time.Time {
 
 func makeZone(id, name string) *repository.ZoneEntity {
 	t := tNow()
+	desc := "test"
+	species := "oak"
+	contact := "test@test.com"
 	return &repository.ZoneEntity{
 		ID:               id,
 		Name:             name,
@@ -66,11 +69,11 @@ func makeZone(id, name string) *repository.ZoneEntity {
 		Status:           "active",
 		Lat:              36.0,
 		Lng:              3.0,
-		Description:      "test",
-		TreeSpecies:      "oak",
-		OrganizerContact: "test@test.com",
+		Description:      &desc,
+		TreeSpecies:      &species,
+		OrganizerContact: &contact,
 		VolunteerCount:   0,
-		Photos:           []string{},
+		Photos:           nil,
 		CreatedAt:        t,
 		UpdatedAt:        t,
 	}
