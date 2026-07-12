@@ -65,10 +65,14 @@ public class AuthService {
     public void sendVerificationEmail(User user) {
         String token = UUID.randomUUID().toString();
         OffsetDateTime expiresAt = OffsetDateTime.now().plusMinutes(tokenTtlMinutes);
-        authTokenRepository.save(new AuthToken(UUID.randomUUID().toString(), user.getId(), AuthToken.Type.EMAIL_VERIFICATION, token, expiresAt));
+        authTokenRepository.save(new AuthToken(
+                UUID.randomUUID().toString(), user.getId(), AuthToken.Type.EMAIL_VERIFICATION, token, expiresAt));
 
         String url = clientUrl + "/verify-email?token=" + token;
-        emailService.send(user.getEmail(), "Verify your email — Green Algeria Map", EmailTemplate.verification(user.getName(), url));
+        emailService.send(
+                user.getEmail(),
+                "Verify your email — Green Algeria Map",
+                EmailTemplate.verification(user.getName(), url));
     }
 
     public void verifyEmail(String token) {
@@ -92,10 +96,14 @@ public class AuthService {
         }
         String token = UUID.randomUUID().toString();
         OffsetDateTime expiresAt = OffsetDateTime.now().plusMinutes(tokenTtlMinutes);
-        authTokenRepository.save(new AuthToken(UUID.randomUUID().toString(), user.getId(), AuthToken.Type.PASSWORD_RESET, token, expiresAt));
+        authTokenRepository.save(new AuthToken(
+                UUID.randomUUID().toString(), user.getId(), AuthToken.Type.PASSWORD_RESET, token, expiresAt));
 
         String url = clientUrl + "/reset-password?token=" + token;
-        emailService.send(user.getEmail(), "Reset your password — Green Algeria Map", EmailTemplate.passwordReset(user.getName(), url));
+        emailService.send(
+                user.getEmail(),
+                "Reset your password — Green Algeria Map",
+                EmailTemplate.passwordReset(user.getName(), url));
     }
 
     public void resetPassword(String token, String newPassword) {
@@ -107,7 +115,9 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid or expired reset token");
         }
         User user = userRepository.findById(authToken.getUserId()).orElseThrow();
-        Account account = accountRepository.findByUserIdAndProviderId(user.getId(), "email").orElseThrow();
+        Account account = accountRepository
+                .findByUserIdAndProviderId(user.getId(), "email")
+                .orElseThrow();
         account.setPassword(passwordEncoder.encode(newPassword));
         accountRepository.save(account);
         authTokenRepository.delete(authToken);

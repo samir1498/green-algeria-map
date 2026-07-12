@@ -15,8 +15,6 @@ const pool = new Pool({
 pool.on('error', () => {});
 
 const email = new BrevoClient();
-const clientUrl =
-  process.env.CLIENT_URL?.split(',')[0]?.trim() ?? 'http://localhost:3000';
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:8080',

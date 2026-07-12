@@ -43,8 +43,7 @@ public final class EmailTemplate {
               </tr>
             </table>
           </body>
-        </html>"""
-                .formatted(title, title, body);
+        </html>""".formatted(title, title, body);
     }
 
     private static String button(String url, String label) {
@@ -55,31 +54,26 @@ public final class EmailTemplate {
         <p style="color: #5f6f60; font-size: 13px;">
           Or paste this link into your browser: <br />
           <a href="%s" style="color: #2e7d32; word-break: break-all;">%s</a>
-        </p>"""
-                .formatted(url, label, url, url);
+        </p>""".formatted(url, label, url, url);
     }
 
     public static String verification(String name, String url) {
         String greeting = name == null || name.isBlank() ? "Hi," : "Hi " + name + ",";
-        String body =
-                """
+        String body = """
                 <p style="color: #2f3a30; font-size: 15px; line-height: 1.6;">%s</p>
                 <p style="color: #2f3a30; font-size: 15px; line-height: 1.6;">
                   Thanks for joining Green Algeria Map! Please confirm your email address to activate your account.
-                </p>%s"""
-                        .formatted(greeting, button(url, "Verify my email"));
+                </p>%s""".formatted(greeting, button(url, "Verify my email"));
         return layout("Verify your email", body);
     }
 
     public static String passwordReset(String name, String url) {
         String greeting = name == null || name.isBlank() ? "Hi," : "Hi " + name + ",";
-        String body =
-                """
+        String body = """
                 <p style="color: #2f3a30; font-size: 15px; line-height: 1.6;">%s</p>
                 <p style="color: #2f3a30; font-size: 15px; line-height: 1.6;">
                   We received a request to reset your password. Click the button below to choose a new one.
-                </p>%s"""
-                        .formatted(greeting, button(url, "Reset password"));
+                </p>%s""".formatted(greeting, button(url, "Reset password"));
         return layout("Reset your password", body);
     }
 }

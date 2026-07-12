@@ -13,7 +13,8 @@ public class AuthToken {
         PASSWORD_RESET
     }
 
-    @Id private String id;
+    @Id
+    private String id;
 
     @Column(nullable = false)
     private String userId;

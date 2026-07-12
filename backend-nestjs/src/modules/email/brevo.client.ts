@@ -14,7 +14,8 @@ export class BrevoClient {
 
   constructor(apiKey?: string, fromEmail?: string, fromName?: string) {
     const key = apiKey ?? process.env.BREVO_API_KEY ?? '';
-    this.fromEmail = fromEmail ?? process.env.FROM_EMAIL ?? 'noreply@greenalgeria.org';
+    this.fromEmail =
+      fromEmail ?? process.env.FROM_EMAIL ?? 'noreply@greenalgeria.org';
     this.fromName = fromName ?? process.env.FROM_NAME ?? 'Green Algeria Map';
     this.http = axios.create({
       baseURL: 'https://api.brevo.com/v3',

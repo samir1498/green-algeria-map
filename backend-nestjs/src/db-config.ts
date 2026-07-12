@@ -25,4 +25,3 @@ export function getDbModuleConfig(): TypeOrmModuleOptions {
     synchronize: false,
   };
 }
-

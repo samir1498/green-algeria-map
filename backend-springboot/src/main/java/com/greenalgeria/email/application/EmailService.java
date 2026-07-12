@@ -35,12 +35,15 @@ public class EmailService {
         headers.set("api-key", apiKey);
         headers.set("accept", "application/json");
 
-        Map<String, Object> body =
-                Map.of(
-                        "sender", Map.of("name", fromName, "email", fromEmail),
-                        "to", new Object[] {Map.of("email", to)},
-                        "subject", subject,
-                        "html", html);
+        Map<String, Object> body = Map.of(
+                "sender",
+                Map.of("name", fromName, "email", fromEmail),
+                "to",
+                new Object[] {Map.of("email", to)},
+                "subject",
+                subject,
+                "html",
+                html);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
         restTemplate.postForEntity("https://api.brevo.com/v3/smtp/email", request, String.class);

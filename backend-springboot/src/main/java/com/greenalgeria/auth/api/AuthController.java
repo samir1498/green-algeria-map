@@ -37,7 +37,8 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
 
-    public AuthController(AuthService authService, AuthenticationManager authenticationManager, UserRepository userRepository) {
+    public AuthController(
+            AuthService authService, AuthenticationManager authenticationManager, UserRepository userRepository) {
         this.authService = authService;
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
@@ -65,8 +66,9 @@ public class AuthController {
     @PostMapping("/send-verification-email")
     @Operation(summary = "Send email verification link")
     public ResponseEntity<?> sendVerificationEmail(@Valid @RequestBody EmailRequest request) {
-        authService.sendVerificationEmail(
-                userRepository.findByEmail(request.email()).orElseThrow(() -> new IllegalArgumentException("User not found")));
+        authService.sendVerificationEmail(userRepository
+                .findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("User not found")));
         return ResponseEntity.ok(Map.of("success", true));
     }
 
