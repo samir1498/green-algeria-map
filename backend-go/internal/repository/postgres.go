@@ -23,9 +23,9 @@ func (s *PostgresStore) CreateItem(ctx context.Context, name, description string
 	now := time.Now().UTC()
 	it := &ItemEntity{}
 	err := s.pool.QueryRow(ctx,
-		`INSERT INTO items (id, name, description, created_at, updated_at)
+		`INSERT INTO items (id, name, description, "createdAt", "updatedAt")
 		 VALUES ($1, $2, $3, $4, $5)
-		 RETURNING id, name, description, created_at, updated_at`,
+		 RETURNING id, name, description, "createdAt", "updatedAt"`,
 		itemID, name, description, now, now,
 	).Scan(&it.ID, &it.Name, &it.Description, &it.CreatedAt, &it.UpdatedAt)
 	if err != nil {
@@ -37,7 +37,7 @@ func (s *PostgresStore) CreateItem(ctx context.Context, name, description string
 func (s *PostgresStore) GetItem(ctx context.Context, id string) (*ItemEntity, error) {
 	it := &ItemEntity{}
 	err := s.pool.QueryRow(ctx,
-		`SELECT id, name, description, created_at, updated_at FROM items WHERE id = $1`, id,
+		`SELECT id, name, description, "createdAt", "updatedAt" FROM items WHERE id = $1`, id,
 	).Scan(&it.ID, &it.Name, &it.Description, &it.CreatedAt, &it.UpdatedAt)
 	if err != nil {
 		if err.Error() == "no rows in result set" {
@@ -49,7 +49,7 @@ func (s *PostgresStore) GetItem(ctx context.Context, id string) (*ItemEntity, er
 }
 
 func (s *PostgresStore) ListItems(ctx context.Context) ([]*ItemEntity, error) {
-	rows, err := s.pool.Query(ctx, `SELECT id, name, description, created_at, updated_at FROM items ORDER BY created_at`)
+	rows, err := s.pool.Query(ctx, `SELECT id, name, description, "createdAt", "updatedAt" FROM items ORDER BY "createdAt"`)
 	if err != nil {
 		return nil, fmt.Errorf("list items: %w", err)
 	}
@@ -69,8 +69,8 @@ func (s *PostgresStore) UpdateItem(ctx context.Context, id, name, description st
 	now := time.Now().UTC()
 	it := &ItemEntity{}
 	err := s.pool.QueryRow(ctx,
-		`UPDATE items SET name = $2, description = $3, updated_at = $4 WHERE id = $1
-		 RETURNING id, name, description, created_at, updated_at`,
+		`UPDATE items SET name = $2, description = $3, "updatedAt" = $4 WHERE id = $1
+		 RETURNING id, name, description, "createdAt", "updatedAt"`,
 		id, name, description, now,
 	).Scan(&it.ID, &it.Name, &it.Description, &it.CreatedAt, &it.UpdatedAt)
 	if err != nil {
@@ -96,9 +96,9 @@ func (s *PostgresStore) CreateZone(ctx context.Context, name, zoneType, status s
 		photos = []string{}
 	}
 	err := s.pool.QueryRow(ctx,
-		`INSERT INTO zones (id, name, type, status, lat, lng, target_count, current_count, description, tree_species, organizer_contact, volunteer_count, photos, created_at, updated_at)
+		`INSERT INTO zones (id, name, type, status, lat, lng, "targetCount", "currentCount", description, "treeSpecies", "organizerContact", "volunteerCount", photos, created_at, updated_at)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-		 RETURNING id, name, type, status, lat, lng, target_count, current_count, description, tree_species, organizer_contact, volunteer_count, photos, created_at, updated_at`,
+		 RETURNING id, name, type, status, lat, lng, "targetCount", "currentCount", description, "treeSpecies", "organizerContact", "volunteerCount", photos, created_at, updated_at`,
 		id, name, zoneType, status, lat, lng, targetCount, currentCount, description, treeSpecies, organizerContact, volunteerCount, photos, now, now,
 	).Scan(&z.ID, &z.Name, &z.Type, &z.Status, &z.Lat, &z.Lng, &z.TargetCount, &z.CurrentCount, &z.Description, &z.TreeSpecies, &z.OrganizerContact, &z.VolunteerCount, &z.Photos, &z.CreatedAt, &z.UpdatedAt)
 	if err != nil {
@@ -110,7 +110,7 @@ func (s *PostgresStore) CreateZone(ctx context.Context, name, zoneType, status s
 func (s *PostgresStore) GetZone(ctx context.Context, id string) (*ZoneEntity, error) {
 	z := &ZoneEntity{}
 	err := s.pool.QueryRow(ctx,
-		`SELECT id, name, type, status, lat, lng, target_count, current_count, description, tree_species, organizer_contact, volunteer_count, photos, created_at, updated_at FROM zones WHERE id = $1`, id,
+		`SELECT id, name, type, status, lat, lng, "targetCount", "currentCount", description, "treeSpecies", "organizerContact", "volunteerCount", photos, created_at, updated_at FROM zones WHERE id = $1`, id,
 	).Scan(&z.ID, &z.Name, &z.Type, &z.Status, &z.Lat, &z.Lng, &z.TargetCount, &z.CurrentCount, &z.Description, &z.TreeSpecies, &z.OrganizerContact, &z.VolunteerCount, &z.Photos, &z.CreatedAt, &z.UpdatedAt)
 	if err != nil {
 		if err.Error() == "no rows in result set" {
@@ -122,7 +122,7 @@ func (s *PostgresStore) GetZone(ctx context.Context, id string) (*ZoneEntity, er
 }
 
 func (s *PostgresStore) ListZones(ctx context.Context) ([]*ZoneEntity, error) {
-	rows, err := s.pool.Query(ctx, `SELECT id, name, type, status, lat, lng, target_count, current_count, description, tree_species, organizer_contact, volunteer_count, photos, created_at, updated_at FROM zones ORDER BY created_at`)
+	rows, err := s.pool.Query(ctx, `SELECT id, name, type, status, lat, lng, "targetCount", "currentCount", description, "treeSpecies", "organizerContact", "volunteerCount", photos, "createdAt", "updatedAt" FROM zones ORDER BY "createdAt"`)
 	if err != nil {
 		return nil, fmt.Errorf("list zones: %w", err)
 	}
@@ -145,8 +145,8 @@ func (s *PostgresStore) UpdateZone(ctx context.Context, id, name, zoneType, stat
 		photos = []string{}
 	}
 	err := s.pool.QueryRow(ctx,
-		`UPDATE zones SET name = $2, type = $3, status = $4, lat = $5, lng = $6, target_count = $7, current_count = $8, description = $9, tree_species = $10, organizer_contact = $11, volunteer_count = $12, photos = $13, updated_at = $14 WHERE id = $1
-		 RETURNING id, name, type, status, lat, lng, target_count, current_count, description, tree_species, organizer_contact, volunteer_count, photos, created_at, updated_at`,
+		`UPDATE zones SET name = $2, type = $3, status = $4, lat = $5, lng = $6, "targetCount" = $7, "currentCount" = $8, description = $9, "treeSpecies" = $10, "organizerContact" = $11, "volunteerCount" = $12, photos = $13, "updatedAt" = $14 WHERE id = $1
+		 RETURNING id, name, type, status, lat, lng, "targetCount", "currentCount", description, "treeSpecies", "organizerContact", "volunteerCount", photos, "createdAt", "updatedAt"`,
 		id, name, zoneType, status, lat, lng, targetCount, currentCount, description, treeSpecies, organizerContact, volunteerCount, photos, now,
 	).Scan(&z.ID, &z.Name, &z.Type, &z.Status, &z.Lat, &z.Lng, &z.TargetCount, &z.CurrentCount, &z.Description, &z.TreeSpecies, &z.OrganizerContact, &z.VolunteerCount, &z.Photos, &z.CreatedAt, &z.UpdatedAt)
 	if err != nil {
@@ -159,12 +159,12 @@ func (s *PostgresStore) UpdateZone(ctx context.Context, id, name, zoneType, stat
 }
 
 func (s *PostgresStore) UpdateZoneVolunteer(ctx context.Context, id string) error {
-	_, err := s.pool.Exec(ctx, `UPDATE zones SET volunteer_count = volunteer_count + 1, updated_at = NOW() WHERE id = $1`, id)
+	_, err := s.pool.Exec(ctx, `UPDATE zones SET "volunteerCount" = "volunteerCount" + 1, "updatedAt" = NOW() WHERE id = $1`, id)
 	return err
 }
 
 func (s *PostgresStore) AddZonePhoto(ctx context.Context, id, photoURL string) error {
-	_, err := s.pool.Exec(ctx, `UPDATE zones SET photos = array_append(photos, $2), updated_at = NOW() WHERE id = $1`, id, photoURL)
+	_, err := s.pool.Exec(ctx, `UPDATE zones SET photos = array_append(photos, $2), "updatedAt" = NOW() WHERE id = $1`, id, photoURL)
 	return err
 }
 
@@ -179,9 +179,9 @@ func (s *PostgresStore) CreateDamageReport(ctx context.Context, zoneID *string, 
 	now := time.Now().UTC()
 	dr := &DamageReportEntity{}
 	err := s.pool.QueryRow(ctx,
-		`INSERT INTO damage_reports (id, zone_id, title, description, severity, type, status, reported_by, lat, lng, created_at, updated_at)
+		`INSERT INTO damage_reports (id, zone_id, title, description, severity, type, status, "reportedBy", lat, lng, "reportedAt", "updatedAt")
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-		 RETURNING id, zone_id, title, description, severity, type, status, reported_by, lat, lng, created_at, updated_at`,
+		 RETURNING id, zone_id, title, description, severity, type, status, "reportedBy", lat, lng, "reportedAt", "updatedAt"`,
 		id, zoneID, title, description, severity, reportType, status, reportedBy, lat, lng, now, now,
 	).Scan(&dr.ID, &dr.ZoneID, &dr.Title, &dr.Description, &dr.Severity, &dr.Type, &dr.Status, &dr.ReportedBy, &dr.Lat, &dr.Lng, &dr.CreatedAt, &dr.UpdatedAt)
 	if err != nil {
@@ -193,7 +193,7 @@ func (s *PostgresStore) CreateDamageReport(ctx context.Context, zoneID *string, 
 func (s *PostgresStore) GetDamageReport(ctx context.Context, id string) (*DamageReportEntity, error) {
 	dr := &DamageReportEntity{}
 	err := s.pool.QueryRow(ctx,
-		`SELECT id, zone_id, title, description, severity, type, status, reported_by, lat, lng, created_at, updated_at FROM damage_reports WHERE id = $1`, id,
+		`SELECT id, zone_id, title, description, severity, type, status, "reportedBy", lat, lng, "reportedAt", "updatedAt" FROM damage_reports WHERE id = $1`, id,
 	).Scan(&dr.ID, &dr.ZoneID, &dr.Title, &dr.Description, &dr.Severity, &dr.Type, &dr.Status, &dr.ReportedBy, &dr.Lat, &dr.Lng, &dr.CreatedAt, &dr.UpdatedAt)
 	if err != nil {
 		if err.Error() == "no rows in result set" {
@@ -212,9 +212,9 @@ func (s *PostgresStore) ListDamageReportsByZone(ctx context.Context, zoneID *str
 	var rows pgx.Rows
 	var err error
 	if zoneID != nil {
-		rows, err = s.pool.Query(ctx, `SELECT id, zone_id, title, description, severity, type, status, reported_by, lat, lng, created_at, updated_at FROM damage_reports WHERE zone_id = $1 ORDER BY created_at`, *zoneID)
+		rows, err = s.pool.Query(ctx, `SELECT id, zone_id, title, description, severity, type, status, "reportedBy", lat, lng, "reportedAt", "updatedAt" FROM damage_reports WHERE zone_id = $1 ORDER BY "reportedAt"`, *zoneID)
 	} else {
-		rows, err = s.pool.Query(ctx, `SELECT id, zone_id, title, description, severity, type, status, reported_by, lat, lng, created_at, updated_at FROM damage_reports ORDER BY created_at`)
+		rows, err = s.pool.Query(ctx, `SELECT id, zone_id, title, description, severity, type, status, "reportedBy", lat, lng, "reportedAt", "updatedAt" FROM damage_reports ORDER BY "reportedAt"`)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("list damage reports: %w", err)
@@ -235,8 +235,8 @@ func (s *PostgresStore) UpdateDamageReportStatus(ctx context.Context, id, status
 	now := time.Now().UTC()
 	dr := &DamageReportEntity{}
 	err := s.pool.QueryRow(ctx,
-		`UPDATE damage_reports SET status = $2, updated_at = $3 WHERE id = $1
-		 RETURNING id, zone_id, title, description, severity, type, status, reported_by, lat, lng, created_at, updated_at`,
+		`UPDATE damage_reports SET status = $2, "updatedAt" = $3 WHERE id = $1
+		 RETURNING id, zone_id, title, description, severity, type, status, "reportedBy", lat, lng, "reportedAt", "updatedAt"`,
 		id, status, now,
 	).Scan(&dr.ID, &dr.ZoneID, &dr.Title, &dr.Description, &dr.Severity, &dr.Type, &dr.Status, &dr.ReportedBy, &dr.Lat, &dr.Lng, &dr.CreatedAt, &dr.UpdatedAt)
 	if err != nil {
@@ -262,11 +262,11 @@ type ZoneEntity struct {
 	Lng              float64   `json:"lng"`
 	TargetCount      *int      `json:"targetCount"`
 	CurrentCount     *int      `json:"currentCount"`
-	Description      string    `json:"description"`
-	TreeSpecies      string    `json:"treeSpecies"`
-	OrganizerContact string    `json:"organizerContact"`
+	Description      *string   `json:"description"`
+	TreeSpecies      *string   `json:"treeSpecies"`
+	OrganizerContact *string   `json:"organizerContact"`
 	VolunteerCount   int       `json:"volunteerCount"`
-	Photos           []string  `json:"photos"`
+	Photos           *string   `json:"photos"`
 	CreatedAt        time.Time `json:"createdAt"`
 	UpdatedAt        time.Time `json:"updatedAt"`
 }
