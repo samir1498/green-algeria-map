@@ -56,6 +56,7 @@ export function ZoneMarker({ zone, onTreeInfo, onReportDamage }: ZoneMarkerProps
           )}
           {zone.treeSpecies && (
             <button
+              type="button"
               onClick={() => onTreeInfo(zone.treeSpecies!)}
               className="mt-1 block text-left text-xs text-green-700 underline hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
               data-testid="tree-species-link"
@@ -66,6 +67,7 @@ export function ZoneMarker({ zone, onTreeInfo, onReportDamage }: ZoneMarkerProps
           <ZonePhotoUploader zoneId={zone.id} />
           <ZoneCtaPanel zone={zone} />
           <button
+            type="button"
             onClick={() => onReportDamage(zone)}
             className="mt-2 w-full rounded bg-red-600 px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-red-700"
             data-testid="report-damage-button"

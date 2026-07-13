@@ -30,6 +30,7 @@ export function ZoneCtaPanel({ zone }: ZoneCtaPanelProps) {
       <div className="flex flex-wrap items-center gap-1.5">
         {actions.map((action) => (
           <button
+            type="button"
             key={action}
             onClick={() => {
               if (action === 'volunteer') {
