@@ -44,11 +44,11 @@ async function main() {
   execSync(`docker compose -f "${COMPOSE_FILE}" up -d`, { stdio: 'inherit' })
 
   console.log('Waiting for PostgreSQL...')
-  await waitForPort(5432, 'localhost')
-  await waitForPgReady('localhost', 'greenalgeria')
+  await waitForPort(5432, '127.0.0.1')
+  await waitForPgReady('127.0.0.1', 'greenalgeria')
 
   console.log('Waiting for RustFS...')
-  await waitForPort(9000, 'localhost')
+  await waitForPort(9000, '127.0.0.1')
 
   console.log('Creating bucket...')
   const bucketScript = path.resolve(cwd, '..', 'backend-nestjs', 'scripts', 'create-bucket.mjs')
