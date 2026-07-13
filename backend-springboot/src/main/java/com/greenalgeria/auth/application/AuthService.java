@@ -10,6 +10,8 @@ import com.greenalgeria.email.application.EmailService;
 import com.greenalgeria.email.application.EmailTemplate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class AuthService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
@@ -57,7 +61,11 @@ public class AuthService {
         Account account = new Account(UUID.randomUUID().toString(), userId, email, passwordEncoder.encode(password));
         accountRepository.save(account);
 
-        sendVerificationEmail(user);
+        try {
+            sendVerificationEmail(user);
+        } catch (Exception e) {
+            log.warn("Failed to send verification email for user {}: {}", user.getEmail(), e.getMessage());
+        }
 
         return UserResponse.from(user);
     }
