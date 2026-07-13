@@ -23,6 +23,19 @@ async function waitForPort(port, host, timeout = 120000) {
   throw new Error(`Timed out waiting for ${host}:${port}`)
 }
 
+function waitForPgReady(host, user, timeout = 120000) {
+  const start = Date.now()
+  while (Date.now() - start < timeout) {
+    try {
+      execSync(`pg_isready -h ${host} -U ${user}`, { stdio: 'ignore' })
+      return
+    } catch {
+      // not ready yet — wait then retry
+    }
+  }
+  throw new Error(`Timed out waiting for PostgreSQL to accept connections`)
+}
+
 async function main() {
   const cwd = path.resolve(__dirname, '..')
   const binaryPath = path.join(cwd, 'backend-go')
@@ -32,6 +45,7 @@ async function main() {
 
   console.log('Waiting for PostgreSQL...')
   await waitForPort(5432, 'localhost')
+  await waitForPgReady('localhost', 'greenalgeria')
 
   console.log('Waiting for RustFS...')
   await waitForPort(9000, 'localhost')
