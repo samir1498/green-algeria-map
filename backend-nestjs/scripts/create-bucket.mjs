@@ -109,7 +109,7 @@ if (!endpoint || !bucket || !accessKey || !secretKey) {
   process.exit(1)
 }
 
-async function createBucketWithRetry(maxRetries = 10, delay = 2000) {
+async function createBucketWithRetry(maxRetries = 15, delay = 2000) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       await createBucket(endpoint, bucket, accessKey, secretKey, region)
@@ -117,13 +117,9 @@ async function createBucketWithRetry(maxRetries = 10, delay = 2000) {
       process.exit(0)
     } catch (err) {
       if (i < maxRetries - 1) {
-        const msg = err.message.toLowerCase()
-        const isTransient = msg.includes('503') || msg.includes('econnrefused') || msg.includes('timeout') || msg.includes('socket') || msg.includes('hang')
-        if (isTransient) {
-          console.log(`RustFS not ready (attempt ${i + 1}/${maxRetries}), retrying in ${delay}ms...`)
-          await new Promise(r => setTimeout(r, delay))
-          continue
-        }
+        console.log(`Bucket creation attempt ${i + 1}/${maxRetries} failed: ${err.message}, retrying in ${delay}ms...`)
+        await new Promise(r => setTimeout(r, delay))
+        continue
       }
       console.error(err.message)
       process.exit(1)
