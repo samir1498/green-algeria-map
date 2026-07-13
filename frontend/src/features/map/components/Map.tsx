@@ -137,6 +137,7 @@ export function Map({ zones, damageReports = [], onDamageReported }: MapProps) {
               }}
             />
             <button
+              type="button"
               onClick={() => setReportingZone(null)}
               className="border-input bg-background hover:bg-muted mt-2 w-full rounded-md border px-3 py-2 text-sm transition-colors"
             >

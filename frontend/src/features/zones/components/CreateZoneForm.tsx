@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { MapContainer, TileLayer, Marker } from 'react-leaflet'
 import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
@@ -23,7 +23,7 @@ export function CreateZoneForm() {
   const [lat, setLat] = useState<number | null>(null)
   const [lng, setLng] = useState<number | null>(null)
   const [organizerContact, setOrganizerContact] = useState('')
-  const [treeSpecies, setTreeSpecies] = useState('')
+  const treeSpeciesRef = useRef('')
   const [createdZoneId, setCreatedZoneId] = useState<string | null>(null)
 
   const handlePick = useCallback((newLat: number, newLng: number) => {
@@ -54,7 +54,7 @@ export function CreateZoneForm() {
         lng,
         description: description.trim(),
         organizerContact: organizerContact.trim() || undefined,
-        treeSpecies: treeSpecies.trim() || undefined,
+        treeSpecies: treeSpeciesRef.current.trim() || undefined,
       },
       {
         onSuccess: (zone) => {
@@ -171,7 +171,7 @@ export function CreateZoneForm() {
               Tree Species <span className="text-muted-foreground">(optional)</span>
             </Label>
             <TreeSearchInput
-              onSelect={(scientificName) => setTreeSpecies(scientificName)}
+              onSelect={(scientificName) => { treeSpeciesRef.current = scientificName }}
               placeholder="Cedrus atlantica"
             />
           </div>

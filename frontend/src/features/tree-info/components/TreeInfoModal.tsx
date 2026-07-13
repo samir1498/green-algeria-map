@@ -64,6 +64,7 @@ export function TreeInfoModal({ taxonId, scientificName, onClose }: TreeInfoModa
               </div>
             )}
             <button
+              type="button"
               onClick={onClose}
               className="border-input bg-background hover:bg-muted mt-3 w-full rounded-md border px-3 py-2 text-sm transition-colors"
               data-testid="tree-info-close"
