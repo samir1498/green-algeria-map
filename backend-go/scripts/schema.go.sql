@@ -26,8 +26,12 @@ CREATE TABLE IF NOT EXISTS damage_reports (
     title       TEXT NOT NULL,
     description TEXT,
     severity    TEXT NOT NULL DEFAULT 'low',
+    type        TEXT NOT NULL DEFAULT 'other',
+    status      TEXT NOT NULL DEFAULT 'reported',
     lat         DOUBLE PRECISION NOT NULL,
     lng         DOUBLE PRECISION NOT NULL,
+    "reportedBy" TEXT NOT NULL DEFAULT '',
+    "reportedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

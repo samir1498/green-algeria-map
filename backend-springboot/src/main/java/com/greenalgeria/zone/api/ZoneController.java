@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,6 +57,7 @@ public class ZoneController {
     }
 
     @PostMapping("/{id}/volunteer")
+    @CacheEvict(value = "zones", allEntries = true)
     public ResponseEntity<Void> registerVolunteer(@PathVariable UUID id) {
         commandBus.execute(new RegisterVolunteerCommand(id));
         return ResponseEntity.noContent().build();

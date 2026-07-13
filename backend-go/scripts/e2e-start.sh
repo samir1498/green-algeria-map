@@ -23,6 +23,19 @@ async function waitForPort(port, host, timeout = 120000) {
   throw new Error(`Timed out waiting for ${host}:${port}`)
 }
 
+function waitForPgReady(host, user, timeout = 120000) {
+  const start = Date.now()
+  while (Date.now() - start < timeout) {
+    try {
+      execSync(`pg_isready -h ${host} -U ${user}`, { stdio: 'ignore' })
+      return
+    } catch {
+      // not ready yet — wait then retry
+    }
+  }
+  throw new Error(`Timed out waiting for PostgreSQL to accept connections`)
+}
+
 async function main() {
   const cwd = path.resolve(__dirname, '..')
   const binaryPath = path.join(cwd, 'backend-go')
@@ -31,10 +44,11 @@ async function main() {
   execSync(`docker compose -f "${COMPOSE_FILE}" up -d`, { stdio: 'inherit' })
 
   console.log('Waiting for PostgreSQL...')
-  await waitForPort(5432, 'localhost')
+  await waitForPort(5432, '127.0.0.1')
+  await waitForPgReady('127.0.0.1', 'greenalgeria')
 
   console.log('Waiting for RustFS...')
-  await waitForPort(9000, 'localhost')
+  await waitForPort(9000, '127.0.0.1')
 
   console.log('Creating bucket...')
   const bucketScript = path.resolve(cwd, '..', 'backend-nestjs', 'scripts', 'create-bucket.mjs')

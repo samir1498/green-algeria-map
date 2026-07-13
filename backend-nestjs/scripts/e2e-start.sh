@@ -5,7 +5,7 @@ const path = require('path')
 
 const COMPOSE_FILE = path.resolve(__dirname, '..', '..', 'config', 'docker-compose.dev.yml')
 
-async function waitForPort(port, host, timeout = 60000) {
+async function waitForPort(port, host, timeout = 120000) {
   const start = Date.now()
   while (Date.now() - start < timeout) {
     try {
@@ -22,20 +22,35 @@ async function waitForPort(port, host, timeout = 60000) {
   throw new Error(`Timed out waiting for ${host}:${port}`)
 }
 
+function waitForPgReady(host, user, timeout = 120000) {
+  const start = Date.now()
+  while (Date.now() - start < timeout) {
+    try {
+      execSync(`pg_isready -h ${host} -U ${user}`, { stdio: 'ignore' })
+      return
+    } catch {
+      // not ready yet — wait then retry
+    }
+  }
+  throw new Error(`Timed out waiting for PostgreSQL to accept connections`)
+}
+
 async function main() {
   const cwd = path.resolve(__dirname, '..')
   console.log('Starting dependencies (PostgreSQL + RustFS)...')
   execSync(`docker compose -f "${COMPOSE_FILE}" up -d`, { stdio: 'inherit' })
   console.log('Waiting for PostgreSQL...')
-  await waitForPort(5432, 'localhost')
+  await waitForPort(5432, '127.0.0.1')
+  await waitForPgReady('127.0.0.1', 'greenalgeria')
   console.log('Waiting for RustFS...')
-  await waitForPort(9000, 'localhost')
+  await waitForPort(9000, '127.0.0.1')
 
-  console.log('Creating bucket...')
+  console.log('Creating schema and bucket...')
+  execSync("docker exec green-algeria-db psql -U greenalgeria -d greenalgeria -c 'CREATE SCHEMA IF NOT EXISTS nestjs'", { stdio: 'inherit' })
   const bucket = spawn(process.execPath, ['scripts/create-bucket.mjs'], {
     cwd, stdio: 'inherit', shell: true,
     env: {
-      OO_OBJECT_STORAGE_ENDPOINT: 'http://localhost:9000',
+      OO_OBJECT_STORAGE_ENDPOINT: 'http://127.0.0.1:9000',
       OO_OBJECT_STORAGE_BUCKET: 'e2e-test',
       OO_OBJECT_STORAGE_ACCESS_KEY: 'greenalgeria-access',
       OO_OBJECT_STORAGE_SECRET_KEY: 'greenalgeria-secret-change-me',
@@ -72,7 +87,7 @@ async function main() {
     env: {
       ...safeEnv,
       CLIENT_URL: 'http://localhost:4173',
-      OO_OBJECT_STORAGE_ENDPOINT: 'http://localhost:9000',
+      OO_OBJECT_STORAGE_ENDPOINT: 'http://127.0.0.1:9000',
       OO_OBJECT_STORAGE_BUCKET: 'e2e-test',
       OO_OBJECT_STORAGE_ACCESS_KEY: 'greenalgeria-access',
       OO_OBJECT_STORAGE_SECRET_KEY: 'greenalgeria-secret-change-me',

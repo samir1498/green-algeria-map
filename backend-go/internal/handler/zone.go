@@ -22,7 +22,7 @@ func (h *ZoneHandler) List(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	writeJSON(w, http.StatusOK, resp)
+	writeJSON(w, http.StatusOK, resp.Zones)
 }
 
 func (h *ZoneHandler) Create(w http.ResponseWriter, r *http.Request) {

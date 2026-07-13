@@ -40,11 +40,11 @@ func TestZoneHandler_CreateAndList(t *testing.T) {
 	w = httptest.NewRecorder()
 	h.List(w, r)
 
-	var listed model.ListZonesResponse
+	var listed []model.ZoneResponse
 	json.NewDecoder(w.Body).Decode(&listed)
 	assert.Equal(t, 200, w.Code)
-	assert.Len(t, listed.Zones, 1)
-	assert.Equal(t, "Park", listed.Zones[0].Name)
+	assert.Len(t, listed, 1)
+	assert.Equal(t, "Park", listed[0].Name)
 }
 
 func TestZoneHandler_Create_Invalid(t *testing.T) {
