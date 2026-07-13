@@ -137,23 +137,25 @@ async function main() {
   log('Creating bucket...')
   await createBucketWithRetry()
 
-  console.log('Starting Spring Boot backend...')
+  log('Starting Spring Boot backend...')
   const fs = require('fs')
   const jarDir = path.join(cwd, 'target')
   const jarFiles = fs.readdirSync(jarDir).filter(f => f.endsWith('.jar') && !f.includes('sources') && !f.includes('javadoc'))
   if (jarFiles.length === 0) {
-    console.error('No JAR found in target/. Build the project first with: make build')
+    log('No JAR found in target/. Build the project first with: make build')
     process.exit(1)
   }
-  console.log(`Found JAR: ${jarFiles[0]}`)
+  log(`Found JAR: ${jarFiles[0]}`)
   const jarPath = path.join(jarDir, jarFiles[0])
   const server = spawn('java', ['-jar', jarPath, '--server.port=8081', '--app.cors.allowed-origins=http://localhost:3000,http://localhost:4173'], {
-    cwd,
-    stdio: 'inherit',
-    shell: true,
+    cwd, stdio: ['pipe', 'inherit', 'inherit'],
     env: { ...process.env },
   })
-  server.on('exit', code => process.exit(code ?? 0))
+  server.stdout?.on('data', d => process.stderr.write(d))
+  server.on('exit', code => {
+    log(`Java exited with code ${code}`)
+    process.exit(code ?? 0)
+  })
 }
 
 main().catch(err => { console.error(err); process.exit(1) })
