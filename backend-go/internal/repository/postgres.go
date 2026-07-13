@@ -260,15 +260,15 @@ type ZoneEntity struct {
 	Status           string    `json:"status"`
 	Lat              float64   `json:"lat"`
 	Lng              float64   `json:"lng"`
-	TargetCount      *int      `json:target_count`
-	CurrentCount     *int      `json:current_count`
+	TargetCount      *int      `json:"target_count"`
+	CurrentCount     *int      `json:"current_count"`
 	Description      *string   `json:"description"`
-	TreeSpecies      *string   `json:tree_species`
-	OrganizerContact *string   `json:organizer_contact`
-	VolunteerCount   int       `json:volunteer_count`
+	TreeSpecies      *string   `json:"tree_species"`
+	OrganizerContact *string   `json:"organizer_contact"`
+	VolunteerCount   int       `json:"volunteer_count"`
 	Photos           []string  `json:"photos"`
-	CreatedAt        time.Time `json:created_at`
-	UpdatedAt        time.Time `json:updated_at`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
 }
 
 type DamageReportEntity struct {
@@ -282,6 +282,6 @@ type DamageReportEntity struct {
 	ReportedBy  *string   `json:"reported_by"`
 	Lat         float64   `json:"lat"`
 	Lng         float64   `json:"lng"`
-	CreatedAt   time.Time `json:created_at`
-	UpdatedAt   time.Time `json:updated_at`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
