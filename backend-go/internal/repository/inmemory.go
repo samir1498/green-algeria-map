@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"strings"
 	"sync"
 	"time"
 
@@ -95,10 +94,6 @@ func (s *InMemoryStore) CreateZone(_ context.Context, name, zoneType, status str
 	if photos == nil {
 		photos = []string{}
 	}
-	photosStr := ""
-	if len(photos) > 0 {
-		photosStr = strings.Join(photos, ",")
-	}
 	z := &ZoneEntity{
 		ID:               uuid.New().String(),
 		Name:             name,
@@ -112,7 +107,7 @@ func (s *InMemoryStore) CreateZone(_ context.Context, name, zoneType, status str
 		TreeSpecies:      &treeSpecies,
 		OrganizerContact: &organizerContact,
 		VolunteerCount:   volunteerCount,
-		Photos:           &photosStr,
+		Photos:           photos,
 		CreatedAt:        now,
 		UpdatedAt:        now,
 	}
@@ -161,11 +156,7 @@ func (s *InMemoryStore) UpdateZone(_ context.Context, id, name, zoneType, status
 	if photos == nil {
 		photos = []string{}
 	}
-	photosStr := ""
-	if len(photos) > 0 {
-		photosStr = strings.Join(photos, ",")
-	}
-	z.Photos = &photosStr
+	z.Photos = photos
 	z.UpdatedAt = time.Now().UTC()
 	return z, nil
 }
@@ -189,14 +180,7 @@ func (s *InMemoryStore) AddZonePhoto(_ context.Context, id, photoURL string) err
 	if !ok {
 		return nil
 	}
-	// Parse existing photos
-	var photos []string
-	if z.Photos != nil && *z.Photos != "" {
-		photos = strings.Split(*z.Photos, ",")
-	}
-	photos = append(photos, photoURL)
-	photosStr := strings.Join(photos, ",")
-	z.Photos = &photosStr
+	z.Photos = append(z.Photos, photoURL)
 	z.UpdatedAt = time.Now().UTC()
 	return nil
 }

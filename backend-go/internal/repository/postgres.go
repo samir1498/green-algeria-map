@@ -266,7 +266,7 @@ type ZoneEntity struct {
 	TreeSpecies      *string   `json:tree_species`
 	OrganizerContact *string   `json:organizer_contact`
 	VolunteerCount   int       `json:volunteer_count`
-	Photos           *string   `json:"photos"`
+	Photos           []string  `json:"photos"`
 	CreatedAt        time.Time `json:created_at`
 	UpdatedAt        time.Time `json:updated_at`
 }
