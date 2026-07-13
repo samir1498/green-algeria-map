@@ -8,6 +8,7 @@ import (
 	"github.com/green-algeria-map/backend-go/internal/email"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jeromesth/go-better-auth"
+	"github.com/jeromesth/go-better-auth/social"
 )
 
 func New(pool *pgxpool.Pool) *betterauth.Auth {
@@ -36,7 +37,7 @@ func New(pool *pgxpool.Pool) *betterauth.Auth {
 				html := email.PasswordResetEmail(data.User.Name, data.URL)
 				return mail.Send(data.User.Email, "Reset your password — Green Algeria Map", html)
 			},
-			RequireEmailVerification: false,
+			RequireEmailVerification: true,
 		},
 		EmailVerification: &betterauth.EmailVerifConfig{
 			SendOnSignUp:                true,
@@ -44,6 +45,16 @@ func New(pool *pgxpool.Pool) *betterauth.Auth {
 			SendVerificationEmail: func(data betterauth.EmailVerificationData, r *http.Request) error {
 				html := email.VerificationEmail(data.User.Name, data.URL)
 				return mail.Send(data.User.Email, "Verify your email — Green Algeria Map", html)
+			},
+		},
+		SocialProviders: map[string]social.ProviderConfig{
+			"google": {
+				ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+				ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+			},
+			"github": {
+				ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
+				ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
 			},
 		},
 		TrustedOrigins: []string{"http://localhost:3000", "http://localhost:4173"},
