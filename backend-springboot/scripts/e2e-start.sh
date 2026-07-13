@@ -149,7 +149,7 @@ async function main() {
   const jarPath = path.join(jarDir, jarFiles[0])
   const server = spawn('java', ['-jar', jarPath, '--server.port=8081', '--app.cors.allowed-origins=http://localhost:3000,http://localhost:4173'], {
     cwd, stdio: ['pipe', 'inherit', 'inherit'],
-    env: { ...process.env },
+    env: { ...process.env, SPRING_FLYWAY_ENABLED: 'true' },
   })
   server.stdout?.on('data', d => process.stderr.write(d))
   server.on('exit', code => {
