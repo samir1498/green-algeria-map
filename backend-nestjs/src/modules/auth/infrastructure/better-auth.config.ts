@@ -13,6 +13,9 @@ const pool = new Pool({
 });
 
 pool.on('error', () => {});
+pool.on('connect', (client) => {
+  client.query('SET search_path TO nestjs,public,extensions').catch(() => {});
+});
 
 const email = new BrevoClient();
 
