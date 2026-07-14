@@ -7,12 +7,12 @@ interface UseRegisterFormOptions {
     name: string
     email: string
     password: string
-  }) => Promise<{ error?: { message: string } | null }>
+  }) => Promise<{ error?: { message: string; code?: string } | null }>
   redirectTo?: string
   onSuccess?: () => Promise<void> | void
 }
 
-export function useRegisterForm({ signUp, redirectTo = '/', onSuccess }: UseRegisterFormOptions) {
+export function useRegisterForm({ signUp, onSuccess }: UseRegisterFormOptions) {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -33,7 +33,7 @@ export function useRegisterForm({ signUp, redirectTo = '/', onSuccess }: UseRegi
 
       toast.success('Account created successfully')
       await onSuccess?.()
-      navigate({ to: redirectTo })
+      navigate({ to: '/auth/verify-email', search: { email } })
     } catch {
       toast.error('Sign up failed. Please try again.')
     } finally {
