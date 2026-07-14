@@ -30,6 +30,7 @@ public class AuthService {
     private final EmailService emailService;
 
     private final String clientUrl;
+    private final String baseUrl;
     private final long tokenTtlMinutes;
 
     public AuthService(
@@ -39,6 +40,7 @@ public class AuthService {
             PasswordEncoder passwordEncoder,
             EmailService emailService,
             @Value("${app.client-url:http://localhost:3000}") String clientUrl,
+            @Value("${server.base-url:http://localhost:8081}") String baseUrl,
             @Value("${app.token-ttl-minutes:60}") long tokenTtlMinutes) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
@@ -46,6 +48,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
         this.clientUrl = clientUrl;
+        this.baseUrl = baseUrl;
         this.tokenTtlMinutes = tokenTtlMinutes;
     }
 
@@ -76,11 +79,17 @@ public class AuthService {
         authTokenRepository.save(new AuthToken(
                 UUID.randomUUID().toString(), user.getId(), AuthToken.Type.EMAIL_VERIFICATION, token, expiresAt));
 
-        String url = clientUrl + "/verify-email?token=" + token;
+        String url = baseUrl + "/api/auth/verify-email?token=" + token + "&redirect=" + clientUrl
+                + "/auth/verify-email?verified=true";
         emailService.send(
                 user.getEmail(),
                 "Verify your email — Green Algeria Map",
                 EmailTemplate.verification(user.getName(), url));
+    }
+
+    public void sendVerificationEmail(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        sendVerificationEmail(user);
     }
 
     public void verifyEmail(String token) {
@@ -107,7 +116,7 @@ public class AuthService {
         authTokenRepository.save(new AuthToken(
                 UUID.randomUUID().toString(), user.getId(), AuthToken.Type.PASSWORD_RESET, token, expiresAt));
 
-        String url = clientUrl + "/reset-password?token=" + token;
+        String url = clientUrl + "/auth/reset-password?token=" + token;
         emailService.send(
                 user.getEmail(),
                 "Reset your password — Green Algeria Map",
