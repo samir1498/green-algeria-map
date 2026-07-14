@@ -4,10 +4,15 @@ import { sanitizeRedirect } from '@/shared/utils/sanitize-redirect'
 import { LoginPage } from './LoginPage'
 
 export const Route = createFileRoute('/auth/login')({
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
-    return typeof search.redirect === 'string'
-      ? { redirect: sanitizeRedirect(search.redirect) }
-      : {}
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; oauth?: string } => {
+    return {
+      ...(typeof search.redirect === 'string'
+        ? { redirect: sanitizeRedirect(search.redirect) }
+        : {}),
+      ...(typeof search.oauth === 'string' && ['success', 'error'].includes(search.oauth)
+        ? { oauth: search.oauth }
+        : {}),
+    }
   },
   beforeLoad: async () => {
     const session = await sessionService.getSession()

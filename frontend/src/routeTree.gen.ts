@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ZonesNewRouteImport } from './routes/zones/new'
 import { Route as AuthVerifyEmailRouteImport } from './routes/auth/verify-email'
+import { Route as AuthSettingsRouteImport } from './routes/auth/settings'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
@@ -43,6 +44,11 @@ const ZonesNewRoute = ZonesNewRouteImport.update({
 const AuthVerifyEmailRoute = AuthVerifyEmailRouteImport.update({
   id: '/auth/verify-email',
   path: '/auth/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthSettingsRoute = AuthSettingsRouteImport.update({
+  id: '/auth/settings',
+  path: '/auth/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/settings': typeof AuthSettingsRoute
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/zones/new': typeof ZonesNewRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/settings': typeof AuthSettingsRoute
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/zones/new': typeof ZonesNewRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/auth/settings': typeof AuthSettingsRoute
   '/auth/verify-email': typeof AuthVerifyEmailRoute
   '/zones/new': typeof ZonesNewRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/auth/reset-password'
+    | '/auth/settings'
     | '/auth/verify-email'
     | '/zones/new'
     | '/dashboard/'
@@ -135,6 +145,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/auth/reset-password'
+    | '/auth/settings'
     | '/auth/verify-email'
     | '/zones/new'
     | '/dashboard'
@@ -148,6 +159,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/auth/reset-password'
+    | '/auth/settings'
     | '/auth/verify-email'
     | '/zones/new'
     | '/_authenticated/dashboard/'
@@ -161,6 +173,7 @@ export interface RootRouteChildren {
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
+  AuthSettingsRoute: typeof AuthSettingsRoute
   AuthVerifyEmailRoute: typeof AuthVerifyEmailRoute
   ZonesNewRoute: typeof ZonesNewRoute
 }
@@ -200,6 +213,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/verify-email'
       fullPath: '/auth/verify-email'
       preLoaderRoute: typeof AuthVerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/settings': {
+      id: '/auth/settings'
+      path: '/auth/settings'
+      fullPath: '/auth/settings'
+      preLoaderRoute: typeof AuthSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/reset-password': {
@@ -281,6 +301,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
+  AuthSettingsRoute: AuthSettingsRoute,
   AuthVerifyEmailRoute: AuthVerifyEmailRoute,
   ZonesNewRoute: ZonesNewRoute,
 }
