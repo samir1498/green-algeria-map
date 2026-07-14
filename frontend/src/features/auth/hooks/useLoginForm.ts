@@ -6,7 +6,7 @@ interface UseLoginFormOptions {
   signIn: (params: {
     email: string
     password: string
-  }) => Promise<{ error?: { message: string } | null }>
+  }) => Promise<{ error?: { message: string; code?: string } | null }>
   redirectTo?: string
   onSuccess?: () => Promise<void> | void
 }
@@ -25,6 +25,10 @@ export function useLoginForm({ signIn, redirectTo = '/', onSuccess }: UseLoginFo
       const result = await signIn({ email, password })
 
       if (result.error) {
+        if (result.error.code === 'EMAIL_NOT_VERIFIED') {
+          navigate({ to: '/auth/verify-email', search: { email } })
+          return
+        }
         toast.error(result.error.message)
         return
       }
