@@ -59,6 +59,10 @@ public class Account {
         return providerId;
     }
 
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
+
     public String getUserId() {
         return userId;
     }
