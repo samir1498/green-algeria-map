@@ -27,10 +27,24 @@ type brevoPayload struct {
 
 // Client sends transactional emails via the Brevo v3 SMTP API.
 type Client struct {
-	apiKey   string
+	apiKey    string
 	fromEmail string
-	fromName string
-	http     *http.Client
+	fromName  string
+	http      *http.Client
+}
+
+// SentHTML captures the HTML of every email "sent" while MOCK_EMAIL is enabled.
+// Integration tests read it to extract verification / reset links without
+// touching the real Brevo API.
+var SentHTML []string
+
+// LastSentHTML returns the most recently captured email body (empty unless
+// MOCK_EMAIL is set).
+func LastSentHTML() string {
+	if len(SentHTML) == 0 {
+		return ""
+	}
+	return SentHTML[len(SentHTML)-1]
 }
 
 // NewClient builds a Brevo client reading configuration from the environment.
@@ -53,6 +67,12 @@ func NewClient() *Client {
 
 // Send delivers an email through Brevo.
 func (c *Client) Send(to, subject, html string) error {
+	// In test environments email delivery is disabled: the caller only needs to
+	// know the send was attempted, not actually reach Brevo.
+	if os.Getenv("MOCK_EMAIL") == "1" {
+		SentHTML = append(SentHTML, html)
+		return nil
+	}
 	if c.apiKey == "" {
 		return fmt.Errorf("BREVO_API_KEY is not set")
 	}
