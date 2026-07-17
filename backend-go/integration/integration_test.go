@@ -7,10 +7,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/green-algeria-map/backend-go/internal/email"
 	"github.com/green-algeria-map/backend-go/internal/server"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
@@ -66,6 +68,7 @@ func runMigrations(t *testing.T, connStr string) {
 		projectRoot + "/migrations/004_betterauth_schema.sql",
 		projectRoot + "/migrations/005_add_damage_report_fields.sql",
 		projectRoot + "/migrations/006_add_zone_fields.sql",
+		projectRoot + "/migrations/007_fix_damage_report_columns.sql",
 	}
 
 	for _, m := range migrations {
@@ -127,11 +130,13 @@ func makeRequest(t *testing.T, srv *server.Server, method, path, body string) *h
 	return w
 }
 
-func makeAuthenticatedRequest(t *testing.T, srv *server.Server, method, path, body, token string) *httptest.ResponseRecorder {
+func makeAuthenticatedRequest(t *testing.T, srv *server.Server, method, path, body, sessionCookie string) *httptest.ResponseRecorder {
 	t.Helper()
 	req := httptest.NewRequest(method, path, strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+token)
+	if sessionCookie != "" {
+		req.Header.Set("Cookie", "better-auth.session_token="+sessionCookie)
+	}
 	w := httptest.NewRecorder()
 	srv.Router.ServeHTTP(w, req)
 	return w
@@ -145,25 +150,37 @@ func signUpAndSignIn(t *testing.T, srv *server.Server) string {
 		t.Fatalf("sign-up failed: %d - %s", w.Code, w.Body.String())
 	}
 
-	signInBody := `{"email":"auth-test@example.com","password":"password123"}`
-	w = makeRequest(t, srv, "POST", "/api/auth/sign-in/email", signInBody)
-	if w.Code != http.StatusOK {
-		t.Fatalf("sign-in failed: %d - %s", w.Code, w.Body.String())
-	}
-
-	var resp map[string]interface{}
-	json.NewDecoder(w.Body).Decode(&resp)
-	token, ok := resp["token"].(string)
-	if !ok || token == "" {
-		// Fall back: try to get session token from Set-Cookie
-		for _, c := range w.Result().Cookies() {
-			if c.Name == "better-auth.session_token" {
-				return c.Value
-			}
+	// AutoSignIn is enabled, so the sign-up response already carries a valid
+	// session cookie. RequireAuth reads the better-auth.session_token cookie,
+	// not a Bearer token.
+	for _, c := range w.Result().Cookies() {
+		if c.Name == "better-auth.session_token" {
+			return c.Value
 		}
-		t.Fatal("no token in sign-in response or cookie")
 	}
-	return token
+	t.Fatal("no session cookie in sign-up response")
+	return ""
+}
+
+// verifyEmail triggers the verification email (go-better-auth does not
+// auto-send on sign-up) and confirms the address via the verify-email endpoint,
+// reading the token from the email captured by MOCK_EMAIL.
+func verifyEmail(t *testing.T, srv *server.Server, emailAddr string) {
+	t.Helper()
+	// Trigger the verification email so MOCK_EMAIL captures it.
+	sendBody := `{"email":"` + emailAddr + `"}`
+	makeRequest(t, srv, "POST", "/api/auth/send-verification-email", sendBody)
+
+	html := email.LastSentHTML()
+	re := regexp.MustCompile(`token=([^"&\s<]+)`)
+	m := re.FindStringSubmatch(html)
+	if len(m) < 2 {
+		t.Fatalf("could not find verification token in email: %q", html)
+	}
+	w := makeRequest(t, srv, "GET", "/api/auth/verify-email?token="+m[1], "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("email verification failed: %d - %s", w.Code, w.Body.String())
+	}
 }
 
 func TestDamageReport_CreateAndList(t *testing.T) {
@@ -432,7 +449,7 @@ func TestAuth_SignUpSignIn(t *testing.T) {
 	if w.Code != http.StatusCreated && w.Code != http.StatusOK {
 		t.Logf("Sign up response: %d - %s", w.Code, w.Body.String())
 	}
-	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.Equal(t, http.StatusOK, w.Code)
 
 	var signUpResponse map[string]interface{}
 	json.NewDecoder(w.Body).Decode(&signUpResponse)
@@ -440,6 +457,10 @@ func TestAuth_SignUpSignIn(t *testing.T) {
 	user := signUpResponse["user"].(map[string]interface{})
 	assert.Equal(t, "test@example.com", user["email"])
 	assert.Equal(t, "Test User", user["name"])
+
+	// Email verification is required before sign-in; confirm via the
+	// verification email captured by MOCK_EMAIL.
+	verifyEmail(t, srv, "test@example.com")
 
 	// Test sign in
 	signInBody := `{"email":"test@example.com","password":"password123"}`
@@ -450,6 +471,18 @@ func TestAuth_SignUpSignIn(t *testing.T) {
 	json.NewDecoder(w.Body).Decode(&signInResponse)
 	assert.NotNil(t, signInResponse["user"])
 
-	// Test get session - need cookie from sign-in
-	// The auth middleware uses session cookies
+	// Test get session using the session cookie from sign-in.
+	var sessionCookie string
+	for _, c := range w.Result().Cookies() {
+		if c.Name == "better-auth.session_token" {
+			sessionCookie = c.Value
+			break
+		}
+	}
+	require.NotEmpty(t, sessionCookie)
+	w = makeAuthenticatedRequest(t, srv, "GET", "/api/auth/get-session", "", sessionCookie)
+	assert.Equal(t, http.StatusOK, w.Code)
+	var sessionResp map[string]interface{}
+	json.NewDecoder(w.Body).Decode(&sessionResp)
+	assert.NotNil(t, sessionResp["user"])
 }
