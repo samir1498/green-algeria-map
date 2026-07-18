@@ -7,7 +7,7 @@ interface UseRegisterFormOptions {
     name: string
     email: string
     password: string
-  }) => Promise<{ error?: { message: string; code?: string } | null; data?: { user?: { emailVerified?: boolean } } }>
+  }) => Promise<{ error?: { message: string; code?: string } | null; data?: { user?: { emailVerified?: boolean } } | null }>
   redirectTo?: string
   onSuccess?: () => Promise<void> | void
 }
