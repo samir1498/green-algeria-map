@@ -4,7 +4,7 @@ import { renderAuthRoute } from '@/shared/test/render-with-router'
 import { sanitizeRedirect } from '@/shared/utils/sanitize-redirect'
 import { RegisterPage } from './RegisterPage'
 
-const mockSignUp = vi.fn().mockResolvedValue({ data: { user: {} }, error: null })
+const mockSignUp = vi.fn().mockResolvedValue({ data: { user: { emailVerified: true } }, error: null })
 
 const validateSearch = (search: Record<string, unknown>): Record<string, unknown> =>
   typeof search.redirect === 'string' ? { redirect: sanitizeRedirect(search.redirect) } : {}
@@ -31,7 +31,7 @@ vi.mock('sonner', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mockSignUp.mockResolvedValue({ data: { user: {} }, error: null })
+  mockSignUp.mockResolvedValue({ data: { user: { emailVerified: true } }, error: null })
 })
 
 afterEach(() => {
@@ -116,7 +116,7 @@ describe('RegisterPage', () => {
   })
 
   it('shows success toast and redirects to home by default', async () => {
-    mockSignUp.mockResolvedValueOnce({ data: { user: {} }, error: null })
+    mockSignUp.mockResolvedValueOnce({ data: { user: { emailVerified: true } }, error: null })
 
     const { user, router } = await renderRegisterPage()
 
@@ -133,7 +133,7 @@ describe('RegisterPage', () => {
   })
 
   it('redirects to redirect query target on success', async () => {
-    mockSignUp.mockResolvedValueOnce({ data: { user: {} }, error: null })
+    mockSignUp.mockResolvedValueOnce({ data: { user: { emailVerified: true } }, error: null })
 
     const { user, router } = await renderRegisterPage({
       initialEntries: ['/auth/register?redirect=%2Fdashboard'],
@@ -150,7 +150,7 @@ describe('RegisterPage', () => {
   })
 
   it('falls back to home for unsafe redirect targets', async () => {
-    mockSignUp.mockResolvedValueOnce({ data: { user: {} }, error: null })
+    mockSignUp.mockResolvedValueOnce({ data: { user: { emailVerified: true } }, error: null })
 
     const { user, router } = await renderRegisterPage({
       initialEntries: ['/auth/register?redirect=http%3A%2F%2Fevil.com'],

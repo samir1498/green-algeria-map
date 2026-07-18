@@ -37,7 +37,7 @@ describe('useRegisterForm', () => {
   })
 
   it('calls signUp and navigates on success', async () => {
-    mockSignUp.mockResolvedValueOnce({ data: { user: {} }, error: null })
+    mockSignUp.mockResolvedValueOnce({ data: { user: { emailVerified: true } }, error: null })
     const { result } = renderHook(() => useRegisterForm({ signUp: mockSignUp }))
 
     const mockEvent = { preventDefault: vi.fn() } as unknown as React.FormEvent
