@@ -42,7 +42,8 @@ export const auth = betterAuth({
         html: passwordResetTemplate({ name: user.name, url }),
       });
     },
-    requireEmailVerification: process.env.REQUIRE_EMAIL_VERIFICATION !== 'false',
+    requireEmailVerification:
+      process.env.REQUIRE_EMAIL_VERIFICATION !== 'false',
   },
   emailVerification: {
     sendOnSignUp: process.env.REQUIRE_EMAIL_VERIFICATION !== 'false',
@@ -58,7 +59,7 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        before: async (data) => {
+        before: (data) => {
           if (process.env.REQUIRE_EMAIL_VERIFICATION === 'false') {
             return { data: { ...data, emailVerified: true } };
           }
