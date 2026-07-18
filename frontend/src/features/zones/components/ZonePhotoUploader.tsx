@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect, useEffect } from 'react'
+import { useState, useRef, useLayoutEffect } from 'react'
 import { api } from '@/shared/lib/axios'
 import { toast } from 'sonner'
 
@@ -61,21 +61,13 @@ export const ZonePhotoUploader: React.FC<ZonePhotoUploaderProps> = ({
     }
   }
 
-  const processFileRef = useRef(processFile)
-  processFileRef.current = processFile
-
-  useEffect(() => {
-    ;(window as any).__uploadZonePhoto = (file: File) => processFileRef.current!(file)
-    return () => { delete (window as any).__uploadZonePhoto }
-  }, [])
-
   useLayoutEffect(() => {
     const input = inputRef.current
     if (!input) return
 
     const handler = (e: Event) => {
       const file = (e.target as HTMLInputElement).files?.[0]
-      if (file) processFileRef.current(file)
+      if (file) processFile(file)
     }
 
     input.addEventListener('change', handler)

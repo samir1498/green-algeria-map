@@ -100,8 +100,9 @@ test.describe('Photo upload after zone creation', () => {
     await expect(page.getByTestId('done-photos')).toBeVisible({ timeout: 5000 })
     await expect(page.getByTestId('upload-dropzone')).toBeVisible()
 
-    await page.addStyleTag({ content: '[data-testid="file-input"] { opacity: 1 !important; }' })
-    await page.getByTestId('file-input').setInputFiles({
+    const fileChooser = page.waitForEvent('filechooser')
+    await page.getByTestId('file-input').click({ force: true })
+    await (await fileChooser).setFiles({
       name: 'e2e-test.png',
       mimeType: 'image/png',
       buffer: createPngBuffer(),

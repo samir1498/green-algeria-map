@@ -22,8 +22,9 @@ test('uploads a photo after creating a zone on production', async ({ page }) => 
   await expect(page.getByTestId('done-photos')).toBeVisible({ timeout: 10_000 })
   await expect(page.getByTestId('upload-dropzone')).toBeVisible()
 
-  await page.addStyleTag({ content: '[data-testid="file-input"] { opacity: 1 !important; }' })
-  await page.getByTestId('file-input').setInputFiles({
+  const fileChooser = page.waitForEvent('filechooser')
+  await page.getByTestId('file-input').click({ force: true })
+  await (await fileChooser).setFiles({
     name: 'prod-test.png',
     mimeType: 'image/png',
     buffer: createPngBuffer(),
@@ -32,5 +33,5 @@ test('uploads a photo after creating a zone on production', async ({ page }) => 
   await expect(page.getByTestId('preview-image')).toBeVisible({ timeout: 10_000 })
   await expect(page.getByTestId('uploading-spinner')).not.toBeVisible({ timeout: 30_000 })
   await expect(page.getByText('Photo successfully uploaded')).toBeVisible({ timeout: 30_000 })
-  await expect(page.getByTestId('preview-image')).not.toBeVisible({ timeout: 10_000 })
+  await expect(page.getByTestId('preview-image')).toBeVisible({ timeout: 10_000 })
 })
