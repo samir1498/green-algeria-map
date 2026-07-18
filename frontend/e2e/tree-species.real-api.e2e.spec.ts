@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test'
 
 // @real-api smoke tests — no mocks, hits real iNaturalist/GBIF APIs
-// These are informational only (non-blocking CI job)
-// Run with: --project=real-api
+// Skip in CI (external API rate limiting), run locally
+
+test.skip(!!process.env.CI, 'External API — skip in CI')
 
 async function clickZoneMarker(page: import('@playwright/test').Page, name: string) {
   await page.getByTestId('map-container').waitFor({ state: 'visible', timeout: 30000 })

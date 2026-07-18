@@ -2,7 +2,7 @@ import { api } from '@/shared/lib/axios'
 import type { Zone } from '@/shared/types/zone'
 import type { DamageReport } from '@/shared/types/damage-report'
 
-interface PublicMapResponse {
+export interface PublicMapResponse {
   zones: Zone[]
   damageReports: DamageReport[]
 }

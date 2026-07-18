@@ -38,6 +38,7 @@ function waitForPgReady(host, user, timeout = 120000) {
 async function main() {
   const cwd = path.resolve(__dirname, '..')
   console.log('Starting dependencies (PostgreSQL + RustFS)...')
+  execSync(`docker rm -f green-algeria-db green-algeria-rustfs 2>/dev/null; true`, { stdio: 'ignore' })
   execSync(`docker compose -f "${COMPOSE_FILE}" up -d`, { stdio: 'inherit' })
   console.log('Waiting for PostgreSQL...')
   await waitForPort(5432, '127.0.0.1')
@@ -91,6 +92,7 @@ async function main() {
       OO_OBJECT_STORAGE_BUCKET: 'e2e-test',
       OO_OBJECT_STORAGE_ACCESS_KEY: 'greenalgeria-access',
       OO_OBJECT_STORAGE_SECRET_KEY: 'greenalgeria-secret-change-me',
+      REQUIRE_EMAIL_VERIFICATION: 'false',
     },
   })
   server.on('exit', code => process.exit(code ?? 0))

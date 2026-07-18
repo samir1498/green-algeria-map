@@ -14,7 +14,7 @@
     "test:unit": "vitest run --config config/vitest.unit.config.ts",
     "test:ui": "vitest run --config config/vitest.ui.config.ts",
     "test:it": "vitest run --config config/vitest.it.config.ts",
-    "test:e2e": "playwright test --config config/playwright.config.ts",
+    "test:e2e": "VITE_API_URL=http://localhost:8080 pnpm build && playwright test --config config/playwright.config.ts",
     "test:e2e:spring": "VITE_API_URL=http://localhost:8081 VITE_API_BACKEND=spring pnpm build && E2E_AUTH_BASE=http://localhost:8081/api/auth playwright test --config config/playwright.spring.config.ts",
     "test:e2e:go": "VITE_API_URL=http://localhost:8082 pnpm build && DISABLE_RATE_LIMIT=true E2E_AUTH_BASE=http://localhost:8082/api/auth playwright test --config config/playwright.go.config.ts",
     "test:e2e:prod": "playwright test --config config/playwright.prod.config.ts",

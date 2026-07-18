@@ -8,6 +8,7 @@ import (
 	"github.com/green-algeria-map/backend-go/internal/email"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jeromesth/go-better-auth"
+	"github.com/jeromesth/go-better-auth/plugin"
 	"github.com/jeromesth/go-better-auth/social"
 )
 
@@ -37,10 +38,10 @@ func New(pool *pgxpool.Pool) *betterauth.Auth {
 				html := email.PasswordResetEmail(data.User.Name, data.URL)
 				return mail.Send(data.User.Email, "Reset your password — Green Algeria Map", html)
 			},
-			RequireEmailVerification: true,
+			RequireEmailVerification: os.Getenv("REQUIRE_EMAIL_VERIFICATION") != "false",
 		},
 		EmailVerification: &betterauth.EmailVerifConfig{
-			SendOnSignUp:                true,
+			SendOnSignUp:                os.Getenv("REQUIRE_EMAIL_VERIFICATION") != "false",
 			AutoSignInAfterVerification: true,
 			SendVerificationEmail: func(data betterauth.EmailVerificationData, r *http.Request) error {
 				html := email.VerificationEmail(data.User.Name, data.URL)
@@ -71,6 +72,9 @@ func New(pool *pgxpool.Pool) *betterauth.Auth {
 				{PathMatcher: "/sign-in/email", Window: 60, Max: 5},
 				{PathMatcher: "/sign-up/email", Window: 60, Max: 5},
 			},
+		},
+		Plugins: []plugin.Plugin{
+			&autoVerifyPlugin{},
 		},
 	})
 }

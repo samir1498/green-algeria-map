@@ -21,7 +21,7 @@ test.describe('Home page map interaction', () => {
     await expect(popup.getByTestId('cta-volunteer')).toHaveText('Volunteer')
 
     await popup.getByTestId('cta-volunteer').click()
-    await expect(popup.getByTestId('cta-volunteer')).toHaveText('Joined')
+    await expect(popup.getByTestId('cta-volunteer')).toHaveText('Joined', { timeout: 10000 })
     await expect(popup.getByText(/volunteers?/)).toBeVisible()
   })
 

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { createPngBuffer } from '../helpers/upload'
 
 const PHOTO_ZONE_NAME = `Prod Upload Test ${Date.now()}`
 
@@ -21,14 +22,11 @@ test('uploads a photo after creating a zone on production', async ({ page }) => 
   await expect(page.getByTestId('done-photos')).toBeVisible({ timeout: 10_000 })
   await expect(page.getByTestId('upload-dropzone')).toBeVisible()
 
-  const fileInput = page.getByTestId('file-input')
-  await fileInput.setInputFiles({
+  await page.addStyleTag({ content: '[data-testid="file-input"] { opacity: 1 !important; }' })
+  await page.getByTestId('file-input').setInputFiles({
     name: 'prod-test.png',
     mimeType: 'image/png',
-    buffer: Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-      'base64',
-    ),
+    buffer: createPngBuffer(),
   })
 
   await expect(page.getByTestId('preview-image')).toBeVisible({ timeout: 10_000 })
