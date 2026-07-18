@@ -61,8 +61,9 @@ export const auth = betterAuth({
       create: {
         before: (data) => {
           if (process.env.REQUIRE_EMAIL_VERIFICATION === 'false') {
-            return { data: { ...data, emailVerified: true } };
+            return Promise.resolve({ data: { ...data, emailVerified: true } });
           }
+          return Promise.resolve();
         },
       },
     },
