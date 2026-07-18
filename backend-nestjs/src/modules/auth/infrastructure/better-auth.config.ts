@@ -42,10 +42,10 @@ export const auth = betterAuth({
         html: passwordResetTemplate({ name: user.name, url }),
       });
     },
-    requireEmailVerification: true,
+    requireEmailVerification: process.env.REQUIRE_EMAIL_VERIFICATION !== 'false',
   },
   emailVerification: {
-    sendOnSignUp: true,
+    sendOnSignUp: process.env.REQUIRE_EMAIL_VERIFICATION !== 'false',
     sendVerificationEmail: async ({ user, url }) => {
       await email.send({
         to: user.email,
@@ -54,6 +54,17 @@ export const auth = betterAuth({
       });
     },
     autoSignInAfterVerification: true,
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (data) => {
+          if (process.env.REQUIRE_EMAIL_VERIFICATION === 'false') {
+            return { data: { ...data, emailVerified: true } };
+          }
+        },
+      },
+    },
   },
   trustedOrigins: process.env.CLIENT_URL
     ? process.env.CLIENT_URL.split(',').map((s) => s.trim())

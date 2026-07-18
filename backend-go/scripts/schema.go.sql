@@ -36,6 +36,12 @@ CREATE TABLE IF NOT EXISTS damage_reports (
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Migrate: add columns that may be missing if table was created from an older schema
+ALTER TABLE damage_reports ADD COLUMN IF NOT EXISTS type TEXT NOT NULL DEFAULT 'other';
+ALTER TABLE damage_reports ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'reported';
+ALTER TABLE damage_reports ADD COLUMN IF NOT EXISTS "reportedBy" TEXT NOT NULL DEFAULT '';
+ALTER TABLE damage_reports ADD COLUMN IF NOT EXISTS "reportedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
 CREATE TABLE IF NOT EXISTS items (
     id          TEXT PRIMARY KEY,
     name        TEXT NOT NULL,

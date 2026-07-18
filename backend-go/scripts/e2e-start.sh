@@ -41,6 +41,7 @@ async function main() {
   const binaryPath = path.join(cwd, 'backend-go')
 
   console.log('Starting dependencies (PostgreSQL + RustFS)...')
+  execSync(`docker rm -f green-algeria-db green-algeria-rustfs 2>/dev/null; true`, { stdio: 'ignore' })
   execSync(`docker compose -f "${COMPOSE_FILE}" up -d`, { stdio: 'inherit' })
 
   console.log('Waiting for PostgreSQL...')
@@ -77,6 +78,9 @@ async function main() {
   console.log('Running schema...')
   execSync(`psql -h localhost -U greenalgeria -d ${DATABASE_NAME} -f scripts/schema.go.sql`, { cwd, stdio: 'inherit', env: PG_ENV })
 
+  console.log('Seeding demo zones...')
+  execSync(`psql -h localhost -U greenalgeria -d ${DATABASE_NAME} -f scripts/seed.go.sql`, { cwd, stdio: 'inherit', env: PG_ENV })
+
   console.log('Building Go backend...')
   execSync('go build -ldflags="-s -w" -o backend-go ./cmd/api', { cwd, stdio: 'inherit' })
 
@@ -91,6 +95,7 @@ async function main() {
       STORE_TYPE: 'postgres',
       DATABASE_URL: databaseURL,
       AUTH_SECRET: 'e2e-test-secret-do-not-use-in-production',
+      REQUIRE_EMAIL_VERIFICATION: 'false',
       DISABLE_RATE_LIMIT: 'true',
     },
   })

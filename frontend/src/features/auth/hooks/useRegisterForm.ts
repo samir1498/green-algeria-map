@@ -7,12 +7,12 @@ interface UseRegisterFormOptions {
     name: string
     email: string
     password: string
-  }) => Promise<{ error?: { message: string; code?: string } | null }>
+  }) => Promise<{ error?: { message: string; code?: string } | null; data?: { user?: { emailVerified?: boolean } } }>
   redirectTo?: string
   onSuccess?: () => Promise<void> | void
 }
 
-export function useRegisterForm({ signUp, onSuccess }: UseRegisterFormOptions) {
+export function useRegisterForm({ signUp, redirectTo, onSuccess }: UseRegisterFormOptions) {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -33,8 +33,13 @@ export function useRegisterForm({ signUp, onSuccess }: UseRegisterFormOptions) {
 
       toast.success('Account created successfully')
       await onSuccess?.()
-      navigate({ to: '/auth/verify-email', search: { email } })
-    } catch {
+      if (result.data?.user?.emailVerified) {
+        navigate({ to: redirectTo || '/' })
+      } else {
+        navigate({ to: '/auth/verify-email', search: { email } })
+      }
+    } catch (e) {
+      console.error('useRegisterForm caught:', e)
       toast.error('Sign up failed. Please try again.')
     } finally {
       setLoading(false)

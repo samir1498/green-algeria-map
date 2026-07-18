@@ -32,6 +32,7 @@ public class AuthService {
     private final String clientUrl;
     private final String baseUrl;
     private final long tokenTtlMinutes;
+    private final boolean requireEmailVerification;
 
     public AuthService(
             UserRepository userRepository,
@@ -41,7 +42,8 @@ public class AuthService {
             EmailService emailService,
             @Value("${app.client-url:http://localhost:3000}") String clientUrl,
             @Value("${server.base-url:http://localhost:8081}") String baseUrl,
-            @Value("${app.token-ttl-minutes:60}") long tokenTtlMinutes) {
+            @Value("${app.token-ttl-minutes:60}") long tokenTtlMinutes,
+            @Value("${app.require-email-verification:true}") boolean requireEmailVerification) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
         this.authTokenRepository = authTokenRepository;
@@ -50,6 +52,7 @@ public class AuthService {
         this.clientUrl = clientUrl;
         this.baseUrl = baseUrl;
         this.tokenTtlMinutes = tokenTtlMinutes;
+        this.requireEmailVerification = requireEmailVerification;
     }
 
     public UserResponse signUp(String email, String password, String name) {
@@ -59,15 +62,22 @@ public class AuthService {
 
         String userId = UUID.randomUUID().toString();
         User user = new User(userId, name, email);
+
+        if (!requireEmailVerification) {
+            user.setEmailVerified(true);
+        }
+
         user = userRepository.save(user);
 
         Account account = new Account(UUID.randomUUID().toString(), userId, email, passwordEncoder.encode(password));
         accountRepository.save(account);
 
-        try {
-            sendVerificationEmail(user);
-        } catch (Exception e) {
-            log.warn("Failed to send verification email for user {}: {}", user.getEmail(), e.getMessage());
+        if (requireEmailVerification) {
+            try {
+                sendVerificationEmail(user);
+            } catch (Exception e) {
+                log.warn("Failed to send verification email for user {}: {}", user.getEmail(), e.getMessage());
+            }
         }
 
         return UserResponse.from(user);

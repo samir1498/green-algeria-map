@@ -125,6 +125,7 @@ async function createBucketWithRetry(retries = 20, delay = 2000) {
 async function main() {
   const cwd = path.resolve(__dirname, '..')
   log('Starting dependencies (PostgreSQL + RustFS)...')
+  execSync(`docker rm -f green-algeria-db green-algeria-rustfs 2>/dev/null; true`, { stdio: 'ignore' })
   execSync(`docker compose -f "${COMPOSE_FILE}" up -d`, { stdio: 'inherit' })
   log('Waiting for PostgreSQL...')
   await waitForPort(5432, '127.0.0.1')
@@ -149,7 +150,7 @@ async function main() {
   const jarPath = path.join(jarDir, jarFiles[0])
   const server = spawn('java', ['-jar', jarPath, '--server.port=8081', '--app.cors.allowed-origins=http://localhost:3000,http://localhost:4173'], {
     cwd, stdio: ['pipe', 'inherit', 'inherit'],
-    env: { ...process.env, SPRING_FLYWAY_ENABLED: 'true' },
+    env: { ...process.env, SPRING_FLYWAY_ENABLED: 'true', APP_REQUIRE_EMAIL_VERIFICATION: 'false' },
   })
   server.stdout?.on('data', d => process.stderr.write(d))
   server.on('exit', code => {
