@@ -1,10 +1,12 @@
-import { getRouteApi, Link } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { getRouteApi, Link, useNavigate } from '@tanstack/react-router'
 import { useLoginForm } from '@/features/auth/hooks/useLoginForm'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { authClient } from '@/features/auth/api/auth-client'
 import { Button } from '@/shared/components/ui/button'
 import { Input } from '@/shared/components/ui/input'
 import { Label } from '@/shared/components/ui/label'
+import { toast } from 'sonner'
 import {
   Card,
   CardContent,
@@ -17,12 +19,23 @@ const routeApi = getRouteApi('/auth/login')
 
 export function LoginPage() {
   const { signIn, refetchSession } = useAuth()
+  const navigate = useNavigate()
   const search = routeApi.useSearch()
   const { email, password, loading, handleSubmit, setEmail, setPassword } = useLoginForm({
     signIn,
     redirectTo: search.redirect,
     onSuccess: refetchSession,
   })
+
+  useEffect(() => {
+    if (search.oauth === 'success') {
+      toast.success('Signed in with OAuth provider')
+      navigate({ to: '/auth/login', search: { redirect: search.redirect }, replace: true })
+    } else if (search.oauth === 'error') {
+      toast.error('OAuth sign in failed. Please try again.')
+      navigate({ to: '/auth/login', search: { redirect: search.redirect }, replace: true })
+    }
+  }, [search.oauth, search.redirect, navigate])
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4 py-12">

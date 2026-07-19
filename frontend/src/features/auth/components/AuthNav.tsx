@@ -1,5 +1,5 @@
 import { Link, useNavigate } from '@tanstack/react-router'
-import { Loader2, LogOut, User } from 'lucide-react'
+import { Loader2, LogOut, Settings, User } from 'lucide-react'
 import { Button } from '@/shared/components/ui/button'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 
@@ -32,6 +32,11 @@ export function AuthNav() {
         <Button variant="ghost" size="sm" className="gap-1">
           <User className="h-4 w-4" />
           {user?.name}
+        </Button>
+      </Link>
+      <Link to="/auth/settings" aria-label="Settings">
+        <Button variant="ghost" size="sm">
+          <Settings className="h-4 w-4" />
         </Button>
       </Link>
       <Button
