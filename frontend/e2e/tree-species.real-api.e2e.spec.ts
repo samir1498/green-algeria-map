@@ -17,7 +17,9 @@ test.describe('Tree species info modal — real API (@real-api)', () => {
   test.describe.configure({ retries: 0, timeout: 60_000 })
 
   test('opens tree info modal from zone marker popup with real API data', async ({ page }) => {
-    test.info().annotations.push({ type: 'real-api', description: 'Hits iNaturalist/GBIF live endpoints' })
+    test
+      .info()
+      .annotations.push({ type: 'real-api', description: 'Hits iNaturalist/GBIF live endpoints' })
 
     await page.goto('/')
     await clickZoneMarker(page, 'Chrea National Park')
