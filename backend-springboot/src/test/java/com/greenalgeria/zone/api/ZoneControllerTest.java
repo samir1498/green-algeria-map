@@ -23,7 +23,7 @@ class ZoneControllerTest extends IntegrationTest {
         mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"New Zone","type":"planting","lat":36.5,"lng":3.0,"description":"desc","organizerContact":"contact"}
+                                {"name":"New Zone","type":"planting","status":"planned","lat":36.5,"lng":3.0,"description":"desc","organizerContact":"contact"}
                                 """))
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
@@ -46,7 +46,7 @@ class ZoneControllerTest extends IntegrationTest {
         var body = mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Old","type":"planting","lat":36.5,"lng":3.0,"description":"Before"}
+                                {"name":"Old","type":"planting","status":"planned","lat":36.5,"lng":3.0,"description":"Before"}
                                 """))
                 .andExpect(status().isCreated())
                 .andReturn()
@@ -86,7 +86,7 @@ class ZoneControllerTest extends IntegrationTest {
         var body = mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"To Delete","type":"planting","lat":36.5,"lng":3.0,"description":"Deleting"}
+                                {"name":"To Delete","type":"planting","status":"planned","lat":36.5,"lng":3.0,"description":"Deleting"}
                                 """))
                 .andExpect(status().isCreated())
                 .andReturn()
@@ -132,7 +132,7 @@ class ZoneControllerTest extends IntegrationTest {
         var body = mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Volunteer","type":"planting","lat":36.5,"lng":3.0,"description":"Volunteering"}
+                                {"name":"Volunteer","type":"planting","status":"planned","lat":36.5,"lng":3.0,"description":"Volunteering"}
                                 """))
                 .andExpect(status().isCreated())
                 .andReturn()

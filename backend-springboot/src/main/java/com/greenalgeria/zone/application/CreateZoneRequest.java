@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
 public record CreateZoneRequest(
         @NotBlank String name,
         @NotNull ZoneType type,
-        ZoneStatus status,
+        @NotNull ZoneStatus status,
         @NotNull Double lat,
         @NotNull Double lng,
         @Min(0) Integer targetCount,

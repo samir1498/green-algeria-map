@@ -3,6 +3,7 @@ package com.greenalgeria.damagereport.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.greenalgeria.shared.exception.DomainError;
 import java.util.UUID;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -60,8 +61,8 @@ class DamageReportTest {
         report.resolve();
 
         assertThatThrownBy(report::verify)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("verify");
+                .isInstanceOf(DomainError.class)
+                .hasMessageContaining("Invalid status transition");
     }
 
     @Test
@@ -79,8 +80,8 @@ class DamageReportTest {
         var report = createFireReport();
 
         assertThatThrownBy(report::resolve)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("verified");
+                .isInstanceOf(DomainError.class)
+                .hasMessageContaining("Invalid status transition");
     }
 
     @Test
@@ -90,8 +91,8 @@ class DamageReportTest {
         report.resolve();
 
         assertThatThrownBy(report::resolve)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("verified");
+                .isInstanceOf(DomainError.class)
+                .hasMessageContaining("Invalid status transition");
     }
 
     @Test

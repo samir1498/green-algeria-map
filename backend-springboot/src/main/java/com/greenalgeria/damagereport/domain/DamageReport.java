@@ -1,6 +1,7 @@
 package com.greenalgeria.damagereport.domain;
 
 import jakarta.persistence.*;
+import com.greenalgeria.damagereport.domain.DamageReportErrors;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -53,6 +54,12 @@ public class DamageReport {
             Double lng,
             String description,
             String reportedBy) {
+        if (lat == null || lat < -90 || lat > 90) {
+            throw new DamageReportErrors.InvalidDamageReportSeverityError("latitude must be between -90 and 90");
+        }
+        if (lng == null || lng < -180 || lng > 180) {
+            throw new DamageReportErrors.InvalidDamageReportSeverityError("longitude must be between -180 and 180");
+        }
         this.id = UUID.randomUUID();
         this.zoneId = zoneId;
         this.type = type;
@@ -80,14 +87,14 @@ public class DamageReport {
 
     public void verify() {
         if (this.status == DamageReportStatus.resolved) {
-            throw new IllegalStateException("Cannot verify a resolved damage report");
+            throw new DamageReportErrors.InvalidStatusTransitionError(this.status.name(), "verified");
         }
         this.status = DamageReportStatus.verified;
     }
 
     public void resolve() {
         if (this.status != DamageReportStatus.verified) {
-            throw new IllegalStateException("Only verified damage reports can be resolved");
+            throw new DamageReportErrors.InvalidStatusTransitionError(this.status.name(), "resolved");
         }
         this.status = DamageReportStatus.resolved;
     }

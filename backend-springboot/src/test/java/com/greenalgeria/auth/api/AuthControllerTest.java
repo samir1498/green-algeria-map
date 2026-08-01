@@ -62,7 +62,7 @@ class AuthControllerTest extends IntegrationTest {
                                 {"email":"existing@example.com","password":"password123","name":"Second"}
                                 """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.detail").value("Email already registered"));
+                .andExpect(jsonPath("$.message").value("Email already registered"));
     }
 
     @Test

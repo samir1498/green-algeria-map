@@ -1,6 +1,7 @@
 package com.greenalgeria.zone.domain;
 
 import jakarta.persistence.*;
+import com.greenalgeria.zone.domain.ZoneErrors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -62,21 +63,22 @@ public class Zone {
 
     public void markInProgress() {
         if (this.status != ZoneStatus.planned) {
-            throw new IllegalStateException("Only planned zones can be marked in progress");
+            throw new ZoneErrors.CannotStartZoneError(this.status.name());
         }
         this.status = ZoneStatus.in_progress;
     }
 
     public void markComplete() {
         if (this.status != ZoneStatus.in_progress) {
-            throw new IllegalStateException("Only in-progress zones can be completed");
+            throw new ZoneErrors.CannotCompleteZoneError(
+                    this.currentCount != null ? this.currentCount : 0, this.targetCount);
         }
         this.status = ZoneStatus.completed;
     }
 
     public void updateProgress(Integer count) {
         if (count != null && count < 0) {
-            throw new IllegalArgumentException("Progress count cannot be negative");
+            throw new ZoneErrors.NegativeCountError();
         }
         this.currentCount = count;
         if (this.currentCount != null && this.targetCount != null && this.currentCount >= this.targetCount) {

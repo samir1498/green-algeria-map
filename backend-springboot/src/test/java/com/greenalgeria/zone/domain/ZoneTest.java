@@ -3,6 +3,7 @@ package com.greenalgeria.zone.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.greenalgeria.shared.exception.DomainError;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -60,8 +61,8 @@ class ZoneTest {
         zone.markInProgress();
 
         assertThatThrownBy(zone::markInProgress)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("planned");
+                .isInstanceOf(DomainError.class)
+                .hasMessageContaining("Cannot start zone");
     }
 
     @Test
@@ -79,8 +80,8 @@ class ZoneTest {
         var zone = createPlantingZone();
 
         assertThatThrownBy(zone::markComplete)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("in-progress");
+                .isInstanceOf(DomainError.class)
+                .hasMessageContaining("Cannot complete zone");
     }
 
     @Test
@@ -90,8 +91,8 @@ class ZoneTest {
         zone.markComplete();
 
         assertThatThrownBy(zone::markComplete)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("in-progress");
+                .isInstanceOf(DomainError.class)
+                .hasMessageContaining("Cannot complete zone");
     }
 
     @Test
@@ -111,7 +112,7 @@ class ZoneTest {
         var zone = createPlantingZone();
 
         assertThatThrownBy(() -> zone.updateProgress(-1))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(DomainError.class)
                 .hasMessageContaining("negative");
     }
 

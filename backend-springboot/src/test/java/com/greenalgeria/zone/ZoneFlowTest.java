@@ -23,7 +23,7 @@ class ZoneFlowTest extends IntegrationTest {
         var body = mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Flow Zone","type":"planting","lat":36.0,"lng":3.0,"description":"Flow test"}
+                                {"name":"Flow Zone","type":"planting","status":"planned","lat":36.0,"lng":3.0,"description":"Flow test"}
                                 """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").isNotEmpty())
@@ -45,14 +45,14 @@ class ZoneFlowTest extends IntegrationTest {
         mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Zone A","type":"planting","lat":36.0,"lng":3.0,"description":"A"}
+                                {"name":"Zone A","type":"planting","status":"planned","lat":36.0,"lng":3.0,"description":"A"}
                                 """))
                 .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Zone B","type":"trash","lat":35.0,"lng":2.0,"description":"B"}
+                                {"name":"Zone B","type":"trash","status":"planned","lat":35.0,"lng":2.0,"description":"B"}
                                 """))
                 .andExpect(status().isCreated());
 
@@ -70,7 +70,7 @@ class ZoneFlowTest extends IntegrationTest {
         var body = mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"To Update","type":"planting","lat":36.0,"lng":3.0,"description":"Before"}
+                                {"name":"To Update","type":"planting","status":"planned","lat":36.0,"lng":3.0,"description":"Before"}
                                 """))
                 .andExpect(status().isCreated())
                 .andReturn()
@@ -103,7 +103,7 @@ class ZoneFlowTest extends IntegrationTest {
         var body = mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"To Delete","type":"planting","lat":36.0,"lng":3.0,"description":"Gone"}
+                                {"name":"To Delete","type":"planting","status":"planned","lat":36.0,"lng":3.0,"description":"Gone"}
                                 """))
                 .andExpect(status().isCreated())
                 .andReturn()
@@ -123,7 +123,7 @@ class ZoneFlowTest extends IntegrationTest {
         var body = mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Volunteer Zone","type":"planting","lat":36.0,"lng":3.0,"description":"Help"}
+                                {"name":"Volunteer Zone","type":"planting","status":"planned","lat":36.0,"lng":3.0,"description":"Help"}
                                 """))
                 .andExpect(status().isCreated())
                 .andReturn()
@@ -153,7 +153,7 @@ class ZoneFlowTest extends IntegrationTest {
         var body = mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Auth Check","type":"planting","lat":36.0,"lng":3.0,"description":"Test"}
+                                {"name":"Auth Check","type":"planting","status":"planned","lat":36.0,"lng":3.0,"description":"Test"}
                                 """))
                 .andExpect(status().isCreated())
                 .andReturn()
@@ -174,7 +174,7 @@ class ZoneFlowTest extends IntegrationTest {
         var body = mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Delete Auth","type":"planting","lat":36.0,"lng":3.0,"description":"Test"}
+                                {"name":"Delete Auth","type":"planting","status":"planned","lat":36.0,"lng":3.0,"description":"Test"}
                                 """))
                 .andExpect(status().isCreated())
                 .andReturn()

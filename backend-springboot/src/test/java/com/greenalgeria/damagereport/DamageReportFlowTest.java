@@ -22,7 +22,7 @@ class DamageReportFlowTest extends IntegrationTest {
         var body = mockMvc.perform(post("/api/zones")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"Report Zone","type":"planting","lat":36.0,"lng":3.0,"description":"For reports"}
+                                {"name":"Report Zone","type":"planting","status":"planned","lat":36.0,"lng":3.0,"description":"For reports"}
                                 """))
                 .andExpect(status().isCreated())
                 .andReturn()

@@ -178,6 +178,14 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("user", user));
     }
 
+    @PostMapping("/sign-out")
+    @Operation(summary = "Sign out")
+    public ResponseEntity<?> signOut(HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+        httpRequest.getSession().invalidate();
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
     private record SignUpResponse(UserResponse user) {}
 
     private record SessionResponse(UserResponse user) {}
