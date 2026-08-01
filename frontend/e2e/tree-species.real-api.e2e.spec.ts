@@ -27,7 +27,7 @@ test.describe('Tree species info modal — real API (@real-api)', () => {
     await expect(popup.getByTestId('tree-species-link')).toBeVisible()
 
     await popup.getByTestId('tree-species-link').click()
-    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 20000 })
+    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 30000 })
   })
 
   test('tree info modal shows species name from real API', async ({ page }) => {
@@ -35,7 +35,7 @@ test.describe('Tree species info modal — real API (@real-api)', () => {
     await clickZoneMarker(page, 'Chrea National Park')
 
     await page.getByTestId('tree-species-link').click()
-    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 20000 })
+    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 30000 })
 
     // Scientific name should be non-empty string from real data
     const sciName = page.getByTestId('tree-info-scientific-name')
@@ -49,7 +49,7 @@ test.describe('Tree species info modal — real API (@real-api)', () => {
     await clickZoneMarker(page, 'Chrea National Park')
 
     await page.getByTestId('tree-species-link').click()
-    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 20000 })
+    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 30000 })
     await expect(page.getByTestId('tree-info-gbif')).toBeVisible()
   })
 
@@ -58,7 +58,7 @@ test.describe('Tree species info modal — real API (@real-api)', () => {
     await clickZoneMarker(page, 'Chrea National Park')
 
     await page.getByTestId('tree-species-link').click()
-    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 20000 })
+    await expect(page.getByTestId('tree-info-content')).toBeVisible({ timeout: 30000 })
     await expect(page.getByTestId('tree-info-wikipedia')).toBeVisible()
   })
 })

@@ -24,7 +24,9 @@ test('uploads a photo after creating a zone on production', async ({ page }) => 
 
   const fileChooser = page.waitForEvent('filechooser')
   await page.getByTestId('file-input').click({ force: true })
-  await (await fileChooser).setFiles({
+  await (
+    await fileChooser
+  ).setFiles({
     name: 'prod-test.png',
     mimeType: 'image/png',
     buffer: createPngBuffer(),

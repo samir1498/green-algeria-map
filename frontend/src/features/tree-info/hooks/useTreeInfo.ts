@@ -18,6 +18,7 @@ export function useTreeInfo(taxonId: number | null, scientificName: string | nul
       return { ...detail, gbifCount }
     },
     enabled: taxonId !== null && taxonId > 0,
+    retry: 1,
     staleTime: 1000 * 60 * 30,
     gcTime: 1000 * 60 * 60,
   })

@@ -102,7 +102,9 @@ test.describe('Photo upload after zone creation', () => {
 
     const fileChooser = page.waitForEvent('filechooser')
     await page.getByTestId('file-input').click({ force: true })
-    await (await fileChooser).setFiles({
+    await (
+      await fileChooser
+    ).setFiles({
       name: 'e2e-test.png',
       mimeType: 'image/png',
       buffer: createPngBuffer(),

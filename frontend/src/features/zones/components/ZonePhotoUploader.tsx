@@ -89,7 +89,11 @@ export const ZonePhotoUploader: React.FC<ZonePhotoUploaderProps> = ({
           className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
           data-testid="file-input"
         />
-        <label htmlFor="zone-photo-input" data-testid="photo-upload-label" className="w-full flex cursor-pointer flex-col items-center gap-3 text-gray-600 hover:text-gray-800">
+        <label
+          htmlFor="zone-photo-input"
+          data-testid="photo-upload-label"
+          className="flex w-full cursor-pointer flex-col items-center gap-3 text-gray-600 hover:text-gray-800"
+        >
           {previewUrl ? (
             <img
               src={previewUrl}
