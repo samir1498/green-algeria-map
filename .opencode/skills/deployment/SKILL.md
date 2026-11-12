@@ -1,66 +1,40 @@
 ---
 name: deployment
-description: Use when working on CI/CD workflows, docker compose, or deployment config. Covers CI pipelines, CD workflows, Docker setup, and infrastructure.
+description: Use when working on CI/CD workflows, docker compose, or deployment config. Product repo only; other GAM backends deploy from their own repos.
 ---
 
-# Deployment — green-algeria-map
+# Deployment — green-algeria-map (product)
 
-## Repository Structure
+## Scope in this repo
 
 ```
-green-algeria-map/
-├── backend-nestjs/       # NestJS (TypeScript) backend
-├── backend-springboot/   # Spring Boot (Java) backend
-├── backend-go/           # Go backend
-├── frontend/             # React/TypeScript frontend (Vite)
-├── benchmark/            # Benchmark CLI (Node.js)
-├── config/               # Shared config files
-├── scripts/              # Utility scripts
-├── .github/workflows/    # CI/CD pipelines
-└── docker-compose.yml    # Shared infra
+./backend-nestjs/       # NestJS API
+./frontend/             # submodule -> gam-frontend (UI source lives there)
+./docker-compose.yml    # postgres + rustfs + app
+.github/workflows/      # ci-backend.yml, cd.yml, ci-e2e.yml, ci-gate.yml
 ```
 
 ## CI Workflows
 
 | Workflow | File | Trigger |
 |----------|------|---------|
-| CI | `.github/workflows/ci.yml` | PRs to main |
-| CI Backend NestJS | `ci-backend.yml` | PRs |
-| CI Backend Spring Boot | `ci-backend-springboot.yml` | PRs |
-| CI Backend Go | `ci-backend-go.yml` | PRs |
-| CI E2E | `ci-e2e.yml` | workflow_dispatch, manual |
-| CI Bench | `ci-bench.yml` | workflow_dispatch |
-| CI Gate | `ci-gate.yml` | PRs (merge gate) |
-| CD | `cd.yml` | Push to main |
-| CD Spring Boot | `cd-backend-springboot.yml` | Push to main |
-| CD Go | `cd-backend-go.yml` | Push to main |
+| CI Backend NestJS | `ci-backend.yml` | `backend-nestjs/**` |
+| CD Frontend | `cd.yml` | push to main (`frontend/**`), manual |
+| E2E | `ci-e2e.yml` | workflow_dispatch |
+| CI Gate | `ci-gate.yml` | PRs |
 
-## Docker Compose
+## Docker
 
-Three compose files:
-- `docker-compose.yml` — shared postgres + rustfs (used in dev)
-- `config/docker-compose.e2e.yml` — e2e postgres + rustfs
-- `docker-compose.dev.yml` — dev overrides
+- `docker-compose.yml` — infra + NestJS app (no other backends).
+- Spring Boot and Go images: `ghcr.io/samir1498/gam-backend-springboot`, `ghcr.io/samir1498/gam-backend-go` (built by those repos).
+- Frontend image: `gam-frontend/Dockerfile`, consumed by stack repos and k8s.
 
-Shared infrastructure containers:
-- `green-algeria-db` — postgres on 5432
-- `green-algeria-rustfs` — object storage on 9000
+## Submodule rules
 
-## CI E2E Jobs
+Every checkout that needs the UI must set `submodules: recursive`. The frontend is
+bumped by pointer, never edited here.
 
-See `.github/workflows/ci-e2e.yml`:
-- Each job uses GitHub Actions `services` for postgres (and rustfs for NestJS)
-- Backend-specific build steps, env vars, and test commands
-- Playwright reports uploaded as artifacts on failure
+## CD Frontend
 
-## Environment Variables
-
-| Variable | Used By | Purpose |
-|----------|---------|---------|
-| `VITE_API_URL` | Frontend build | Backend URL at build time |
-| `VITE_API_BACKEND` | Frontend build | `spring` for Spring Boot features |
-| `OO_OBJECT_STORAGE_*` | Backend | RustFS/S3 connection |
-
-## CD Pipeline
-
-Deployments happen on push to main. Each backend has its own CD workflow plus a shared `cd.yml` for the frontend.
+`cd.yml` builds `frontend/` (with submodule) and deploys to Cloudflare Pages,
+project `green-algeria-map`.

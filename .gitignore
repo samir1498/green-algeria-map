@@ -1,12 +1,10 @@
 node_modules/
 dist/
-backend-go/api
 .env
 .env.local
 *.log
 .DS_Store
 coverage
 # AGENTS.md is tracked — opencode instructions
-results/
 
 .open-mem/
