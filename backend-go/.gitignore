@@ -1,5 +1,0 @@
-backend-go
-*.exe
-tmp/
-coverage.out
-uploads/

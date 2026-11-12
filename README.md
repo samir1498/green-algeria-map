@@ -1,35 +1,55 @@
-# Green Algeria Map
+# Green Algeria Map — Product (NestJS + Frontend)
 
 Map-based platform for tracking reforestation and cleanup efforts across Algeria. Volunteers, donors, and organizers can find planting zones, track progress, and coordinate action.
+
+This is the **main GAM repository**: the product, deployed to Cloudflare Pages + GHCR.
+The other implementations were split out so they own their own CI and images, but the
+UI itself lives in exactly one place:
+
+| Repo | Role |
+|---|---|
+| **this repo** | Product — NestJS backend + `frontend/` submodule, prod deploy |
+| `gam-frontend` | React 19 UI, single source, consumed here as a submodule |
+| `gam-backend-springboot` | Standalone Spring Boot API |
+| `gam-backend-go` | Standalone Go API |
+| `gam-laravel` | Laravel lab (learning) |
+| `gam-contract` | OpenAPI contract + conformance runner |
+| `gam-benchmark` | k6 harness + published results |
+| `gam-platform` | Kubernetes + extracted microservices |
+
 
 ## Stack
 
 | Layer | Tech |
 |-------|------|
-| **Frontend** | React 19, TanStack Router, Tailwind CSS v4, shadcn/ui, Leaflet |
-| **Backend (NestJS)** | NestJS 11, CQRS (`@nestjs/cqrs`), TypeORM, PostgreSQL 18 |
-| **Backend (Spring Boot)** | Spring Boot 4.0.6, Java 25, CQRS, JPA/Hibernate, Flyway, PostgreSQL 18 |
-| **Auth (NestJS)** | BetterAuth + `@thallesp/nestjs-better-auth` |
-| **Auth (Spring Boot)** | Form login, BCrypt, session-based |
+| **Frontend** | React 19, TanStack Router, Tailwind CSS v4, shadcn/ui, Leaflet (pinned submodule from `gam-frontend`) |
+| **Backend** | NestJS 11, CQRS (`@nestjs/cqrs`), TypeORM, PostgreSQL 18 |
+| **Auth** | BetterAuth + `@thallesp/nestjs-better-auth` |
 | **Quality** | TypeScript strict, ESLint, Prettier, knip, depcruise, husky |
-| **CI** | GitHub Actions — frontend + backend (NestJS + Spring Boot) with path filters |
-| **CD** | Cloudflare Pages (frontend on `main` push) + GHCR (Spring Boot native Docker image on annotated tag `backend-springboot-v*`) |
-| **E2E** | Playwright tests against NestJS & Spring Boot backends (manual trigger) |
-| **Runtime** | Docker (PostgreSQL), pnpm, Bun |
+| **CI** | GitHub Actions — NestJS backend + E2E (frontend CI lives in `gam-frontend`) |
+| **CD** | Cloudflare Pages (frontend on `main` push) |
+| **E2E** | Playwright against the NestJS backend (manual trigger) |
+| **Runtime** | Docker (PostgreSQL + RustFS), pnpm, Bun |
 
 ## Quick Start
 
 ```bash
-# Start everything (DB → migrations → seed → services in tmux)
-./start-dev.sh
+# NestJS + submodule UI (DB, migrations, services in tmux)
+./dev.sh
 
-# Or manually:
-cd backend-nestjs && docker compose up -d db
-pnpm migration:run
-bun src/seed.ts
-pnpm start:dev
+or manually:
+git submodule update --init --recursive
+cd frontend && pnpm install && pnpm dev      # :3000
+cd backend-nestjs && docker compose up -d postgres rustfs
+pnpm migration:run && bun src/seed.ts && pnpm start:dev
+```
 
-cd frontend && pnpm dev
+The `frontend/` directory is a **git submodule** pointing at `gam-frontend` at a pinned
+commit. Do not edit it here. To upgrade the UI:
+
+```bash
+cd frontend && git pull origin main && cd ..   # inside the submodule
+git add frontend && git commit -m "chore: bump frontend pointer"
 ```
 
 ## Architecture
@@ -90,20 +110,6 @@ sequenceDiagram
 
 - Zone GET routes are `@AllowAnonymous()` (public), writes require auth
 
-## Frontend Scripts
-
-Run from `frontend/`:
-
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Dev server (port 3000) |
-| `pnpm build` | Production build |
-| `pnpm check` | Type check |
-| `pnpm lint` | ESLint |
-| `pnpm knip` | Dead code detection |
-| `pnpm depcruise` | Module boundary validation |
-| `pnpm format` | Prettier |
-
 ## Backend Scripts
 
 ### NestJS
@@ -127,26 +133,6 @@ Run from `backend-nestjs/`:
 
 API docs at `http://localhost:8080/api/docs` (Scalar, moon theme).
 
-### Spring Boot
-
-Run from `backend-springboot/`:
-
-| Command | Description |
-|---------|-------------|
-| `make dev` | Dev server (port 8080) |
-| `make build` | Build JAR (skip tests) |
-| `make check` | Test + lint |
-| `make lint` | Format check (Palantir) |
-| `make format` | Auto-format |
-| `make test-unit` | Domain unit tests |
-| `make test-arch` | Architecture tests (ArchUnit) |
-| `make test-it` | Integration tests (Testcontainers + PostgreSQL) |
-| `make native` | Native compile (GraalVM binary) |
-| `make native-image` | Build native Docker image |
-| `make depgraph` | Generate module dependency graph |
-
-API docs at `http://localhost:8080/swagger-ui/index.html` (Swagger UI).
-
 ### Auth Endpoints
 
 | Method | Path | Description |
@@ -160,28 +146,7 @@ API docs at `http://localhost:8080/swagger-ui/index.html` (Swagger UI).
 
 ```
 green-algeria-map/
-├── frontend/                 # React SPA
-│   └── src/
-│       ├── app/              # App shell (router.tsx)
-│       ├── features/         # Domain feature slices
-│       │   ├── auth/         #   api/ + hooks/
-│       │   ├── zones/        #   api/ + hooks/
-│       │   ├── damage-reports/ # api/ + hooks/ + components/
-│       │   ├── map/          #   components/ (Map, Legend)
-│       │   └── tree-info/    #   api/ + hooks/ + components/
-│       ├── routes/           # TanStack Router route files (thin)
-│       ├── shared/           # Cross-cutting shared code
-│       │   ├── components/   #   shadcn/ui primitives
-│       │   ├── constants/    #   Domain constants
-│       │   ├── demo/         #   Mock data
-│       │   ├── hooks/        #   Shared hooks
-│       │   ├── lib/          #   Axios, query client, utils
-│       │   ├── test/         #   Test utilities
-│       │   ├── types/        #   Domain types
-│       │   └── utils/        #   Pure utility functions
-│       ├── main.tsx
-│       ├── routeTree.gen.ts
-│       └── styles.css
+├── frontend/                 # git submodule -> gam-frontend (React SPA)
 ├── backend-nestjs/           # NestJS CQRS API
 │   ├── src/
 │   │   ├── lib/              # Shared: DomainError, exception filters
@@ -189,33 +154,27 @@ green-algeria-map/
 │   │   ├── seed.ts           # Demo data seeder
 │   │   ├── migrations/       # TypeORM migrations
 │   │   └── modules/
-│   │       ├── zones/        # domain/ + application/ + infrastructure/ + dto/
-│   │       ├── damage-reports/ # domain/ + application/ + infrastructure/ + dto/
-│   │       └── auth/         # infrastructure/ only (BetterAuth)
+│   │       ├── zones/
+│   │       ├── damage-reports/
+│   │       └── auth/
 │   └── test/
 │       ├── it/               # Integration tests (Testcontainers + Postgres)
-│       └── setup/            # Test module helper
-├── backend-springboot/       # Spring Boot CQRS API (Testcontainers, Flyway, GraalVM)
-│   └── src/main/java/...     # domain/ + application/ + infrastructure/ + controller/
-├── benchmark/                # k6 scripts + results for performance benchmarks
-├── .github/workflows/        # CI/CD (frontend, NestJS, Spring Boot) + E2E
-├── .skills/                  # Project-specific AI skills
-├── .husky/                   # Pre-commit hooks
-├── CONTEXT.md                # Domain architecture documentation
-├── start-dev.sh              # Dev environment launcher
-└── .tmux.conf                # Tmux config
+│       └── setup/
+├── .github/workflows/        # NestJS CI, frontend CD, E2E
+├── scripts/dev/              # Dev session launcher
+└── docker-compose.yml        # postgres + rustfs + app
 ```
 
 ## CI / CD
 
 | Workflow | Triggers | Jobs |
 |----------|----------|------|
-| CI Frontend | Changes in `frontend/` or `ci.yml` | check → lint → knip → depcruise → test-unit → test-ui → test-it → coverage → build |
-| CI Backend NestJS | Changes in `backend-nestjs/` or `ci-backend.yml` | check → lint → knip → depcruise → test-unit → test-it → build |
-| CI Backend Spring Boot | Changes in `backend-springboot/` or `ci-backend-springboot.yml` | check → lint → arch → depgraph → test-unit → test-it → build |
-| CD Frontend | Push to `main` (frontend/ or cd.yml) + manual | Build → Deploy to Cloudflare Pages |
-| CD Backend Spring Boot | Annotated tag `backend-springboot-v*` + manual | Test → Build native Docker image → Push to GHCR |
-| E2E | manual (workflow_dispatch) | Playwright tests against NestJS & Spring Boot |
+| CI (NestJS) | `backend-nestjs/**` changes | check → lint → knip → depcruise → test-unit → test-it → build |
+| CD Frontend | Push to `main` (`frontend/**`) + manual | Build → Deploy to Cloudflare Pages |
+| E2E | manual (workflow_dispatch) | Playwright against NestJS |
+
+Frontend quality gates (check/lint/knip/test/build) run in `gam-frontend`.
+Spring Boot and Go pipelines run in their own repositories.
 
 ## Status
 
@@ -234,18 +193,13 @@ green-algeria-map/
 - Frontend auth integration (sign-in/up pages, protected routes)
 - Full test suite: unit, UI, integration
 
-### Spring Boot
-- Feature parity with NestJS: 19 API endpoints (zone CRUD, damage reports, auth, public map, health)
-- CQRS with CommandBus/QueryBus (SimpleCommandBus, SimpleQueryBus)
-- Photo upload: `POST /storage/zones/{id}/photo` with S3-compatible storage (MinIO/RustFS)
-- Swagger/OpenAPI at `/swagger-ui/index.html`
-- Rich domain model: Coordinates value object, status transitions, domain events
-- Repository abstraction: domain interfaces decoupled from JPA
-- Zero-mock test suite: 48 integration tests via Testcontainers + singleton PostgreSQL
-- Architecture enforcement: 7 ArchUnit rules
-- Native Docker image: GraalVM via Paketo Buildpacks, pushed to GHCR on tag (`backend-springboot-v*`)
-- Makefile for all dev/build/test commands (no direct `mvnw` usage)
-- GitHub Actions CI: compile, lint, arch tests, depgraph, unit tests, integration tests, build
+### Extracted
+
+- Spring Boot API parity work moved to `gam-backend-springboot` (own CI/CD, image `ghcr.io/samir1498/gam-backend-springboot`)
+- Go API moved to `gam-backend-go`
+- Benchmark harness + published results moved to `gam-benchmark`
+
+
 
 ## License
 

@@ -49,12 +49,11 @@ services:
     ports:
       - '9000:9000'
       - '9001:9001'
-
-  # ── NestJS ──────────────────────────────────────────────────
-  nestjs-app:
-    profiles: [nestjs]
-    container_name: green-algeria-nestjs
+  # ── API (NestJS) ─────────────────────────────────────────────
+  app:
     build: ./backend-nestjs
+    container_name: green-algeria-nestjs
+    restart: unless-stopped
     ports:
       - '8080:8080'
     depends_on:
@@ -67,11 +66,11 @@ services:
       PORT: 8080
       CLIENT_URL: http://localhost:4173
       BETTER_AUTH_URL: http://localhost:8080
-      BETTER_AUTH_SECRET: benchmark-better-auth-secret-for-testing-only
+      BETTER_AUTH_SECRET: local-dev-secret-change-me
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USERNAME: *pguser
-      DB_PASSWORD: *pgpass
+      DB_USERNAME: greenalgeria
+      DB_PASSWORD: greenalgeria
       DB_NAME: greenalgeria_nestjs
       DATABASE_URL: postgresql://greenalgeria:greenalgeria@postgres:5432/greenalgeria_nestjs
       OO_OBJECT_STORAGE_ENDPOINT: http://rustfs:9000
@@ -80,56 +79,6 @@ services:
       OO_OBJECT_STORAGE_ACCESS_KEY: greenalgeria-access
       OO_OBJECT_STORAGE_SECRET_KEY: greenalgeria-secret-change-me
       DISABLE_RATE_LIMIT: 'true'
-      NODE_OPTIONS:
-      DISABLE_SWAGGER:
-
-  # ── Spring Boot ──────────────────────────────────────────────
-  springboot-app:
-    profiles: [springboot]
-    container_name: green-algeria-springboot
-    build:
-      context: ./backend-springboot
-      dockerfile: Dockerfile
-    ports:
-      - '8081:8081'
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rustfs:
-        condition: service_healthy
-    environment:
-      SERVER_PORT: 8081
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/greenalgeria_springboot
-      SPRING_DATASOURCE_USERNAME: *pguser
-      SPRING_DATASOURCE_PASSWORD: *pgpass
-      STORAGE_ENDPOINT: http://rustfs:9000
-      STORAGE_REGION: us-east-1
-      STORAGE_BUCKET: green-algeria
-      STORAGE_ACCESS_KEY: greenalgeria-access
-      STORAGE_SECRET_KEY: greenalgeria-secret-change-me
-      APP_CORS_ALLOWED_ORIGINS: http://localhost:4173
-      APP_RATE_LIMIT_ENABLED: 'false'
-      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Xlog:gc*:file=/tmp/gc.log:time,level,tags}
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
-
-  # ── Go ────────────────────────────────────────────────────────
-  go-app:
-    profiles: [go]
-    container_name: green-algeria-go
-    build:
-      context: ./backend-go
-      dockerfile: Dockerfile
-    ports:
-      - '8082:8082'
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      PORT: '8082'
-      STORE_TYPE: postgres
-      DATABASE_URL: postgresql://greenalgeria:greenalgeria@postgres:5432/greenalgeria_go
-      DISABLE_RATE_LIMIT: 'true'
-      CORS_ALLOWED_ORIGINS: http://localhost:4173
 
 volumes:
   pgdata:
